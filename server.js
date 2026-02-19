@@ -98,12 +98,12 @@ const COMPRESSIBLE = new Set(['.html', '.css', '.js', '.json', '.svg', '.xml', '
 // In-memory static file cache: path → { etag, raw, gzipped, contentType, cacheControl }
 const fileCache = new Map();
 
-// Cache strategy: no-store for code (browser must always fetch fresh), long cache for assets
+// Cache strategy: short cache for code (CDN/browser + ETag revalidation), long cache for assets
 const cacheHeader = (ext) => {
   if (['.png', '.jpg', '.jpeg', '.gif', '.ico', '.woff', '.woff2'].includes(ext)) {
     return 'public, max-age=86400'; // Images/fonts: 1 day
   }
-  return 'no-store'; // HTML/JS/CSS/JSON: never cache, always fetch fresh
+  return 'public, max-age=10, must-revalidate'; // HTML/JS/CSS: 10s cache, then ETag revalidation
 };
 
 // =============================================================================
@@ -274,14 +274,14 @@ const handleApi = async (req, res) => {
     }
 
     if (req.method === 'POST') {
-      const data = await loadAndSerialize(mapId);
+      const data = await loadAndSerialize(mapId, req.headers.host);
       if (!data) {
         res.writeHead(404, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Map not found' }));
         return;
       }
       // Strip metadata fields from the snapshot
-      const { id, locked, exported, backups: _b, ...snapshot } = data;
+      const { id, site, locked, exported, backups: _b, ...snapshot } = data;
       const backups = await readJson(getBackupFile(mapId), []);
       const entry = {
         id: randomBytes(6).toString('hex'),
@@ -438,7 +438,7 @@ const serializeDoc = (doc) => {
   return result;
 };
 
-const loadAndSerialize = async (mapId) => {
+const loadAndSerialize = async (mapId, host) => {
   // Try in-memory first (active WebSocket connections)
   let doc = docs.get(mapId);
   let data;
@@ -460,7 +460,8 @@ const loadAndSerialize = async (mapId) => {
     // Insert name, id, locked for readable key ordering
     const { app, v, exported, name, ...rest } = data;
     const locks = await readJson(LOCK_FILE, {});
-    data = { app, v, exported, name, id: mapId, locked: !!locks[mapId]?.isLocked, ...rest };
+    const site = (host || '').replace(/:\d+$/, '');
+    data = { app, v, exported, name, id: mapId, site, locked: !!locks[mapId]?.isLocked, ...rest };
     // Include backups for format URLs and exports
     const backups = await readJson(getBackupFile(mapId), []);
     if (backups.length) data.backups = backups;
@@ -518,7 +519,7 @@ const server = createServer(async (req, res) => {
     if (!content && !reqPath.includes('/', 1) && (ext === '.json' || ext === '.yaml')) {
       const mapId = reqPath.slice(1, -ext.length);
       if (mapId) {
-        const data = await loadAndSerialize(mapId);
+        const data = await loadAndSerialize(mapId, req.headers.host);
         if (data) {
           const body = ext === '.yaml'
             ? jsyaml.dump(jsonToYamlObj(data), { indent: 2, lineWidth: 120, noRefs: true, quotingType: '"' })

@@ -2019,6 +2019,14 @@ body.main-menu-open .step:hover {
     letter-spacing: 0.5px;
 }
 
+.slice-closed-banner {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border-color: #93c5fd;
+}
+.slice-closed-banner .slice-completed-text {
+    color: #1e40af;
+}
+
 /* Card Options Menu */
 .card-options {
     position: absolute;
@@ -2387,6 +2395,7 @@ body.main-menu-open .step:hover {
 
 .welcome-hero-img {
     width: 100%;
+    max-width: 1532px;
     height: auto;
     border-radius: 12px;
     box-shadow:
@@ -2577,13 +2586,20 @@ body.main-menu-open .step:hover {
 
 .welcome-footer {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    gap: 16px;
+    gap: 10px;
     font-size: 13px;
     color: #666;
     padding: 16px 48px;
     border-top: 1px solid #e8ecf0;
+}
+
+.welcome-footer .footer-main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
 }
 
 .welcome-footer .footer-text {
@@ -2593,6 +2609,18 @@ body.main-menu-open .step:hover {
 .welcome-footer .footer-support {
     display: flex;
     align-items: center;
+}
+
+.welcome-footer .footer-legal {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #999;
+}
+
+.welcome-footer .footer-dot {
+    color: #ccc;
 }
 
 .welcome-footer .bmc-btn {
@@ -2621,6 +2649,14 @@ body.main-menu-open .step:hover {
 
 .welcome-footer a:hover {
     text-decoration: underline;
+}
+
+.welcome-footer .footer-legal a {
+    color: #999;
+}
+
+.welcome-footer .footer-legal a:hover {
+    color: var(--color-teal);
 }
 
 .mobile-only {
@@ -6082,13 +6118,18 @@ body.read-only-mode .story-card.card-selected {
 
 .selection-toolbar-tags-dropdown {
     width: 240px;
-    max-height: min(400px, calc(100vh - 120px));
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
+    overflow: hidden !important;
     flex-direction: column !important;
     flex-wrap: nowrap !important;
     gap: 0 !important;
     padding: 8px !important;
+}
+
+.selection-toolbar-tags-scroll {
+    max-height: 300px;
+    overflow-y: auto;
+    flex-shrink: 1;
+    min-height: 0;
 }
 
 .selection-toolbar-tags-section {

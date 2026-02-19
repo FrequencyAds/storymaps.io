@@ -43,7 +43,7 @@ You've probably seen these patterns in your own work. It happens to us all. It's
 ### Story Mapping
 - **Users, Activities & Steps (Backbone)** - define the user journey left-to-right
 - **Task cards** - break down work under each step
-- **Release slices** - group tasks into MVP, V1, V2 etc.; mark slices complete to collapse them
+- **Release slices** - group tasks into MVP, V1, V2 etc.; mark slices complete or collapse them
 - **Status indicators** - done, in-progress, planned, blocked with per-slice progress tracking
 - **Story points** - estimate effort per card, auto-summed per slice
 - **Tags** - categorize cards with free-text tags, autocomplete from existing tags
@@ -95,6 +95,7 @@ You've probably seen these patterns in your own work. It happens to us all. It's
 - **Backup metadata** - each backup shows the map name, card count, size, and relative age
 
 ### Other
+- **Full Screen Mode** - toggle from the menu; double-Esc to exit (single Esc still closes modals, search, etc.); auto zoom-to-fit on enter and exit
 - **Focus Mode** - hide card metadata (status, points, tags, links) for a cleaner presentation view; expand icons still appear on hover
 - **Copy map** - duplicate an existing map to a new URL
 - **Sample maps** - load examples to learn the methodology
@@ -235,10 +236,11 @@ The server starts on `http://localhost:8080`.
 16. Use **Ctrl+scroll** to zoom, **right-click drag** to pan, **Alt+R** to zoom to fit
 17. Select consecutive columns and use **Menu → Create Partial** to extract shared sequences into reusable map partials; manage them from the **Partials** panel
 18. Use **Menu → Focus Mode** to hide card metadata for a cleaner presentation view
-19. Use **Menu → Backups** to create, restore, or delete map snapshots
-20. Use **Menu → Import** to import from JSON or YAML
-21. Use **Menu → Export** to save as JSON or YAML, or export to Jira, Asana, or Phabricator
-22. Use **Print** to save as PDF
+19. Use **Menu → Full Screen Mode** for a distraction-free view; press **Esc** twice to exit
+20. Use **Menu → Backups** to create, restore, or delete map snapshots
+21. Use **Menu → Import** to import from JSON or YAML
+22. Use **Menu → Export** to save as JSON or YAML, or export to Jira, Asana, or Phabricator
+23. Use **Print** to save as PDF
 
 ## Support
 If you find this tool useful, consider [buying me a coffee](https://buymeacoffee.com/jackgleeson). It goes towards server costs and helps me keep the app running.

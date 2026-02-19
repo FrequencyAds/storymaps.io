@@ -52,6 +52,7 @@ export const serialize = () => ({
     exported: new Date().toISOString(),
     name: state.name,
     ...(state.mapId && { id: state.mapId }),
+    site: window.location.hostname,
     users: state.columns.map(col => (state.users[col.id] || []).map(serializeCard)),
     activities: state.columns.map(col => (state.activities[col.id] || []).map(serializeCard)),
     steps: state.columns.map(col => {
@@ -68,6 +69,7 @@ export const serialize = () => ({
             stories: state.columns.map(col => (slice.stories[col.id] || []).map(serializeCard))
         };
         if (slice.collapsed) obj.collapsed = true;
+        if (slice.closedReason) obj.closedReason = slice.closedReason;
         return obj;
     }),
     ...(state.legend.length > 0 && {
@@ -117,6 +119,7 @@ const deserializeV1 = (data) => {
             collapsed: !!slice.collapsed,
             stories: {}
         };
+        if (slice.closedReason) newSlice.closedReason = slice.closedReason;
         const stories = Array.isArray(slice.stories) ? slice.stories : [];
         state.columns.forEach((col, i) => {
             newSlice.stories[col.id] = (stories[i] || []).map(deserializeCard);

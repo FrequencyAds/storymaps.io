@@ -3,7 +3,7 @@
 
 import * as notepad from '/src/notepad.js';
 import { generateId, el, CARD_COLORS, DEFAULT_CARD_COLORS, STATUS_OPTIONS, ZOOM_LEVELS } from '/src/constants.js';
-import { state, init as stateInit, initState, hasContent, confirmOverwrite, pushUndo, undo, redo, updateUndoRedoButtons, createColumn, createStory, createSlice, createRefColumn, selection, clearSelection, partialMapEditState } from '/src/state.js';
+import { state, init as stateInit, initState, hasContent, confirmOverwrite, pushUndo, undo, redo, updateUndoRedoButtons, createColumn, createStory, createSlice, createRefColumn, selection, clearSelection, partialMapEditState, DEFAULT_NOTES } from '/src/state.js';
 import { serialize, deserialize } from '/src/serialization.js';
 import * as navigation from '/src/navigation.js';
 import * as presence from '/src/presence.js';
@@ -198,6 +198,8 @@ const dom = {
     // Focus mode
     toggleFocusModeBtn: document.getElementById('toggleFocusModeBtn'),
     toggleFocusModeText: document.getElementById('toggleFocusModeText'),
+    toggleFullscreenBtn: document.getElementById('toggleFullscreenBtn'),
+    toggleFullscreenText: document.getElementById('toggleFullscreenText'),
     // Lock feature
     lockMapBtn: document.getElementById('lockMapBtn'),
     relockBtn: document.getElementById('relockBtn'),
@@ -283,6 +285,8 @@ const subscribeToMap = async (mapId) => {
     }
 
     syncFromYjs();
+    // Ensure state.notes gets written to ytext (fixes .yaml/.json endpoints missing notes)
+    if (state.notes && getYmap()) saveToStorage();
     render();
 
     const deferredTracking = async () => {
@@ -1405,6 +1409,58 @@ const initEventListeners = () => {
         localStorage.setItem('focusMode', focusMode);
         applyFocusMode();
     });
+    // Fullscreen mode — double-Esc to exit (single Esc is used by modals, expand view, etc.)
+    let fullscreenMode = false;
+    let lastFullscreenEsc = 0;
+    let keyboardLocked = false;
+    const updateFullscreenLabel = () => {
+        if (dom.toggleFullscreenText) {
+            dom.toggleFullscreenText.textContent = fullscreenMode ? 'Exit Full Screen Mode' : 'Full Screen Mode';
+        }
+    };
+    const enterFullscreenMode = () => {
+        fullscreenMode = true;
+        lastFullscreenEsc = 0;
+        document.documentElement.requestFullscreen().then(() => {
+            requestAnimationFrame(zoomToFit);
+            // Keyboard Lock API (Chrome/Edge): prevent browser from auto-exiting on Esc
+            if (navigator.keyboard?.lock) {
+                navigator.keyboard.lock(['Escape']).then(() => { keyboardLocked = true; }).catch(() => {});
+            }
+        }).catch(() => { fullscreenMode = false; });
+    };
+    const exitFullscreenMode = () => {
+        fullscreenMode = false;
+        lastFullscreenEsc = 0;
+        keyboardLocked = false;
+        if (document.fullscreenElement) {
+            const p = document.exitFullscreen();
+            if (p?.then) p.then(() => requestAnimationFrame(zoomToFit));
+        }
+    };
+    if (dom.toggleFullscreenBtn && !document.fullscreenEnabled) {
+        dom.toggleFullscreenBtn.style.display = 'none';
+    }
+    dom.toggleFullscreenBtn?.addEventListener('click', () => {
+        closeMainMenu();
+        if (fullscreenMode) exitFullscreenMode();
+        else enterFullscreenMode();
+    });
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement && fullscreenMode) {
+            // Browser exited fullscreen (Esc without keyboard lock) — re-enter
+            document.documentElement.requestFullscreen().then(() => {
+                if (navigator.keyboard?.lock) {
+                    navigator.keyboard.lock(['Escape']).then(() => { keyboardLocked = true; }).catch(() => {});
+                }
+            }).catch(() => { fullscreenMode = false; requestAnimationFrame(zoomToFit); });
+        }
+        if (!document.fullscreenElement && !fullscreenMode) {
+            keyboardLocked = false;
+            requestAnimationFrame(zoomToFit);
+        }
+        updateFullscreenLabel();
+    });
     dom.importJsonMenuItem.addEventListener('click', () => {
         closeMainMenu();
         if (lockState.isLocked && !lockState.sessionUnlocked) {
@@ -2033,11 +2089,12 @@ const initEventListeners = () => {
     document.addEventListener('keydown', (e) => {
         const isTextInput = e.target.matches('input, textarea') || e.target.closest('.cm-editor');
 
-        if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey && !isTextInput) {
+        const isEmptyTextInput = isTextInput && e.target.matches('input, textarea') && !e.target.value;
+        if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey && (!isTextInput || isEmptyTextInput)) {
             e.preventDefault();
             undo();
         }
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey)) && !isTextInput) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey)) && (!isTextInput || isEmptyTextInput)) {
             e.preventDefault();
             redo();
         }
@@ -2058,7 +2115,26 @@ const initEventListeners = () => {
             e.preventDefault();
             openSearch();
         }
+        if (e.key === 'Escape' && fullscreenMode) {
+            const now = Date.now();
+            if (now - lastFullscreenEsc < 500) {
+                exitFullscreenMode();
+                lastFullscreenEsc = 0;
+                return;
+            }
+            lastFullscreenEsc = now;
+        }
         if (e.key === 'Escape') {
+            const hadOpenUI =
+                dom.cardExpandModal.classList.contains('visible') ||
+                !dom.filterPanel.classList.contains('hidden') ||
+                !dom.searchBar.classList.contains('hidden') ||
+                selection.columnIds.length > 0 ||
+                dom.mainMenu.classList.contains('visible') ||
+                dom.shareMenu.classList.contains('visible') ||
+                dom.importModal.classList.contains('visible') ||
+                dom.exportModal.classList.contains('visible') ||
+                dom.backupsModal?.classList.contains('visible');
             if (dom.cardExpandModal.classList.contains('visible')) {
                 closeExpandModal();
                 return;
@@ -2081,6 +2157,9 @@ const initEventListeners = () => {
             hidePhabExportModal();
             hideAsanaExportModal();
             hideAsanaCsvExportModal();
+            if (fullscreenMode && !hadOpenUI) {
+                showToast('Press Esc again to exit full screen mode', 1500);
+            }
         }
         if (!isTextInput && ((e.altKey && e.key === 'r') || (e.shiftKey && e.code === 'Digit0'))) {
             e.preventDefault();

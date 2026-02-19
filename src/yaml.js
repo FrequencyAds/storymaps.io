@@ -92,6 +92,7 @@ export function jsonToYamlObj(data) {
     const result = {};
     result.name = data.name || '';
     if (data.id) result.id = data.id;
+    if (data.site) result.site = data.site;
     if (data.locked != null) result.locked = data.locked;
 
     const yamlUsers = backboneToYaml(usersArr, resolvedNames);
@@ -166,6 +167,8 @@ export function jsonToYamlObj(data) {
     if (slices.length) {
         result.slices = slices.map(slice => {
             const obj = { name: slice.name || '' };
+            if (slice.collapsed) obj.collapsed = true;
+            if (slice.closedReason) obj.closedReason = slice.closedReason;
             const stories = {};
             (slice.stories || []).forEach((cards, i) => {
                 if (!cards?.length) return;
@@ -329,6 +332,7 @@ export function yamlObjToJson(obj) {
         }
         const s = { name: slice.name || '', stories };
         if (slice.collapsed) s.collapsed = true;
+        if (slice.closedReason) s.closedReason = slice.closedReason;
         return s;
     });
 

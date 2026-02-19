@@ -103,24 +103,37 @@ export const createSliceMenu = (slice, onDelete, deleteMessage) => {
     const btn = el('button', 'btn-slice-menu', { text: '☰', title: 'Slice options', ariaLabel: 'Slice options menu' });
     const menu = el('div', 'slice-menu-dropdown');
 
-    // Mark as complete / Reopen option
-    const completeOption = el('button', 'slice-menu-item');
     if (slice.collapsed) {
-        completeOption.innerHTML = '<span class="slice-menu-icon">↩</span> Reopen';
-        completeOption.addEventListener('click', (e) => {
+        // Reopen option
+        const reopenOption = el('button', 'slice-menu-item');
+        reopenOption.innerHTML = '<span class="slice-menu-icon">↩</span> Reopen';
+        reopenOption.addEventListener('click', (e) => {
             e.stopPropagation();
             toggleSliceCollapsed(slice.id, false);
             menu.classList.remove('visible');
         });
+        menu.appendChild(reopenOption);
     } else {
+        // Mark as complete option
+        const completeOption = el('button', 'slice-menu-item');
         completeOption.innerHTML = '<span class="slice-menu-icon">✓</span> Mark Complete';
         completeOption.addEventListener('click', (e) => {
             e.stopPropagation();
-            toggleSliceCollapsed(slice.id, true);
+            toggleSliceCollapsed(slice.id, true, 'complete');
             menu.classList.remove('visible');
         });
+        menu.appendChild(completeOption);
+
+        // Collapse option
+        const collapseOption = el('button', 'slice-menu-item');
+        collapseOption.innerHTML = '<span class="slice-menu-icon" style="font-size:10px;vertical-align:1px">▼</span> Collapse';
+        collapseOption.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleSliceCollapsed(slice.id, true, 'closed');
+            menu.classList.remove('visible');
+        });
+        menu.appendChild(collapseOption);
     }
-    menu.appendChild(completeOption);
 
     // Delete option
     const deleteOption = el('button', 'slice-menu-item slice-menu-item-danger');
@@ -147,11 +160,13 @@ export const createSliceMenu = (slice, onDelete, deleteMessage) => {
 };
 
 // Toggle slice collapsed state
-const toggleSliceCollapsed = (sliceId, collapsed) => {
+const toggleSliceCollapsed = (sliceId, collapsed, reason) => {
     const slice = _state.slices.find(s => s.id === sliceId);
     if (!slice) return;
 
     slice.collapsed = collapsed;
+    if (collapsed && reason) slice.closedReason = reason;
+    else delete slice.closedReason;
     _renderAndSave();
 };
 
@@ -1049,9 +1064,10 @@ export const createSliceContainer = (slice, index) => {
             storiesRow.appendChild(placeholder);
         }
 
-        const completedBanner = el('div', 'slice-completed-banner');
+        const isClosed = slice.closedReason === 'closed';
+        const completedBanner = el('div', `slice-completed-banner${isClosed ? ' slice-closed-banner' : ''}`);
         const sliceName = slice.name ? `${slice.name} - ` : '';
-        const bannerText = el('span', 'slice-completed-text', { text: `${sliceName}Complete` });
+        const bannerText = el('span', 'slice-completed-text', { text: `${sliceName}${isClosed ? 'Closed' : 'Complete'}` });
         completedBanner.appendChild(bannerText);
         storiesRow.appendChild(completedBanner);
 

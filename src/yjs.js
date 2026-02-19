@@ -159,6 +159,7 @@ const createYSlice = (slice, columns) => {
     ySlice.set('id', slice.id);
     ySlice.set('name', slice.name || '');
     if (slice.collapsed) ySlice.set('collapsed', true);
+    if (slice.closedReason) ySlice.set('closedReason', slice.closedReason);
 
     const yStories = new Y.Map();
     columns.forEach(col => {
@@ -267,6 +268,7 @@ export const syncFromYjs = () => {
                         collapsed: sliceData.collapsed || false,
                         stories: {}
                     };
+                    if (sliceData.closedReason) slice.closedReason = sliceData.closedReason;
                     const storiesData = sliceData.stories || {};
                     _state.columns.forEach(col => {
                         const columnStories = storiesData[col.id];
@@ -286,6 +288,7 @@ export const syncFromYjs = () => {
                         collapsed: sliceData.collapsed || false,
                         stories: {}
                     };
+                    if (sliceData.closedReason) slice.closedReason = sliceData.closedReason;
                     const storiesData = sliceData.stories || {};
                     _state.columns.forEach(col => {
                         const columnStories = storiesData[col.id];
@@ -381,6 +384,10 @@ const updateYSlice = (ySlice, slice, columns) => {
     if (ySlice.get('collapsed') !== slice.collapsed) {
         if (slice.collapsed) ySlice.set('collapsed', true);
         else ySlice.delete('collapsed');
+    }
+    if (ySlice.get('closedReason') !== (slice.closedReason || undefined)) {
+        if (slice.closedReason) ySlice.set('closedReason', slice.closedReason);
+        else ySlice.delete('closedReason');
     }
 
     let yStories = ySlice.get('stories');

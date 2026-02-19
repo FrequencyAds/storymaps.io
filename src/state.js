@@ -3,6 +3,8 @@
 
 import { generateId, CARD_COLORS } from '/src/constants.js';
 
+export const DEFAULT_NOTES = 'Thanks for trying Storymaps.io! If you find it useful, please consider starring the open-source repo: https://github.com/jackgleeson/storymaps.io\nHave a great day!';
+
 export const state = {
     mapId: null,
     name: '',
@@ -264,7 +266,7 @@ export const initState = () => {
         { id: generateId(), color: CARD_COLORS.lime, label: 'Questions' },
         { id: generateId(), color: CARD_COLORS.rose, label: 'Edge cases' },
     ];
-    state.notes = '';
+    state.notes = DEFAULT_NOTES;
     state.slices = [
         { id: generateId(), name: '', collapsed: false, stories: { [column.id]: [createStory('New Task or Detail', '#fef08a')] } }
     ];

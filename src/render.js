@@ -683,6 +683,9 @@ export const updateSelectionUI = () => {
         const buildTagsDropdown = () => {
             tagsDropdown.innerHTML = '';
 
+            // Scrollable container for tag sections
+            const scrollArea = el('div', 'selection-toolbar-tags-scroll');
+
             // Collect tags currently on selected cards
             const selectedTags = new Map();
             for (const card of selection.clickedCards) {
@@ -708,8 +711,8 @@ export const updateSelectionUI = () => {
                     row.append(label, removeBtn);
                     currentSection.appendChild(row);
                 }
-                tagsDropdown.appendChild(currentSection);
-                tagsDropdown.appendChild(el('div', 'selection-toolbar-tags-divider'));
+                scrollArea.appendChild(currentSection);
+                scrollArea.appendChild(el('div', 'selection-toolbar-tags-divider'));
             }
 
             // Show all map tags to add
@@ -725,10 +728,12 @@ export const updateSelectionUI = () => {
                     });
                     addSection.appendChild(btn);
                 });
-                tagsDropdown.appendChild(addSection);
+                scrollArea.appendChild(addSection);
             }
 
-            // Input to add a new tag
+            tagsDropdown.appendChild(scrollArea);
+
+            // Input to add a new tag (pinned at bottom)
             const inputRow = el('div', 'selection-toolbar-tag-input-row');
             const tagInput = el('input', 'selection-toolbar-tag-input');
             tagInput.type = 'text';
@@ -755,12 +760,6 @@ export const updateSelectionUI = () => {
                 buildTagsDropdown();
                 requestAnimationFrame(() => {
                     tagsDropdown.querySelector('.selection-toolbar-tag-input')?.focus();
-                    // Clamp dropdown so it doesn't clip above the viewport
-                    tagsDropdown.style.bottom = '';
-                    const rect = tagsDropdown.getBoundingClientRect();
-                    if (rect.top < 8) {
-                        tagsDropdown.style.bottom = `calc(100% + 8px + ${rect.top - 8}px)`;
-                    }
                 });
             }
         });
@@ -1160,7 +1159,7 @@ const bulkAddTag = (tag) => {
         if (!item.tags) item.tags = [];
         if (!item.tags.includes(trimmed)) item.tags.push(trimmed);
     }
-    _renderAndSave();
+    _saveToStorage();
 };
 
 const bulkRemoveTag = (tag) => {
@@ -1170,7 +1169,7 @@ const bulkRemoveTag = (tag) => {
         const item = getItemForCard(card);
         if (item?.tags) item.tags = item.tags.filter(t => t !== tag);
     }
-    _renderAndSave();
+    _saveToStorage();
 };
 
 // =============================================================================
