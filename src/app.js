@@ -285,8 +285,6 @@ const subscribeToMap = async (mapId) => {
     }
 
     syncFromYjs();
-    // Ensure state.notes gets written to ytext (fixes .yaml/.json endpoints missing notes)
-    if (state.notes && getYmap()) saveToStorage();
     render();
 
     const deferredTracking = async () => {
@@ -2426,7 +2424,7 @@ const materializePhantomColumn = (phantomIndex = 0) => {
     let targetColumn = null;
     for (let i = 0; i <= phantomIndex; i++) {
         const hidden = i < phantomIndex;
-        const column = createColumn('', null, null, hidden);
+        const column = createColumn('', CARD_COLORS.green, null, hidden);
         state.columns.push(column);
         state.users[column.id] = [];
         state.activities[column.id] = [];

@@ -15,6 +15,18 @@ let provider = null;
 let ydoc = null;
 let ymap = null;
 export let isSyncingFromRemote = false;
+let lastSyncedHash = null;
+
+const stateHash = () => JSON.stringify([
+    _state.name,
+    _state.columns,
+    _state.users,
+    _state.activities,
+    _state.slices,
+    _state.legend,
+    _state.partialMaps,
+    ydoc.getText('notes').toString(),
+]);
 
 // Yjs modules — lazy-loaded to avoid blocking the welcome screen
 let Y = null;
@@ -325,6 +337,8 @@ export const syncFromYjs = () => {
     _notepad.migrateLegacyNotes(ymap, ydoc.getText('notes'), _state);
 
     if (_dom.boardName) _dom.boardName.value = _state.name;
+
+    lastSyncedHash = stateHash();
 };
 
 const syncYArray = (yArray, items, getId, createFn, updateFn) => {
@@ -430,6 +444,10 @@ export const syncToYjs = () => {
     if (!ymap || isSyncingFromRemote) return;
 
     if (_state.mapId && !_isMapEditable()) return;
+
+    const currentHash = stateHash();
+    if (currentHash === lastSyncedHash) return;
+    lastSyncedHash = currentHash;
 
     ydoc.transact(() => {
         ymap.set('name', _state.name);
@@ -557,7 +575,17 @@ export const createYjsDoc = async (mapId) => {
             const timeout = setTimeout(resolve, 10_000);
             provider.once('sync', () => { clearTimeout(timeout); resolve(); });
         });
-        _notepad.bindYjs(ydoc, ydoc.getText('notes'), provider);
+        // Seed Yjs from state for new maps (samples, imports, copies)
+        const ytext = ydoc.getText('notes');
+        if (ytext.length === 0 && _state.notes) {
+            ydoc.transact(() => {
+                ytext.insert(0, _state.notes);
+            }, 'local');
+        }
+        if (!ymap.get('columns') && _state.columns?.length) {
+            syncToYjs();
+        }
+        _notepad.bindYjs(ydoc, ytext, provider);
     }
 
     return ydoc;

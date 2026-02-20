@@ -2858,6 +2858,17 @@ body.main-menu-open .step:hover {
     .welcome-footer {
         margin-top: 24px;
         padding-top: 10px;
+        padding-left: 24px;
+        padding-right: 24px;
+        font-size: 11px;
+    }
+
+    .welcome-footer .footer-main {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .welcome-footer .footer-legal {
         font-size: 11px;
     }
 
@@ -3136,6 +3147,17 @@ body.main-menu-open .step:hover {
 
     .welcome-footer {
         margin-top: 16px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .welcome-footer .footer-main {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .welcome-footer .footer-legal {
+        font-size: 10px;
     }
 
     .loading-indicator {

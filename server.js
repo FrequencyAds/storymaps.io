@@ -5,8 +5,14 @@ import { basename, extname, join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import { createHash, randomBytes } from 'node:crypto';
+import { createRequire } from 'node:module';
 import { WebSocketServer } from 'ws';
 import Database from 'better-sqlite3';
+
+// Use createRequire to get the same CJS Yjs instance as y-websocket/bin/utils.cjs
+// (avoids dual-instance issues when mixing ESM import with CJS require)
+const _require = createRequire(import.meta.url);
+const Y = _require('yjs');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -38,8 +44,43 @@ const isOriginAllowed = (origin) => {
 process.env.YPERSISTENCE = DATA_DIR;
 const { setupWSConnection, docs, getPersistence } = await import('y-websocket/bin/utils');
 
-import { jsonToYamlObj } from './src/yaml.js';
+import { jsonToYamlObj, dumpYaml, importFromYaml } from './src/yaml.js';
 import jsyaml from '#js-yaml';
+
+// Rate limiter: sliding window, 30 req/min per IP
+const RATE_LIMIT = 30;
+const RATE_WINDOW = 60_000;
+const rateLimitMap = new Map();
+
+const getClientIp = (req) => {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) return forwarded.split(',')[0].trim();
+  return req.socket.remoteAddress;
+};
+
+const isRateLimited = (req) => {
+  const ip = getClientIp(req);
+  const now = Date.now();
+  let timestamps = rateLimitMap.get(ip);
+  if (!timestamps) {
+    timestamps = [];
+    rateLimitMap.set(ip, timestamps);
+  }
+  // Remove expired entries
+  while (timestamps.length && timestamps[0] <= now - RATE_WINDOW) timestamps.shift();
+  if (timestamps.length >= RATE_LIMIT) return true;
+  timestamps.push(now);
+  return false;
+};
+
+// Clean up stale rate limit entries every 5 minutes
+setInterval(() => {
+  const cutoff = Date.now() - RATE_WINDOW;
+  for (const [ip, timestamps] of rateLimitMap) {
+    while (timestamps.length && timestamps[0] <= cutoff) timestamps.shift();
+    if (!timestamps.length) rateLimitMap.delete(ip);
+  }
+}, 5 * 60_000);
 
 // JSON file paths for lock and counter data
 const LOCK_FILE = join(DATA_DIR, 'locks.json');
@@ -114,17 +155,20 @@ const handleApi = async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const path = url.pathname;
 
-  // Check origin for write requests
-  if (['POST', 'PUT', 'DELETE'].includes(req.method) && !isOriginAllowed(req.headers.origin)) {
+  // Check origin for write requests (skip for CLI API routes — rate-limited instead)
+  const isCliApi = /^\/api\/(maps(\/[a-z0-9]+)?|lock\/[a-z0-9]+(\/(?:unlock|remove))?)$/.test(path) && ['POST', 'PUT'].includes(req.method);
+  if (['POST', 'PUT', 'DELETE'].includes(req.method) && !isCliApi && !isOriginAllowed(req.headers.origin)) {
     res.writeHead(403, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Forbidden' }));
     return;
   }
 
-  // Parse JSON body for POST/PUT/DELETE (1 MB limit)
+  // Parse body for POST/PUT/DELETE (5 MB limit)
   let body = null;
   if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
-    const MAX_BODY = 1_048_576;
+    const MAX_BODY = 5_242_880;
+    const contentType = (req.headers['content-type'] || '').toLowerCase();
+    const isYaml = contentType.includes('text/yaml') || contentType.includes('application/x-yaml');
     body = await new Promise((resolve, reject) => {
       let data = '';
       let size = 0;
@@ -134,14 +178,37 @@ const handleApi = async (req, res) => {
         data += chunk;
       });
       req.on('end', () => {
-        try { resolve(JSON.parse(data)); }
-        catch { resolve({}); }
+        if (!data.trim()) { resolve({}); return; }
+        try {
+          if (isYaml) {
+            resolve(importFromYaml(data));
+          } else {
+            resolve(JSON.parse(data));
+          }
+        } catch (e) {
+          if (isYaml && e.validationErrors) {
+            const err = new Error('YAML validation failed');
+            err.validationErrors = e.validationErrors;
+            err.validationWarnings = e.validationWarnings;
+            reject(err);
+          } else {
+            resolve({});
+          }
+        }
       });
       req.on('error', reject);
-    }).catch(() => null);
+    }).catch((e) => {
+      if (e.validationErrors) return e; // Pass validation errors through
+      return null;
+    });
     if (body === null && req.destroyed) {
       res.writeHead(413, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Request body too large' }));
+      return;
+    }
+    if (body?.validationErrors) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'YAML validation failed', errors: body.validationErrors, warnings: body.validationWarnings || [] }));
       return;
     }
   }
@@ -229,6 +296,155 @@ const handleApi = async (req, res) => {
     } catch {
       res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Failed to generate unique ID' }));
+    }
+    return;
+  }
+
+  // --- CLI Map API ---
+  // POST /api/maps — create a new map
+  if (path === '/api/maps' && req.method === 'POST') {
+    if (isRateLimited(req)) {
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Rate limit exceeded' }));
+      return;
+    }
+    try {
+      const id = generateUniqueMapId();
+      const now = new Date().toISOString();
+
+      // If body has map data, write it to Yjs + persist to LevelDB
+      const hasData = body.steps?.length || body.slices?.length;
+      if (hasData) {
+        const doc = new Y.Doc();
+        writeDocFromJson(doc, body, Y);
+        const persistence = getPersistence();
+        if (persistence) {
+          await persistence.provider.storeUpdate(id, Y.encodeStateAsUpdate(doc));
+        }
+        doc.destroy();
+      }
+
+      // Create SQLite entry + increment stats
+      stmtInsert.run(id, body.name || 'untitled', now, now);
+      const stats = await readJson(STATS_FILE, { mapCount: 0 });
+      stats.mapCount = (stats.mapCount || 0) + 1;
+      await writeJson(STATS_FILE, stats);
+
+      const site = (req.headers.host || '').replace(/:\d+$/, '');
+      const proto = req.headers['x-forwarded-proto'] || 'http';
+      res.writeHead(201, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ id, url: `${proto}://${site}/${id}`, created_at: now }));
+    } catch (err) {
+      console.error('POST /api/maps error:', err);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Failed to create map' }));
+    }
+    return;
+  }
+
+  // GET /api/maps/:id — pull map data
+  const getMapMatch = path.match(/^\/api\/maps\/([a-z0-9]+)$/);
+  if (getMapMatch && req.method === 'GET') {
+    const mapId = getMapMatch[1];
+    const data = await loadAndSerialize(mapId, req.headers.host);
+    if (!data) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Map not found' }));
+      return;
+    }
+    // Strip backups from API response
+    const { backups, ...clean } = data;
+    const etag = contentEtag(data);
+    const format = url.searchParams.get('format');
+    if (format === 'yaml') {
+      const yamlStr = dumpYaml(jsonToYamlObj(clean));
+      res.writeHead(200, { 'Content-Type': 'text/yaml; charset=utf-8', 'Cache-Control': 'no-cache', 'ETag': etag });
+      res.end(yamlStr);
+    } else {
+      const jsonBody = JSON.stringify(clean, null, 2);
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-cache', 'ETag': etag });
+      res.end(jsonBody);
+    }
+    return;
+  }
+
+  // PUT /api/maps/:id — push map data
+  const putMapMatch = path.match(/^\/api\/maps\/([a-z0-9]+)$/);
+  if (putMapMatch && req.method === 'PUT') {
+    if (isRateLimited(req)) {
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Rate limit exceeded' }));
+      return;
+    }
+    const mapId = putMapMatch[1];
+
+    // Validate body
+    if (!body.steps?.length && !body.slices?.length) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Body must contain steps or slices' }));
+      return;
+    }
+
+    // Check lock (X-Lock-Password header bypasses if it matches the hash)
+    const locks = await readJson(LOCK_FILE, {});
+    if (locks[mapId]?.isLocked) {
+      const lockPassword = req.headers['x-lock-password'];
+      if (!lockPassword || lockPassword !== locks[mapId].passwordHash) {
+        res.writeHead(423, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Map is locked' }));
+        return;
+      }
+    }
+
+    // ETag conflict detection (opt-in via If-Match header)
+    const ifMatch = req.headers['if-match'];
+    if (ifMatch) {
+      const current = await loadAndSerialize(mapId, req.headers.host);
+      if (current) {
+        const currentEtag = contentEtag(current);
+        if (ifMatch !== currentEtag) {
+          res.writeHead(409, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Conflict: map has been modified since last pull. Pull again to get the latest version.' }));
+          return;
+        }
+      }
+    }
+
+    try {
+      const existingDoc = docs.get(mapId);
+
+      if (existingDoc) {
+        // Doc is in-memory (active WS clients) — write directly, changes broadcast automatically
+        writeDocFromJson(existingDoc, body, Y);
+      } else {
+        // Doc not in-memory — load from LevelDB, write, persist
+        const persistence = getPersistence();
+        if (!persistence) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Persistence unavailable' }));
+          return;
+        }
+        const doc = new Y.Doc();
+        await persistence.bindState(mapId, doc);
+        writeDocFromJson(doc, body, Y);
+        await persistence.provider.storeUpdate(mapId, Y.encodeStateAsUpdate(doc));
+        doc.destroy();
+      }
+
+      // Upsert SQLite entry
+      const now = new Date().toISOString();
+      if (stmtExists.get(mapId)) {
+        stmtUpdate.run(body.name || 'untitled', now, mapId);
+      } else {
+        stmtInsert.run(mapId, body.name || 'untitled', now, now);
+      }
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: true, id: mapId, updated_at: now }));
+    } catch (err) {
+      console.error(`PUT /api/maps/${mapId} error:`, err);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Failed to update map' }));
     }
     return;
   }
@@ -438,6 +654,12 @@ const serializeDoc = (doc) => {
   return result;
 };
 
+// Compute ETag from content fields only (excludes volatile metadata like exported, locked)
+const contentEtag = (data) => {
+  const { app, v, exported, id, site, locked, backups, ...content } = data;
+  return `"${createHash('md5').update(JSON.stringify(content, null, 2)).digest('hex')}"`;
+};
+
 const loadAndSerialize = async (mapId, host) => {
   // Try in-memory first (active WebSocket connections)
   let doc = docs.get(mapId);
@@ -448,7 +670,6 @@ const loadAndSerialize = async (mapId, host) => {
     // Load from LevelDB persistence
     const persistence = getPersistence();
     if (!persistence) return null;
-    const Y = await import('yjs');
     doc = new Y.Doc();
     await persistence.bindState(mapId, doc);
     const ymap = doc.getMap('storymap');
@@ -467,6 +688,123 @@ const loadAndSerialize = async (mapId, host) => {
     if (backups.length) data.backups = backups;
   }
   return data;
+};
+
+// =============================================================================
+// Write JSON → Yjs doc (server-side equivalent of client syncToYjs)
+// =============================================================================
+
+const writeDocFromJson = (doc, data, Y) => {
+  doc.transact(() => {
+    const ymap = doc.getMap('storymap');
+    ymap.set('name', data.name || '');
+
+    // Columns
+    const columns = (data.steps || []).map(step => {
+      const id = generateCardId();
+      if (step.partialMapId) {
+        const col = { id, partialMapId: step.partialMapId };
+        if (step.partialMapOrigin) col.partialMapOrigin = true;
+        return col;
+      }
+      return { id, name: step.name || '', color: step.color || '', hidden: step.hidden || false };
+    });
+
+    const yColumns = new Y.Array();
+    columns.forEach(col => {
+      const yCol = new Y.Map();
+      yCol.set('id', col.id);
+      if (col.partialMapId) {
+        yCol.set('partialMapId', col.partialMapId);
+        if (col.partialMapOrigin) yCol.set('partialMapOrigin', true);
+      } else {
+        yCol.set('name', col.name);
+        if (col.color) yCol.set('color', col.color);
+        if (col.hidden) yCol.set('hidden', true);
+      }
+      yColumns.push([yCol]);
+    });
+    ymap.set('columns', yColumns);
+
+    // Helper: create a Y.Map card from a plain object
+    const makeYCard = (card) => {
+      const ym = new Y.Map();
+      ym.set('id', generateCardId());
+      ym.set('name', card.name || '');
+      if (card.body) ym.set('body', card.body);
+      if (card.color) ym.set('color', card.color);
+      if (card.url) ym.set('url', card.url);
+      if (card.hidden) ym.set('hidden', true);
+      if (card.status) ym.set('status', card.status);
+      if (card.points != null) ym.set('points', card.points);
+      if (card.tags?.length) ym.set('tags', JSON.stringify(card.tags));
+      return ym;
+    };
+
+    // Users (positional array → keyed by column ID)
+    const yUsers = new Y.Map();
+    (data.users || []).forEach((cards, i) => {
+      if (i >= columns.length) return;
+      const yArr = new Y.Array();
+      (cards || []).forEach(card => yArr.push([makeYCard(card)]));
+      yUsers.set(columns[i].id, yArr);
+    });
+    ymap.set('users', yUsers);
+
+    // Activities
+    const yActivities = new Y.Map();
+    (data.activities || []).forEach((cards, i) => {
+      if (i >= columns.length) return;
+      const yArr = new Y.Array();
+      (cards || []).forEach(card => yArr.push([makeYCard(card)]));
+      yActivities.set(columns[i].id, yArr);
+    });
+    ymap.set('activities', yActivities);
+
+    // Slices
+    const ySlices = new Y.Array();
+    (data.slices || []).forEach(slice => {
+      const ySlice = new Y.Map();
+      ySlice.set('id', generateCardId());
+      ySlice.set('name', slice.name || '');
+      if (slice.collapsed) ySlice.set('collapsed', true);
+      if (slice.closedReason) ySlice.set('closedReason', slice.closedReason);
+
+      const yStories = new Y.Map();
+      (slice.stories || []).forEach((cards, i) => {
+        if (i >= columns.length) return;
+        const yArr = new Y.Array();
+        (cards || []).forEach(card => yArr.push([makeYCard(card)]));
+        yStories.set(columns[i].id, yArr);
+      });
+      ySlice.set('stories', yStories);
+      ySlices.push([ySlice]);
+    });
+    ymap.set('slices', ySlices);
+
+    // Legend
+    const yLegend = new Y.Array();
+    (data.legend || []).forEach(entry => {
+      const ym = new Y.Map();
+      ym.set('id', generateCardId());
+      ym.set('color', entry.color);
+      ym.set('label', entry.label || '');
+      yLegend.push([ym]);
+    });
+    ymap.set('legend', yLegend);
+
+    // Notes
+    if (data.notes) {
+      const ytext = doc.getText('notes');
+      if (ytext.length > 0) ytext.delete(0, ytext.length);
+      ytext.insert(0, data.notes);
+    }
+
+    // Partial maps (stored as JSON string, same as client)
+    if (data.partialMaps?.length) {
+      ymap.set('partialMaps', JSON.stringify(data.partialMaps));
+    }
+  });
 };
 
 // =============================================================================
@@ -522,7 +860,7 @@ const server = createServer(async (req, res) => {
         const data = await loadAndSerialize(mapId, req.headers.host);
         if (data) {
           const body = ext === '.yaml'
-            ? jsyaml.dump(jsonToYamlObj(data), { indent: 2, lineWidth: 120, noRefs: true, quotingType: '"' })
+            ? dumpYaml(jsonToYamlObj(data))
             : JSON.stringify(data, null, 2);
           const ct = ext === '.yaml' ? 'text/yaml' : 'application/json';
           res.writeHead(200, { 'Content-Type': ct + '; charset=utf-8', 'Cache-Control': 'no-store' });
@@ -631,6 +969,12 @@ const generateUniqueMapId = () => {
   throw new Error('Failed to generate unique ID');
 };
 
+const generateCardId = () => {
+  const bytes = randomBytes(6);
+  const num = Array.from(bytes).reduce((acc, b) => acc * 256n + BigInt(b), 0n);
+  return num.toString(36).slice(-8).padStart(8, '0');
+};
+
 // Debounce map for update writes (mapId → timeout)
 const updateTimers = new Map();
 
@@ -716,39 +1060,53 @@ setInterval(() => {
 
 // Graceful shutdown: stop connections, flush LevelDB + SQLite, then exit
 const gracefulShutdown = async () => {
-  console.log('Shutting down...');
+  // Force exit after 5s if cleanup hangs
+  const forceExit = setTimeout(() => {
+    console.error('Shutdown timed out, forcing exit.');
+    process.exit(1);
+  }, 5_000);
+  forceExit.unref();
 
-  // Stop accepting new connections
-  server.close();
-  wss.close();
+  try {
+    console.log('Shutting down...');
 
-  // Close all WebSocket clients
-  for (const ws of wss.clients) {
-    ws.close();
-  }
+    // Stop accepting new connections
+    server.close();
+    wss.close();
 
-  // Persist and destroy all active Yjs docs (flushes LevelDB)
-  const persistence = getPersistence();
-  for (const [name, doc] of docs) {
-    if (persistence) {
-      await persistence.writeState(name, doc);
+    // Close all WebSocket clients
+    for (const ws of wss.clients) {
+      ws.close();
     }
-    doc.destroy();
-  }
 
-  // Close LevelDB
-  if (persistence?.provider?.destroy) {
-    await persistence.provider.destroy();
-  }
+    // Flush all active Yjs docs to LevelDB, then destroy
+    const persistence = getPersistence();
+    for (const [name, doc] of docs) {
+      try {
+        if (persistence) await persistence.writeState(name, doc);
+        doc.destroy();
+      } catch (err) {
+        console.error(`Error flushing doc ${name}:`, err.message);
+      }
+    }
 
-  // Flush pending SQLite writes
-  for (const mapId of updateTimers.keys()) {
-    flushMapUpdate(mapId);
-  }
-  sqlite.close();
+    // Close LevelDB
+    if (persistence?.provider?.destroy) {
+      await persistence.provider.destroy();
+    }
 
-  console.log('Shutdown complete.');
-  process.exit(0);
+    // Flush pending SQLite writes
+    for (const mapId of updateTimers.keys()) {
+      flushMapUpdate(mapId);
+    }
+    sqlite.close();
+
+    console.log('Shutdown complete.');
+  } catch (err) {
+    console.error('Error during shutdown:', err);
+  } finally {
+    process.exit(0);
+  }
 };
 process.on('SIGTERM', gracefulShutdown);
 process.on('SIGINT', gracefulShutdown);

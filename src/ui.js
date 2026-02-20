@@ -469,6 +469,7 @@ const createColumnPlaceholder = (column) => {
 
     placeholder.addEventListener('click', () => {
         column.hidden = false;
+        column.color = CARD_COLORS.green;
         _renderAndSave();
     });
 

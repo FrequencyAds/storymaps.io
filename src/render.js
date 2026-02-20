@@ -1187,7 +1187,7 @@ const focusLastElement = (selector, textareaClass) => {
 
 export const addColumn = (hidden = true) => {
     _pushUndo();
-    const column = _createColumn('', null, null, hidden);
+    const column = _createColumn('', CARD_COLORS.green, null, hidden);
     _state.columns.push(column);
     _state.users[column.id] = [];
     _state.activities[column.id] = [];
@@ -1207,7 +1207,7 @@ export const addColumn = (hidden = true) => {
 
 export const addColumnAt = (index, hidden = false) => {
     _pushUndo();
-    const column = _createColumn('', null, null, hidden);
+    const column = _createColumn('', CARD_COLORS.green, null, hidden);
     _state.columns.splice(index, 0, column);
     _state.users[column.id] = [];
     _state.activities[column.id] = [];
