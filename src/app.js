@@ -13,6 +13,7 @@ import * as ui from '/src/ui.js';
 import * as renderMod from '/src/render.js';
 import * as exportsMod from '/src/exports.js';
 import { exportToYaml, importFromYaml } from '/src/yaml.js';
+import { showAlert, showConfirm, showPrompt } from '/src/modals.js';
 
 // =============================================================================
 // DOM References
@@ -472,12 +473,12 @@ const createAutoBackup = async (note) => {
     } catch { /* best-effort */ }
 };
 
-const importMap = (file) => {
+const importMap = async (file) => {
     const isFromWelcome = !state.mapId;
 
     if (!isFromWelcome) {
         saveToStorage();
-        if (!confirmOverwrite()) return;
+        if (!await confirmOverwrite()) return;
     }
 
     const reader = new FileReader();
@@ -504,7 +505,7 @@ const importMap = (file) => {
             }
             importBackupsIfPresent(parsed);
         } catch {
-            alert('Failed to import: Invalid file format');
+            await showAlert('Failed to import: Invalid file format');
         }
     };
     reader.readAsText(file);
@@ -526,7 +527,7 @@ const importFromJsonText = async (jsonText) => {
 
     if (!isFromWelcome) {
         saveToStorage();
-        if (!confirmOverwrite()) return;
+        if (!await confirmOverwrite()) return;
     }
 
     try {
@@ -552,7 +553,7 @@ const importFromJsonText = async (jsonText) => {
         }
         importBackupsIfPresent(data);
     } catch {
-        alert('Failed to import: Invalid JSON format');
+        await showAlert('Failed to import: Invalid JSON format');
     }
 };
 
@@ -574,7 +575,7 @@ const importFromYamlText = async (yamlText) => {
 
     if (!isFromWelcome) {
         saveToStorage();
-        if (!confirmOverwrite()) return;
+        if (!await confirmOverwrite()) return;
     }
 
     dom.importYamlValidationError.classList.add('hidden');
@@ -587,7 +588,7 @@ const importFromYamlText = async (yamlText) => {
             dom.importYamlValidationError.textContent = err.validationErrors.join('\n');
             dom.importYamlValidationError.classList.remove('hidden');
         } else {
-            alert('Failed to import: Invalid YAML format');
+            await showAlert('Failed to import: Invalid YAML format');
         }
         return;
     }
@@ -614,16 +615,16 @@ const importFromYamlText = async (yamlText) => {
         }
         importBackupsIfPresent(data);
     } catch {
-        alert('Failed to import: Invalid data structure');
+        await showAlert('Failed to import: Invalid data structure');
     }
 };
 
-const importYamlFile = (file) => {
+const importYamlFile = async (file) => {
     const isFromWelcome = !state.mapId;
 
     if (!isFromWelcome) {
         saveToStorage();
-        if (!confirmOverwrite()) return;
+        if (!await confirmOverwrite()) return;
     }
 
     const reader = new FileReader();
@@ -651,7 +652,7 @@ const importYamlFile = (file) => {
             importBackupsIfPresent(data);
         } catch (err) {
             const msg = err.validationErrors ? err.validationErrors.join('\n') : 'Invalid YAML format';
-            alert('Failed to import: ' + msg);
+            await showAlert('Failed to import: ' + msg);
         }
     };
     reader.readAsText(file);
@@ -917,7 +918,7 @@ const setCreateBtnLabel = (text) => {
 };
 
 const createBackup = async () => {
-    const note = prompt('Backup note (optional):');
+    const note = await showPrompt('Backup note (optional):');
     if (note === null) return;
     try {
         dom.createBackupBtn.disabled = true;
@@ -929,7 +930,7 @@ const createBackup = async () => {
         });
         await refreshBackupsList();
     } catch {
-        alert('Failed to create backup');
+        await showAlert('Failed to create backup');
     } finally {
         dom.createBackupBtn.disabled = false;
         setCreateBtnLabel('Create Backup');
@@ -938,10 +939,10 @@ const createBackup = async () => {
 
 const restoreBackup = async (backupId) => {
     if (!isMapEditable()) {
-        alert('Cannot restore while the map is locked.');
+        await showAlert('Cannot restore while the map is locked.');
         return;
     }
-    if (!confirm('Restore this backup? A safety backup of the current state will be created first.')) return;
+    if (!await showConfirm('Restore this backup? A safety backup of the current state will be created first.')) return;
     try {
         // Create safety backup
         await fetch(`/api/backups/${state.mapId}`, {
@@ -961,17 +962,17 @@ const restoreBackup = async (backupId) => {
         hideBackupsModal();
         showToast('Backup restored');
     } catch {
-        alert('Failed to restore backup');
+        await showAlert('Failed to restore backup');
     }
 };
 
 const deleteBackup = async (backupId) => {
-    if (!confirm('Delete this backup?')) return;
+    if (!await showConfirm('Delete this backup?')) return;
     try {
         await fetch(`/api/backups/${state.mapId}/${backupId}`, { method: 'DELETE' });
         await refreshBackupsList();
     } catch {
-        alert('Failed to delete backup');
+        await showAlert('Failed to delete backup');
     }
 };
 
@@ -981,7 +982,7 @@ const loadSample = async (name) => {
     }
 
     saveToStorage();
-    if (!confirmOverwrite()) return;
+    if (!await confirmOverwrite()) return;
 
     try {
         const response = await fetch(`samples/${name}.json`, { cache: 'no-cache' });
@@ -991,13 +992,13 @@ const loadSample = async (name) => {
         dom.boardName.value = state.name;
         renderAndSave();
     } catch {
-        alert('Failed to load sample');
+        await showAlert('Failed to load sample');
     }
 };
 
 const newMap = async () => {
     saveToStorage();
-    if (hasContent() && !confirm('Create a new story map?\n\nYou can return to this map using the back button.')) {
+    if (hasContent() && !await showConfirm('Create a new story map?\n\nYou can return to this map using the back button.')) {
         return;
     }
     destroyYjs();
@@ -1022,7 +1023,7 @@ const newMap = async () => {
 
 const copyMap = async () => {
     saveToStorage();
-    if (!confirm('Copy this map?\n\nA copy will be created with a new URL.')) {
+    if (!await showConfirm('Copy this map?\n\nA copy will be created with a new URL.')) {
         return;
     }
     destroyYjs();
@@ -1298,10 +1299,10 @@ const clearAllFilters = () => {
 };
 
 const initEventListeners = () => {
-    dom.logoLink.addEventListener('click', (e) => {
+    dom.logoLink.addEventListener('click', async (e) => {
         if (!state.mapId) return;
         e.preventDefault();
-        if (!hasContent() || confirm('Go to home page?\n\nYou can return to this map using the back button.')) {
+        if (!hasContent() || await showConfirm('Go to home page?\n\nYou can return to this map using the back button.')) {
             window.location.href = '/';
         }
     });
@@ -1459,18 +1460,18 @@ const initEventListeners = () => {
         }
         updateFullscreenLabel();
     });
-    dom.importJsonMenuItem.addEventListener('click', () => {
+    dom.importJsonMenuItem.addEventListener('click', async () => {
         closeMainMenu();
         if (lockState.isLocked && !lockState.sessionUnlocked) {
-            alert('This map is read-only. Unlock it first to import.');
+            await showAlert('This map is read-only. Unlock it first to import.');
             return;
         }
         showImportModal();
     });
-    dom.importYamlMenuItem.addEventListener('click', () => {
+    dom.importYamlMenuItem.addEventListener('click', async () => {
         closeMainMenu();
         if (lockState.isLocked && !lockState.sessionUnlocked) {
-            alert('This map is read-only. Unlock it first to import.');
+            await showAlert('This map is read-only. Unlock it first to import.');
             return;
         }
         showImportYamlModal();
@@ -1639,9 +1640,9 @@ const initEventListeners = () => {
     dom.phabCopyCall.addEventListener('click', () => {
         copyPhabCode(dom.phabImportCall, dom.phabCopyCall);
     });
-    document.getElementById('phabTokenHelpLink')?.addEventListener('click', (e) => {
+    document.getElementById('phabTokenHelpLink')?.addEventListener('click', async (e) => {
         e.preventDefault();
-        alert('To get your API token:\n\n1. Click your profile picture in Phabricator\n2. Go to Settings\n3. Click "Conduit API Tokens"\n4. Click "Generate Token"');
+        await showAlert('To get your API token:\n\n1. Click your profile picture in Phabricator\n2. Go to Settings\n3. Click "Conduit API Tokens"\n4. Click "Generate Token"');
     });
     dom.phabInstanceUrl.addEventListener('input', () => {
         dom.phabImportFunction.textContent = generatePhabImportFunction();
@@ -1817,7 +1818,7 @@ const initEventListeners = () => {
             dom.shareBtn.textContent = 'Copied!';
             setTimeout(() => dom.shareBtn.textContent = 'Share', 2000);
         } catch {
-            prompt('Copy this link to share:', url);
+            await showPrompt('Copy this link to share:', url);
         }
     });
     const captureMap = async () => {
@@ -1944,7 +1945,7 @@ const initEventListeners = () => {
             dom.shareBtn.textContent = 'Copied!';
             setTimeout(() => dom.shareBtn.textContent = 'Share', 2000);
         } catch (err) {
-            alert('Screenshot failed: ' + err.message);
+            await showAlert('Screenshot failed: ' + err.message);
             dom.shareBtn.textContent = 'Share';
         }
     });
@@ -1962,7 +1963,7 @@ const initEventListeners = () => {
             link.click();
             dom.shareBtn.textContent = 'Share';
         } catch (err) {
-            alert('Screenshot failed: ' + err.message);
+            await showAlert('Screenshot failed: ' + err.message);
             dom.shareBtn.textContent = 'Share';
         }
     });
@@ -2023,6 +2024,7 @@ const initEventListeners = () => {
         dom.copyExistingBtn.disabled = !onMap;
         dom.exportSubmenuTrigger.disabled = !onMap;
         dom.printBtn.disabled = !onMap;
+        dom.backupsBtn.disabled = !onMap;
     });
 
     // Submenu collapse helper
@@ -2064,11 +2066,11 @@ const initEventListeners = () => {
     });
 
     // Handle clicks on sample items in main menu
-    dom.mainMenu.addEventListener('click', (e) => {
+    dom.mainMenu.addEventListener('click', async (e) => {
         const item = e.target.closest('.dropdown-item');
         if (item?.dataset.sample) {
             if (lockState.isLocked && !lockState.sessionUnlocked) {
-                alert('This map is read-only. Unlock it first to load a sample.');
+                await showAlert('This map is read-only. Unlock it first to load a sample.');
                 closeMainMenu();
                 return;
             }
@@ -2361,7 +2363,7 @@ const startWithSample = async (sampleName) => {
         if (!response.ok) throw new Error();
         deserialize(await response.json());
     } catch {
-        alert('Failed to load sample');
+        await showAlert('Failed to load sample');
     }
     dom.boardName.value = state.name;
     render();

@@ -3,6 +3,7 @@
 
 import { el } from '/src/constants.js';
 import { state } from '/src/state.js';
+import { showConfirm } from '/src/modals.js';
 
 let dom = null;
 let sanitizeFilename = null;
@@ -30,8 +31,8 @@ export const hideJiraExportModal = () => {
     dom.jiraExportModal.classList.remove('visible');
 };
 
-export const confirmCloseJiraExportModal = () => {
-    if (confirm('Close export dialog?')) {
+export const confirmCloseJiraExportModal = async () => {
+    if (await showConfirm('Close export dialog?')) {
         hideJiraExportModal();
     }
 };
@@ -302,8 +303,8 @@ export const hidePhabExportModal = () => {
     dom.phabExportModal.classList.remove('visible');
 };
 
-export const confirmClosePhabModal = () => {
-    if (confirm('Close export dialog?')) {
+export const confirmClosePhabModal = async () => {
+    if (await showConfirm('Close export dialog?')) {
         hidePhabExportModal();
     }
 };
@@ -619,8 +620,8 @@ export const hideJiraApiExportModal = () => {
     dom.jiraApiExportModal.classList.remove('visible');
 };
 
-export const confirmCloseJiraApiModal = () => {
-    if (confirm('Close export dialog?')) {
+export const confirmCloseJiraApiModal = async () => {
+    if (await showConfirm('Close export dialog?')) {
         hideJiraApiExportModal();
     }
 };
@@ -905,8 +906,8 @@ export const hideAsanaExportModal = () => {
     dom.asanaExportModal.classList.remove('visible');
 };
 
-export const confirmCloseAsanaModal = () => {
-    if (confirm('Close export dialog?')) {
+export const confirmCloseAsanaModal = async () => {
+    if (await showConfirm('Close export dialog?')) {
         hideAsanaExportModal();
     }
 };
@@ -1235,8 +1236,8 @@ export const hideAsanaCsvExportModal = () => {
     dom.asanaCsvExportModal.classList.remove('visible');
 };
 
-export const confirmCloseAsanaCsvModal = () => {
-    if (confirm('Close export dialog?')) {
+export const confirmCloseAsanaCsvModal = async () => {
+    if (await showConfirm('Close export dialog?')) {
         hideAsanaCsvExportModal();
     }
 };

@@ -2,6 +2,7 @@
 // State management, undo/redo, and factory functions
 
 import { generateId, CARD_COLORS } from '/src/constants.js';
+import { showConfirm } from '/src/modals.js';
 
 export const DEFAULT_NOTES = 'Thanks for trying Storymaps.io! If you find it useful, please consider starring the open-source repo: https://github.com/jackgleeson/storymaps.io\nHave a great day!';
 
@@ -291,8 +292,8 @@ export const hasContent = () => {
     return false;
 };
 
-export const confirmOverwrite = () => {
-    return !hasContent() || confirm('This will replace your current story map. Continue?');
+export const confirmOverwrite = async () => {
+    return !hasContent() || await showConfirm('This will replace your current story map. Continue?');
 };
 
 export const createColumn = (name = '', color = null, url = null, hidden = false, status = null, points = null, tags = [], body = '') => ({ id: generateId(), name, body, color, url, hidden, status, points, tags });

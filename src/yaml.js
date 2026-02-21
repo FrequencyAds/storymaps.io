@@ -174,8 +174,17 @@ export function jsonToYamlObj(data) {
         if (stepTypes[i] === 'spacer') return 'spacer';
         if (stepTypes[i] === 'partial') return { partial: partialSlugMap[step.partialMapId] };
         const name = resolvedNames[i];
-        if (step.color && step.color !== DEFAULT_STEP_COLOR) return { name, color: step.color };
-        return name;
+        const hasExtra = (step.color && step.color !== DEFAULT_STEP_COLOR)
+            || step.body || step.url || step.status || step.points != null || step.tags?.length;
+        if (!hasExtra) return name;
+        const s = { name };
+        if (step.color && step.color !== DEFAULT_STEP_COLOR) s.color = step.color;
+        if (step.body) s.body = step.body;
+        if (step.url) s.url = step.url;
+        if (step.status) s.status = step.status;
+        if (step.points != null) s.points = step.points;
+        if (step.tags?.length) s.tags = step.tags;
+        return s;
     });
 
     // Legend
@@ -321,7 +330,15 @@ export function yamlObjToJson(obj) {
         const displayName = rawName.replace(/:\[\d+\]\s*/, ': ').replace(/\[\d+\]$/, '');
         const color = typeof step === 'string' ? DEFAULT_STEP_COLOR : (step.color || DEFAULT_STEP_COLOR);
         stepNameToIndex[rawName] = jsonSteps.length;
-        jsonSteps.push({ name: displayName, color });
+        const s = { name: displayName, color };
+        if (typeof step === 'object' && step !== null) {
+            if (step.body) s.body = step.body;
+            if (step.url) s.url = step.url;
+            if (step.status) s.status = step.status;
+            if (step.points != null) s.points = step.points;
+            if (step.tags?.length) s.tags = step.tags;
+        }
+        jsonSteps.push(s);
     });
 
     const n = jsonSteps.length;

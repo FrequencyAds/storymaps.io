@@ -3103,9 +3103,11 @@ body.main-menu-open .step:hover {
     }
 
     .card-tags-row {
-        bottom: 3px;
-        right: 5px;
-        gap: 2px;
+        display: none;
+    }
+
+    .points-badge {
+        display: none;
     }
 
     .zoom-controls {
@@ -3314,6 +3316,57 @@ body.main-menu-open .step:hover {
     padding: 24px;
     overflow-y: auto;
 }
+
+/* Custom dialog modals (replace native alert/confirm/prompt) */
+.dialog-overlay { z-index: 2100; }
+.dialog-modal {
+    max-width: 440px;
+    width: 90vw;
+    padding: 24px;
+    border-radius: 12px;
+}
+.dialog-message {
+    font-size: 15px;
+    color: #333;
+    margin-bottom: 16px;
+    white-space: pre-line;
+    line-height: 1.5;
+}
+.dialog-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    outline: none;
+}
+.dialog-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15); }
+.dialog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+.dialog-btn {
+    padding: 8px 18px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.15s;
+}
+.dialog-btn-cancel {
+    background: #f3f4f6;
+    color: #374151;
+}
+.dialog-btn-cancel:hover { background: #e5e7eb; }
+.dialog-btn-ok {
+    background: #3b82f6;
+    color: #fff;
+}
+.dialog-btn-ok:hover { background: #2563eb; }
 
 .import-modal-body {
     display: flex;
@@ -5100,7 +5153,7 @@ body.read-only-mode {
 /* Card Expand Modal */
 .card-expand-modal {
     max-width: 360px;
-    width: 360px;
+    width: min(360px, 90vw);
     border-radius: 2px;
     background-color: #fef08a;
     overflow: hidden;
@@ -5217,6 +5270,9 @@ body.read-only-mode .empty-backbone-column {
     body.read-only-mode {
         padding-top: calc(12px + 28px);
     }
+
+    .dialog-modal { width: 94vw; padding: 18px; }
+    .dialog-btn { padding: 10px 18px; }
 }
 
 /* Print: hide lock UI */
@@ -5226,7 +5282,8 @@ body.read-only-mode .empty-backbone-column {
     .read-only-banner,
     .lock-modal,
     .selection-toolbar,
-    .canvas-context-menu {
+    .canvas-context-menu,
+    .dialog-overlay {
         display: none !important;
     }
 
@@ -5260,9 +5317,7 @@ body.read-only-mode .empty-backbone-column {
     .canvas-context-menu,
     .card-tag-overflow { display: none !important; }
 
-    /* btn-options is invisible (opacity:0) on touch devices — disable pointer
-       events so it can't be triggered accidentally via tag badge tap targets. */
-    .btn-options { pointer-events: none; }
+    .btn-options { opacity: 0.5; }
 }
 
 /* On touch devices, stretch tabs to full width so they stay aligned

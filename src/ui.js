@@ -3,6 +3,7 @@
 
 import { CARD_COLORS, DEFAULT_CARD_COLORS, STATUS_OPTIONS, el, isValidUrl } from '/src/constants.js';
 import { partialMapEditState } from '/src/state.js';
+import { showAlert, showConfirm, showPrompt } from '/src/modals.js';
 
 let _state = null;
 let _dom = null;
@@ -89,9 +90,9 @@ export const getAllTagsInMap = () => {
 
 export const createDeleteBtn = (onConfirm, message) => {
     const btn = el('button', 'btn-delete', { html: '&#128465;', title: 'Delete', ariaLabel: 'Delete' });
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', async (e) => {
         e.stopPropagation();
-        if (confirm(message)) onConfirm();
+        if (await showConfirm(message)) onConfirm();
     });
     return btn;
 };
@@ -138,10 +139,10 @@ export const createSliceMenu = (slice, onDelete, deleteMessage) => {
     // Delete option
     const deleteOption = el('button', 'slice-menu-item slice-menu-item-danger');
     deleteOption.innerHTML = '<span class="slice-menu-icon">🗑</span> Delete';
-    deleteOption.addEventListener('click', (e) => {
+    deleteOption.addEventListener('click', async (e) => {
         e.stopPropagation();
         menu.classList.remove('visible');
-        if (confirm(deleteMessage)) onDelete();
+        if (await showConfirm(deleteMessage)) onDelete();
     });
     menu.appendChild(deleteOption);
 
@@ -341,14 +342,14 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
 
     // URL option
     const urlOption = el('button', 'options-item', { text: item.url ? 'Edit URL...' : 'Add URL...' });
-    urlOption.addEventListener('click', (e) => {
+    urlOption.addEventListener('click', async (e) => {
         e.stopPropagation();
-        const url = prompt('Enter URL (https:// or http://):', item.url || '');
+        const url = await showPrompt('Enter URL (https:// or http://):', item.url || '');
         if (url !== null) {
             if (url === '' || isValidUrl(url)) {
                 onUrlChange(url);
             } else {
-                alert('Invalid URL. Please enter a valid http:// or https:// URL.');
+                await showAlert('Invalid URL. Please enter a valid http:// or https:// URL.');
             }
         }
         menu.classList.remove('visible');
@@ -368,11 +369,11 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
 
     // Delete option
     const deleteOption = el('button', 'options-item options-delete', { text: 'Delete' });
-    deleteOption.addEventListener('click', (e) => {
+    deleteOption.addEventListener('click', async (e) => {
         e.stopPropagation();
         menu.classList.remove('visible');
         if (deleteMessage) {
-            if (confirm(deleteMessage)) onDelete();
+            if (await showConfirm(deleteMessage)) onDelete();
         } else {
             onDelete();
         }
@@ -382,10 +383,10 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
     // Delete column option (for step cards only)
     if (onDeleteColumn) {
         const deleteColumnOption = el('button', 'options-item options-delete-column', { text: 'Delete Column' });
-        deleteColumnOption.addEventListener('click', (e) => {
+        deleteColumnOption.addEventListener('click', async (e) => {
             e.stopPropagation();
             menu.classList.remove('visible');
-            if (confirm('Delete this column and all its stories?')) {
+            if (await showConfirm('Delete this column and all its stories?')) {
                 onDeleteColumn();
             }
         });

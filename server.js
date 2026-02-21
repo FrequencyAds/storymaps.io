@@ -707,7 +707,11 @@ const writeDocFromJson = (doc, data, Y) => {
         if (step.partialMapOrigin) col.partialMapOrigin = true;
         return col;
       }
-      return { id, name: step.name || '', color: step.color || '', hidden: step.hidden || false };
+      return {
+        id, name: step.name || '', color: step.color || '', hidden: step.hidden || false,
+        body: step.body || '', url: step.url || null, status: step.status || null,
+        points: step.points != null ? step.points : null, tags: step.tags || [],
+      };
     });
 
     const yColumns = new Y.Array();
@@ -721,6 +725,11 @@ const writeDocFromJson = (doc, data, Y) => {
         yCol.set('name', col.name);
         if (col.color) yCol.set('color', col.color);
         if (col.hidden) yCol.set('hidden', true);
+        if (col.body) yCol.set('body', col.body);
+        if (col.url) yCol.set('url', col.url);
+        if (col.status) yCol.set('status', col.status);
+        if (col.points != null) yCol.set('points', col.points);
+        if (col.tags?.length) yCol.set('tags', JSON.stringify(col.tags));
       }
       yColumns.push([yCol]);
     });

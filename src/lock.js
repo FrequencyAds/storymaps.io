@@ -1,6 +1,8 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Lock feature — password-protect maps
 
+import { showAlert, showConfirm } from '/src/modals.js';
+
 let _state = null;
 let _dom = null;
 let _getProvider = null;
@@ -151,10 +153,10 @@ const lockMap = async (password) => {
         updateLockUI();
         updateEditability();
 
-        alert('Map is now read-only. Others will need the password to edit, but you can continue editing in this session.');
+        await showAlert('Map is now read-only. Others will need the password to edit, but you can continue editing in this session.');
     } catch (err) {
         console.error('Failed to lock map:', err);
-        alert('Failed to lock map. Please try again.');
+        await showAlert('Failed to lock map. Please try again.');
     }
 };
 
@@ -170,7 +172,7 @@ export const removeLock = async () => {
         });
         const data = await res.json();
         if (!data.ok) {
-            alert('Failed to remove lock.');
+            await showAlert('Failed to remove lock.');
             return;
         }
 
@@ -193,7 +195,7 @@ export const removeLock = async () => {
         updateEditability();
     } catch (err) {
         console.error('Failed to remove lock:', err);
-        alert('Failed to remove lock. Please try again.');
+        await showAlert('Failed to remove lock. Please try again.');
     }
 };
 
@@ -219,7 +221,7 @@ const relockMap = async () => {
         updateEditability();
     } catch (err) {
         console.error('Failed to re-lock map:', err);
-        alert('Failed to lock map. Please try again.');
+        await showAlert('Failed to lock map. Please try again.');
     }
 };
 
@@ -386,13 +388,13 @@ const handleLockModalConfirm = async () => {
     const mode = _dom.lockModal.dataset.mode;
 
     if (!password) {
-        alert('Please enter a password.');
+        await showAlert('Please enter a password.');
         return;
     }
 
     if (mode === 'lock' || mode === 'relock') {
         if (password.length < 4) {
-            alert('Password must be at least 4 characters.');
+            await showAlert('Password must be at least 4 characters.');
             return;
         }
         await lockMap(password);
@@ -402,7 +404,7 @@ const handleLockModalConfirm = async () => {
         if (success) {
             hideLockModal();
         } else {
-            alert('Incorrect password. Please try again.');
+            await showAlert('Incorrect password. Please try again.');
             _dom.lockPasswordInput.value = '';
             _dom.lockPasswordInput.focus();
         }
@@ -433,9 +435,9 @@ export const initLockListeners = () => {
     }
 
     if (_dom.removeLockBtn) {
-        _dom.removeLockBtn.addEventListener('click', () => {
+        _dom.removeLockBtn.addEventListener('click', async () => {
             _closeMainMenu();
-            if (confirm('Remove read-only lock? Anyone with the link will be able to edit this map.')) {
+            if (await showConfirm('Remove read-only lock? Anyone with the link will be able to edit this map.')) {
                 removeLock();
             }
         });

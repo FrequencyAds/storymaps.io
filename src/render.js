@@ -4,6 +4,7 @@
 import { el, DEFAULT_CARD_COLORS, CARD_COLORS, STATUS_OPTIONS, generateId } from '/src/constants.js';
 import { createColumnCard, createStoryCard, createStoryColumn, createSliceContainer, createBackboneRow, createEmptyBackboneRow, createPhantomStep, PHANTOM_BUFFER, renderLegend as uiRenderLegend, getAllTagsInMap, createPartialMapRef, createPartialMapRefCell, renderPartialsList as uiRenderPartialsList } from '/src/ui.js';
 import { partialMapEditState } from '/src/state.js';
+import { showAlert, showConfirm, showPrompt } from '/src/modals.js';
 
 let _state = null;
 let _dom = null;
@@ -218,7 +219,8 @@ export const initSortable = async () => {
             ghostClass: 'sortable-ghost',
             chosenClass: 'sortable-chosen',
             dragClass: 'sortable-drag',
-            filter: '.btn-add-story',
+            filter: '.btn-add-story, .btn-expand, .btn-options, .options-menu',
+            preventOnFilter: false,
             onStart: (evt) => {
                 if (_broadcastDragStart) {
                     const storyId = evt.item.dataset.storyId;
@@ -581,8 +583,8 @@ export const updateSelectionUI = () => {
                 const nonRefIds = nonRefSelected.map(c => c.id);
                 const partialIcon = '<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" fill="#fef08a" stroke="#d4aa00" stroke-width="1"/><rect x="14" y="3" width="7" height="7" rx="1" fill="#fecdd3" stroke="#e88a9a" stroke-width="1"/><rect x="3" y="14" width="7" height="7" rx="1" fill="#a5f3fc" stroke="#67c5d6" stroke-width="1"/><rect x="14" y="14" width="7" height="7" rx="1" fill="#14b8a6" stroke="#0d9488" stroke-width="1"/></svg>';
                 const modes = [
-                    { label: 'Create Map Partial', html: partialIcon + 'Create Map Partial', action: () => {
-                        const name = prompt('Name this Map Partial:');
+                    { label: 'Create Map Partial', html: partialIcon + 'Create Map Partial', action: async () => {
+                        const name = await showPrompt('Name this Map Partial:');
                         if (name === null) return;
                         if (_createPartialMap) _createPartialMap(name || 'Untitled', nonRefIds);
                     }},
@@ -942,7 +944,7 @@ export const duplicateCards = () => {
     });
 };
 
-export const deleteSelectedColumns = () => {
+export const deleteSelectedColumns = async () => {
     if (selection.columnIds.length === 0) return;
     if (!_isMapEditable()) return;
 
@@ -968,7 +970,7 @@ export const deleteSelectedColumns = () => {
 
     const remaining = _state.columns.filter(c => !c.partialMapId).length - regularIds.length;
     if (remaining < 1 && refCols.length === 0) {
-        alert('Cannot delete all columns.');
+        await showAlert('Cannot delete all columns.');
         return;
     }
 
@@ -980,7 +982,7 @@ export const deleteSelectedColumns = () => {
         const names = partialsToRemove.map(p => `"${p.name || 'Untitled'}"`).join(', ');
         parts.push(`\nThis will remove partial${partialsToRemove.length > 1 ? 's' : ''} ${names} from the partials list. You can undo this.`);
     }
-    if (!confirm(parts.join(''))) return;
+    if (!await showConfirm(parts.join(''))) return;
 
     _pushUndo();
 
@@ -1031,7 +1033,7 @@ export const deleteSelectedColumns = () => {
     _renderAndSave();
 };
 
-export const deleteSelectedCards = () => {
+export const deleteSelectedCards = async () => {
     if (selection.clickedCards.length === 0) return;
     if (!_isMapEditable()) return;
 
@@ -1040,7 +1042,7 @@ export const deleteSelectedCards = () => {
 
     const cardCount = stepClicks.length + storyClicks.length;
     if (cardCount === 0) return;
-    if (!confirm(`Delete ${cardCount} card${cardCount > 1 ? 's' : ''}?`)) return;
+    if (!await showConfirm(`Delete ${cardCount} card${cardCount > 1 ? 's' : ''}?`)) return;
 
     _pushUndo();
 
@@ -1275,7 +1277,7 @@ export const addSlice = (afterIndex) => {
     return slice;
 };
 
-export const deleteColumn = (columnId) => {
+export const deleteColumn = async (columnId) => {
     const col = _state.columns.find(c => c.id === columnId);
     if (!col) return;
 
@@ -1285,7 +1287,7 @@ export const deleteColumn = (columnId) => {
         if (otherRefs.length === 0) {
             const pm = _state.partialMaps.find(p => p.id === col.partialMapId);
             const name = pm ? `"${pm.name || 'Untitled'}"` : 'this partial';
-            if (!confirm(`This will remove partial ${name} from the partials list. You can undo this.`)) return;
+            if (!await showConfirm(`This will remove partial ${name} from the partials list. You can undo this.`)) return;
             if (_deletePartialMap) _deletePartialMap(col.partialMapId);
         } else {
             _pushUndo();
@@ -1301,7 +1303,7 @@ export const deleteColumn = (columnId) => {
     }
 
     if (_state.columns.filter(c => !c.partialMapId).length <= 1) {
-        alert('Cannot delete the last column.');
+        await showAlert('Cannot delete the last column.');
         return;
     }
     const index = _state.columns.indexOf(col);
