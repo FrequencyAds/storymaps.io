@@ -114,6 +114,7 @@ export const toggleCursorsVisibility = () => {
 export const updateCursorsVisibilityUI = () => {
     if (_dom.toggleCursorsText) {
         _dom.toggleCursorsText.textContent = cursorsVisible ? 'Hide External Cursors' : 'Show External Cursors';
+        _dom.toggleCursorsBtn.title = cursorsVisible ? 'Hide other users\' cursors on the map' : 'Show other users\' cursors on the map';
     }
 };
 

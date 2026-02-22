@@ -1401,6 +1401,7 @@ const initEventListeners = () => {
         document.body.classList.toggle('focus-mode', focusMode);
         if (dom.toggleFocusModeText) {
             dom.toggleFocusModeText.textContent = focusMode ? 'Exit Focus Mode' : 'Focus Mode';
+            dom.toggleFocusModeBtn.title = focusMode ? 'Show card metadata again' : 'Hide card metadata (status, points, tags, links) for a cleaner view';
         }
     }
     applyFocusMode();
@@ -1422,6 +1423,7 @@ const initEventListeners = () => {
         document.documentElement.classList.toggle('dark-mode', darkMode);
         if (dom.toggleDarkModeText) {
             dom.toggleDarkModeText.textContent = darkMode ? 'Light Mode' : 'Dark Mode';
+            dom.toggleDarkModeBtn.title = darkMode ? 'Switch to light theme' : 'Switch to dark theme';
         }
     }
     applyDarkMode();
@@ -1443,6 +1445,7 @@ const initEventListeners = () => {
     const updateFullscreenLabel = () => {
         if (dom.toggleFullscreenText) {
             dom.toggleFullscreenText.textContent = fullscreenMode ? 'Exit Full Screen Mode' : 'Full Screen Mode';
+            dom.toggleFullscreenBtn.title = fullscreenMode ? 'Exit full screen (double-Esc)' : 'Fill the entire screen; double-Esc to exit';
         }
     };
     const enterFullscreenMode = () => {

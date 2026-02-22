@@ -83,7 +83,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Backup metadata** - each backup shows the map name, card count, size, and relative age
 
 ### Other
-- **Dark mode** - follows system preference automatically; manual toggle in the menu overrides system setting
+- **Dark mode** - matches your system theme, or toggle manually from the menu
 - **Full Screen Mode** - toggle from the menu; double-Esc to exit (single Esc still closes modals, search, etc.); auto zoom-to-fit on enter and exit
 - **Focus Mode** - hide card metadata (status, points, tags, links) for a cleaner presentation view; expand icons still appear on hover
 - **Copy map** - duplicate an existing map to a new URL
