@@ -201,6 +201,8 @@ const dom = {
     toggleFocusModeText: document.getElementById('toggleFocusModeText'),
     toggleFullscreenBtn: document.getElementById('toggleFullscreenBtn'),
     toggleFullscreenText: document.getElementById('toggleFullscreenText'),
+    toggleDarkModeBtn: document.getElementById('toggleDarkModeBtn'),
+    toggleDarkModeText: document.getElementById('toggleDarkModeText'),
     // Lock feature
     lockMapBtn: document.getElementById('lockMapBtn'),
     relockBtn: document.getElementById('relockBtn'),
@@ -1408,6 +1410,32 @@ const initEventListeners = () => {
         localStorage.setItem('focusMode', focusMode);
         applyFocusMode();
     });
+    // Dark mode toggle
+    let darkMode = (() => {
+        try {
+            const stored = localStorage.getItem('darkMode');
+            if (stored !== null) return stored === 'true';
+        } catch (e) {}
+        return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+    })();
+    function applyDarkMode() {
+        document.documentElement.classList.toggle('dark-mode', darkMode);
+        if (dom.toggleDarkModeText) {
+            dom.toggleDarkModeText.textContent = darkMode ? 'Light Mode' : 'Dark Mode';
+        }
+    }
+    applyDarkMode();
+    dom.toggleDarkModeBtn?.addEventListener('click', () => {
+        closeMainMenu();
+        darkMode = !darkMode;
+        try { localStorage.setItem('darkMode', darkMode); } catch (e) {}
+        applyDarkMode();
+    });
+    window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        try { if (localStorage.getItem('darkMode') !== null) return; } catch (ex) {}
+        darkMode = e.matches;
+        applyDarkMode();
+    });
     // Fullscreen mode — double-Esc to exit (single Esc is used by modals, expand view, etc.)
     let fullscreenMode = false;
     let lastFullscreenEsc = 0;
@@ -1828,11 +1856,14 @@ const initEventListeners = () => {
         }
 
         const dpr = Math.max(window.devicePixelRatio || 2, 2);
+        const isDark = document.documentElement.classList.contains('dark-mode');
+        const bgColor = isDark ? '#0f172a' : '#f8fafc';
 
         // Capture the map as a canvas (no logo in live DOM — avoids flicker)
         const mapCanvas = await window._htmlToImage.toCanvas(dom.storyMap, {
-            backgroundColor: '#f8fafc',
+            backgroundColor: bgColor,
             pixelRatio: dpr,
+            skipFonts: true,
             style: {
                 transform: 'none',
                 margin: '0',
@@ -1845,6 +1876,7 @@ const initEventListeners = () => {
         const logoCanvas = await window._htmlToImage.toCanvas(dom.logoLink, {
             backgroundColor: 'transparent',
             pixelRatio: dpr,
+            skipFonts: true,
         });
 
         // Composite: logo on top, then map below with spacing
@@ -1854,7 +1886,7 @@ const initEventListeners = () => {
         finalCanvas.width = Math.max(mapCanvas.width, logoCanvas.width + logoPad * 2);
         finalCanvas.height = mapCanvas.height + logoCanvas.height + logoGap;
         const ctx = finalCanvas.getContext('2d');
-        ctx.fillStyle = '#f8fafc';
+        ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
         ctx.drawImage(logoCanvas, logoPad, logoPad);
         ctx.drawImage(mapCanvas, 0, logoCanvas.height + logoGap);
@@ -1892,15 +1924,15 @@ const initEventListeners = () => {
             ctx.lineTo(bx, by + r);
             ctx.quadraticCurveTo(bx, by, bx + r, by);
             ctx.closePath();
-            ctx.fillStyle = 'white';
+            ctx.fillStyle = isDark ? '#1e293b' : 'white';
             ctx.fill();
-            ctx.strokeStyle = '#e2e2e2';
+            ctx.strokeStyle = isDark ? '#334155' : '#e2e2e2';
             ctx.lineWidth = 1 * s;
             ctx.stroke();
 
             // Title
             ctx.font = titleFont;
-            ctx.fillStyle = '#666';
+            ctx.fillStyle = isDark ? '#94a3b8' : '#666';
             ctx.fillText('Legend', bx + pad, by + pad + 12 * s);
 
             // Entries
@@ -1925,7 +1957,7 @@ const initEventListeners = () => {
                 ctx.fill();
                 // Label
                 ctx.font = font;
-                ctx.fillStyle = '#333';
+                ctx.fillStyle = isDark ? '#e2e8f0' : '#333';
                 ctx.fillText(entry.label, bx + pad + swatchSize + gap, ry + rowH / 2 + 5 * s);
             });
         }

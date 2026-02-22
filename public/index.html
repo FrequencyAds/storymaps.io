@@ -56,6 +56,16 @@
     }
     </script>
 
+    <script>
+    (function() {
+        try {
+            var s = localStorage.getItem('darkMode');
+            var p = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (s !== null ? s === 'true' : p) document.documentElement.classList.add('dark-mode');
+        } catch(e) {}
+    })();
+    </script>
+
     <script type="importmap">
     { "imports": { "yjs": "/vendor/yjs.bundle.js", "#js-yaml": "/vendor/js-yaml.bundle.js" } }
     </script>
@@ -187,6 +197,9 @@
                     </button>
                     <button class="dropdown-item" id="toggleFullscreenBtn">
                         <span class="menu-icon">⛶</span> <span id="toggleFullscreenText">Full Screen Mode</span>
+                    </button>
+                    <button class="dropdown-item" id="toggleDarkModeBtn">
+                        <span class="menu-icon">🌙</span> <span id="toggleDarkModeText">Dark Mode</span>
                     </button>
                     <div class="dropdown-divider" id="lockDivider"></div>
                     <button class="dropdown-item" id="lockMapBtn">

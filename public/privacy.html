@@ -8,6 +8,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" crossorigin="anonymous">
+    <script>
+    (function() {
+        try {
+            var s = localStorage.getItem('darkMode');
+            var p = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (s !== null ? s === 'true' : p) document.documentElement.classList.add('dark-mode');
+        } catch(e) {}
+    })();
+    </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -71,6 +80,15 @@
             .content { padding: 32px 20px 60px; }
             h1 { font-size: 24px; }
         }
+        /* Dark mode */
+        html.dark-mode body { background: #0f172a; color: #e2e8f0; }
+        html.dark-mode .page-header { border-bottom-color: #1e293b; }
+        html.dark-mode .page-header a { color: #e2e8f0; }
+        html.dark-mode h1, html.dark-mode h2 { color: #f1f5f9; }
+        html.dark-mode .effective-date { color: #64748b; }
+        html.dark-mode p, html.dark-mode li { color: #94a3b8; }
+        html.dark-mode strong { color: #e2e8f0; }
+        html.dark-mode a { color: #2dd4bf; }
     </style>
 </head>
 <body>
