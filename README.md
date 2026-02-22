@@ -6,7 +6,7 @@ A free, open-source user story mapping tool with real-time collaboration.
 
 ## What is User Story Mapping?
 
-User story mapping is a technique for laying out a product as a visual map, organised around the journeys its users make. It helps teams build a shared understanding of what a product does, who it serves, how it delivers value, how it was built, and where it's going next. It's essentially a comprehension tool which shows you the product vision and evolution in a single diagram.
+User story mapping is a technique for visualising a product as a diagram focused around the journeys its users make. It helps teams build a shared understanding of what a product does, who it serves, how it delivers value, how it was built, and where it's going next. It's a comprehension tool which shows you the product vision and evolution in a single artefact.
 
 If a sprint shows you the tree, a story map shows you the forest.
 
@@ -15,7 +15,7 @@ It's not a replacement for your project management tool or your product roadmap.
 
 ### Why It Matters
 
-Agile workflows like Scrum and Kanban are great at showing you what you're building right now. They're not always great at showing you how it connects to everything else. Long-running projects often follow the same pattern: they start with energy, vision and shared understanding, and six months later that coherent picture of the product has been replaced by a giant backlog. Everyone knows what their tickets are. Nobody can point to a single place that shows how all that work fits together as a product. The vision that started the project isn't lost because people forgot it. It's lost because nothing in the workflow preserves it.
+Agile workflows like Scrum and Kanban are great at showing you what you're building right now. They're not always great at showing you how it connects to everything else. Long-running projects often follow the same pattern: they start with energy, vision, and shared understanding, and six months later that coherent picture of the product has been replaced by a giant backlog. Everyone knows what their tickets are. Nobody can point to a single place that shows how all that work fits together as a product. The vision that started the project isn't lost because people forgot it. It's lost because nothing in the workflow preserves it.
 
 A story map preserves it. One diagram that shows who the users are, what journey they take, what features support each step, and what's been delivered versus what's planned. You can draw a line across the map and say 'everything above this is V1, everything below is V2.' The product vision stays visible, not as a document nobody reads, but as a living artifact the team works from, refers back to, and can update as the product evolves.
 
@@ -71,7 +71,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Print / PDF**
 
 ### Navigation
-- **Infinite canvas** - Ctrl+scroll to zoom, right-click drag or touch-drag to pan
+- **Infinite canvas** - Ctrl+scroll to zoom, right-click drag, or touch-drag to pan
 - **Pinch-to-zoom** - two-finger pinch to zoom on touch devices
 - **Zoom to fit** (Alt+R / Shift+0) - auto-fit all content to viewport
 - **Keyboard shortcuts** - undo/redo (Ctrl+Z / Ctrl+Y), search (Ctrl+F), duplicate (Ctrl+D), delete (Delete/Backspace), zoom, pan
