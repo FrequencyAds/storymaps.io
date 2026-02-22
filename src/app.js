@@ -2,6 +2,7 @@
 // Orchestrator — imports all modules, wires init(), owns dom + persistence + event listeners
 
 import * as notepad from '/src/notepad.js';
+import * as log from '/src/log.js';
 import { generateId, el, CARD_COLORS, DEFAULT_CARD_COLORS, STATUS_OPTIONS, ZOOM_LEVELS } from '/src/constants.js';
 import { state, init as stateInit, initState, hasContent, confirmOverwrite, pushUndo, undo, redo, updateUndoRedoButtons, createColumn, createStory, createSlice, createRefColumn, selection, clearSelection, partialMapEditState, DEFAULT_NOTES } from '/src/state.js';
 import { serialize, deserialize } from '/src/serialization.js';
@@ -230,6 +231,9 @@ const dom = {
     partialsToggle: document.getElementById('partialsToggle'),
     partialsBody: document.getElementById('partialsBody'),
     partialsList: document.getElementById('partialsList'),
+    // Log
+    logToggle: document.getElementById('logToggle'),
+    logPanel: document.getElementById('logPanel'),
     // Backups
     backupsBtn: document.getElementById('backupsBtn'),
     backupsModal: document.getElementById('backupsModal'),
@@ -412,6 +416,7 @@ const autoResizeExpandName = () => {
 dom.cardExpandName.addEventListener('input', () => {
     if (!_expandedItem) return;
     _expandedItem.name = dom.cardExpandName.value;
+    log.logTextEdit('card title', _expandedItem.id);
     autoResizeExpandName();
     saveToStorage();
 });
@@ -419,6 +424,7 @@ dom.cardExpandName.addEventListener('input', () => {
 dom.cardExpandBody.addEventListener('input', () => {
     if (!_expandedItem) return;
     _expandedItem.body = dom.cardExpandBody.value;
+    log.logTextEdit('card body', _expandedItem.id);
     saveToStorage();
 });
 
@@ -930,6 +936,7 @@ const createBackup = async () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ note }),
         });
+        log.logEvent('Created backup');
         await refreshBackupsList();
     } catch {
         await showAlert('Failed to create backup');
@@ -962,6 +969,7 @@ const restoreBackup = async (backupId) => {
         dom.boardName.value = state.name;
         renderAndSave();
         hideBackupsModal();
+        log.logEvent('Restored backup');
         showToast('Backup restored');
     } catch {
         await showAlert('Failed to restore backup');
@@ -972,6 +980,7 @@ const deleteBackup = async (backupId) => {
     if (!await showConfirm('Delete this backup?')) return;
     try {
         await fetch(`/api/backups/${state.mapId}/${backupId}`, { method: 'DELETE' });
+        log.logEvent('Deleted backup');
         await refreshBackupsList();
     } catch {
         await showAlert('Failed to delete backup');
@@ -1344,6 +1353,7 @@ const initEventListeners = () => {
 
     dom.boardName.addEventListener('input', (e) => {
         state.name = e.target.value;
+        log.logTextEdit('map title', 'map');
         saveToStorage();
     });
 
@@ -2011,6 +2021,7 @@ const initEventListeners = () => {
     dom.legendToggle?.addEventListener('click', () => switchPanelTab('legend'));
     dom.partialsToggle?.addEventListener('click', () => switchPanelTab('partials'));
     dom.notesToggle?.addEventListener('click', () => switchPanelTab('notepad'));
+    dom.logToggle?.addEventListener('click', () => switchPanelTab('log'));
     dom.legendAddBtn?.addEventListener('click', () => {
         if (state.legend.length >= Object.keys(CARD_COLORS).length) return;
         pushUndo();
@@ -2019,6 +2030,7 @@ const initEventListeners = () => {
             color: CARD_COLORS.yellow,
             label: ''
         });
+        log.logEvent('Added legend entry');
         renderAndSave();
         const inputs = dom.legendEntries.querySelectorAll('.legend-label');
         if (inputs.length) inputs[inputs.length - 1].focus();
@@ -2416,7 +2428,7 @@ const startWithSample = async (sampleName) => {
 // =============================================================================
 
 // Wire state module (needs serialize/deserialize + renderAndSave)
-stateInit({ dom, serialize, deserialize, renderAndSave });
+stateInit({ dom, serialize, deserialize, renderAndSave, logEvent: (text, ids) => log.logEvent(text, ids) });
 
 // Wire navigation module
 navigation.init({ dom, state, updateSelectionUI, selection, clearSelection, isMapEditable, addColumnAt, deleteColumn, duplicateColumns, duplicateCards, deleteSelectedColumns, deleteSelectedCards, insertPartialMapRef: (...args) => insertPartialMapRef(...args) });
@@ -2443,12 +2455,14 @@ lock.init({
     closeMainMenu,
     initSortable,
     renderLegend,
+    logEvent: (text, ids) => log.logEvent(text, ids),
 });
 
 // Wire yjs module
 yjs.init({
     state,
     notepad,
+    log,
     dom,
     isMapEditable,
     render,
@@ -2855,6 +2869,8 @@ ui.init({
     deletePartialMap,
     restorePartialMap,
     openExpandModal,
+    logEvent: (text, ids) => log.logEvent(text, ids),
+    logTextEdit: (label, id) => log.logTextEdit(label, id),
 });
 
 // Wire render module
@@ -2876,6 +2892,8 @@ renderMod.init({
     createPartialMap,
     deletePartialMap,
     replaceWithPartial,
+    logEvent: (text, ids) => log.logEvent(text, ids),
+    logTextEdit: (label, id) => log.logTextEdit(label, id),
 });
 
 // =============================================================================
@@ -2937,7 +2955,8 @@ const init = async () => {
     const mapId = window.location.pathname.slice(1) || null;
 
     initEventListeners();
-    notepad.init({ state, saveToStorage, isMapEditable });
+    notepad.init({ state, saveToStorage, isMapEditable, logTextEdit: (label, id) => log.logTextEdit(label, id) });
+    log.init();
     updateCursorsVisibilityUI();
 
     // Populate browser-specific DevTools instructions

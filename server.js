@@ -317,6 +317,7 @@ const handleApi = async (req, res) => {
       if (hasData) {
         const doc = new Y.Doc();
         writeDocFromJson(doc, body, Y);
+        appendLogEntry(doc, 'Created map via CLI');
         const persistence = getPersistence();
         if (persistence) {
           await persistence.provider.storeUpdate(id, Y.encodeStateAsUpdate(doc));
@@ -415,7 +416,10 @@ const handleApi = async (req, res) => {
 
       if (existingDoc) {
         // Doc is in-memory (active WS clients) — write directly, changes broadcast automatically
+        const oldSnapshot = serializeDoc(existingDoc);
         writeDocFromJson(existingDoc, body, Y);
+        const result = diffPush(oldSnapshot, body, existingDoc);
+        if (result) appendLogEntry(existingDoc, result.text, result.ids);
       } else {
         // Doc not in-memory — load from LevelDB, write, persist
         const persistence = getPersistence();
@@ -426,7 +430,10 @@ const handleApi = async (req, res) => {
         }
         const doc = new Y.Doc();
         await persistence.bindState(mapId, doc);
+        const oldSnapshot = serializeDoc(doc);
         writeDocFromJson(doc, body, Y);
+        const result = diffPush(oldSnapshot, body, doc);
+        if (result) appendLogEntry(doc, result.text, result.ids);
         await persistence.provider.storeUpdate(mapId, Y.encodeStateAsUpdate(doc));
         doc.destroy();
       }
@@ -690,6 +697,105 @@ const loadAndSerialize = async (mapId, host) => {
   return data;
 };
 
+/** Append a log entry to a Yjs doc's log Y.Array. */
+const appendLogEntry = (doc, text, ids = []) => {
+  const yarray = doc.getArray('log');
+  const entry = { ts: Date.now(), src: 'cli', text, sid: '', ids };
+  doc.transact(() => {
+    yarray.push([entry]);
+    while (yarray.length > 20) yarray.delete(0);
+  }, 'local');
+};
+
+/**
+ * Diff a CLI push: snapshot before write, call again after write to collect changed IDs.
+ * Returns { text, ids } or null if nothing changed.
+ */
+const diffPush = (oldSnapshot, body, newDoc) => {
+  const old = oldSnapshot;
+  const flat = (arr) => Array.isArray(arr) ? arr.flat().length : 0;
+  const oldSteps = old.steps?.filter(s => !s.partialMapId).length || 0;
+  const newSteps = (body.steps || []).filter(s => !s.partialMapId).length;
+  const oldSlices = old.slices?.length || 0;
+  const newSlices = (body.slices || []).length;
+  const oldCards = flat(old.users) + flat(old.activities)
+    + (old.slices || []).reduce((n, s) => n + flat(s.stories), 0);
+  const newCards = flat(body.users) + flat(body.activities)
+    + (body.slices || []).reduce((n, s) => n + flat(s.stories), 0);
+
+  const parts = [];
+  const ids = [];
+  const diff = (label, o, n) => {
+    if (n > o) { const d = n - o; parts.push(`added ${d} ${d === 1 ? label.replace(/s$/, '') : label}`); }
+    else if (n < o) { const d = o - n; parts.push(`removed ${d} ${d === 1 ? label.replace(/s$/, '') : label}`); }
+  };
+  if (old.name !== (body.name || '')) parts.push('renamed map');
+  diff('steps', oldSteps, newSteps);
+  diff('slices', oldSlices, newSlices);
+  diff('cards', oldCards, newCards);
+
+  // Detect per-item content edits and collect new Yjs IDs of changed items
+  if (!parts.length) {
+    const j = (v) => JSON.stringify(v ?? []);
+    if (j(old.steps) !== j(body.steps)) parts.push('edited steps');
+    if (j(old.users) !== j(body.users)) parts.push('edited user cards');
+    if (j(old.activities) !== j(body.activities)) parts.push('edited activity cards');
+    if (j(old.slices) !== j(body.slices)) parts.push('edited slices');
+    if (j(old.legend) !== j(body.legend)) parts.push('edited legend');
+    if ((old.notes || '') !== (body.notes || '')) parts.push('edited notes');
+  }
+  if (!parts.length) return null;
+
+  // Collect IDs of changed cards/steps from the new doc
+  const ymap = newDoc.getMap('storymap');
+  const columns = ymap.get('columns')?.toJSON() || [];
+
+  // Diff steps
+  (body.steps || []).forEach((step, i) => {
+    if (i < (old.steps || []).length && JSON.stringify(old.steps[i]) !== JSON.stringify(step)) {
+      if (columns[i]?.id) ids.push(columns[i].id);
+    }
+  });
+
+  // Diff card rows (users, activities) by position
+  const diffCards = (oldRow, newRow, yMapKey) => {
+    const yRow = ymap.get(yMapKey)?.toJSON() || {};
+    (newRow || []).forEach((cards, colIdx) => {
+      const oldCards = oldRow?.[colIdx] || [];
+      const colId = columns[colIdx]?.id;
+      if (!colId) return;
+      const yCards = yRow[colId] || [];
+      (cards || []).forEach((card, cardIdx) => {
+        if (JSON.stringify(oldCards[cardIdx]) !== JSON.stringify(card)) {
+          if (yCards[cardIdx]?.id) ids.push(yCards[cardIdx].id);
+        }
+      });
+    });
+  };
+  diffCards(old.users, body.users, 'users');
+  diffCards(old.activities, body.activities, 'activities');
+
+  // Diff slice story cards
+  (body.slices || []).forEach((slice, si) => {
+    const oldSlice = old.slices?.[si];
+    const ySlices = ymap.get('slices')?.toJSON() || [];
+    const ySlice = ySlices[si];
+    (slice.stories || []).forEach((cards, colIdx) => {
+      const oldCards = oldSlice?.stories?.[colIdx] || [];
+      const colId = columns[colIdx]?.id;
+      if (!colId) return;
+      const yCards = ySlice?.stories?.[colId] || [];
+      (cards || []).forEach((card, cardIdx) => {
+        if (JSON.stringify(oldCards[cardIdx]) !== JSON.stringify(card)) {
+          if (yCards[cardIdx]?.id) ids.push(yCards[cardIdx].id);
+        }
+      });
+    });
+  });
+
+  return { text: parts.join(', ').replace(/^./, c => c.toUpperCase()), ids };
+};
+
 // =============================================================================
 // Write JSON → Yjs doc (server-side equivalent of client syncToYjs)
 // =============================================================================
@@ -813,6 +919,8 @@ const writeDocFromJson = (doc, data, Y) => {
     if (data.partialMaps?.length) {
       ymap.set('partialMaps', JSON.stringify(data.partialMaps));
     }
+
+    // Activity log — skip on import to prevent injecting fake history
   });
 };
 

@@ -14,6 +14,7 @@ let _saveToStorage = null;
 let _closeMainMenu = null;
 let _initSortable = null;
 let _renderLegend = null;
+let _logEvent = null;
 
 // Lock state - tracks whether map is locked and if current session has unlocked it
 export const lockState = {
@@ -27,7 +28,7 @@ let lockPollInterval = null;
 // Track previous editability to avoid unnecessary sortable reinit
 let wasEditable = true;
 
-export const init = ({ state, dom, getProvider, getYdoc, getCursorColor, render, notepadUpdate, saveToStorage, closeMainMenu, initSortable, renderLegend }) => {
+export const init = ({ state, dom, getProvider, getYdoc, getCursorColor, render, notepadUpdate, saveToStorage, closeMainMenu, initSortable, renderLegend, logEvent }) => {
     _state = state;
     _dom = dom;
     _getProvider = getProvider;
@@ -39,6 +40,7 @@ export const init = ({ state, dom, getProvider, getYdoc, getCursorColor, render,
     _closeMainMenu = closeMainMenu;
     _initSortable = initSortable;
     _renderLegend = renderLegend;
+    _logEvent = logEvent;
 };
 
 // Hash password using SHA-256
@@ -150,6 +152,7 @@ const lockMap = async (password) => {
             provider.awareness.setLocalStateField('lock', { isLocked: true, at: Date.now() });
         }
 
+        _logEvent?.('Locked map');
         updateLockUI();
         updateEditability();
 
@@ -191,6 +194,7 @@ export const removeLock = async () => {
             provider.awareness.setLocalStateField('lock', { isLocked: false, at: Date.now() });
         }
 
+        _logEvent?.('Removed map lock');
         updateLockUI();
         updateEditability();
     } catch (err) {
@@ -217,6 +221,7 @@ const relockMap = async () => {
             provider.awareness.setLocalStateField('lock', { isLocked: true, at: Date.now() });
         }
 
+        _logEvent?.('Locked map');
         updateLockUI();
         updateEditability();
     } catch (err) {
@@ -244,6 +249,7 @@ const unlockMap = async (password) => {
     lockState.passwordHash = inputHash;
     lockState.sessionUnlocked = true;
     saveSessionUnlock(_state.mapId);
+    _logEvent?.('Unlocked map');
     updateLockUI();
     updateEditability();
     return true;

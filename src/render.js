@@ -23,8 +23,10 @@ let _getIsPinching = null;
 let _createPartialMap = null;
 let _deletePartialMap = null;
 let _replaceWithPartial = null;
+let _logEvent = null;
+let _logTextEdit = null;
 
-export const init = ({ state, dom, isMapEditable, pushUndo, saveToStorage, renderAndSave, ensureSortable, scrollElementIntoView, notepadUpdate, getIsSafari, getZoomLevel, broadcastDragStart, broadcastDragEnd, getIsPinching, createPartialMap, deletePartialMap, replaceWithPartial }) => {
+export const init = ({ state, dom, isMapEditable, pushUndo, saveToStorage, renderAndSave, ensureSortable, scrollElementIntoView, notepadUpdate, getIsSafari, getZoomLevel, broadcastDragStart, broadcastDragEnd, getIsPinching, createPartialMap, deletePartialMap, replaceWithPartial, logEvent, logTextEdit }) => {
     _state = state;
     _dom = dom;
     _isMapEditable = isMapEditable;
@@ -42,6 +44,8 @@ export const init = ({ state, dom, isMapEditable, pushUndo, saveToStorage, rende
     _createPartialMap = createPartialMap;
     _deletePartialMap = deletePartialMap;
     _replaceWithPartial = replaceWithPartial;
+    _logEvent = logEvent;
+    _logTextEdit = logTextEdit;
 };
 
 const _getEditingPartialColIds = () => {
@@ -286,6 +290,7 @@ export const initSortable = async () => {
 
                 _pushUndo();
                 _state.slices = newSliceOrder;
+                _logEvent?.('Reordered slices');
                 _renderAndSave();
             }
         });
@@ -396,6 +401,7 @@ export const initSortable = async () => {
 
                 _pushUndo();
                 _state.columns = newOrder;
+                _logEvent?.('Reordered steps');
                 dragColumnId = null;
                 _renderAndSave();
             }
@@ -935,6 +941,9 @@ export const duplicateCards = () => {
         }
     });
 
+    const dupCount = selection.clickedCards.length;
+    const newColIds = newColumns.slice(1).map(c => c.id);
+    _logEvent?.(`Duplicated ${dupCount} card${dupCount > 1 ? 's' : ''}`, newColIds);
     clearSelection();
     _renderAndSave();
 
@@ -1035,6 +1044,7 @@ export const deleteSelectedColumns = async () => {
         _state.slices.forEach(slice => slice.stories[col.id] = []);
     }
 
+    _logEvent?.(`Deleted ${totalCols} step${totalCols > 1 ? 's' : ''}`);
     clearSelection();
     _renderAndSave();
 };
@@ -1102,6 +1112,7 @@ export const deleteSelectedCards = async () => {
         }
     }
 
+    _logEvent?.(`Deleted ${cardCount} card${cardCount > 1 ? 's' : ''}`);
     clearSelection();
     _renderAndSave();
 };
@@ -1136,13 +1147,18 @@ const getItemForCard = (card) => {
     return null;
 };
 
+const getSelectedIds = () => selection.clickedCards.map(c => c.type === 'step' ? c.columnId : c.storyId).filter(Boolean);
+
 const bulkChangeColor = (color) => {
     if (selection.clickedCards.length === 0) return;
     _pushUndo();
+    const n = selection.clickedCards.length;
+    const ids = getSelectedIds();
     for (const card of selection.clickedCards) {
         const item = getItemForCard(card);
         if (item) item.color = color;
     }
+    _logEvent?.(`Changed color on ${n} card${n > 1 ? 's' : ''}`, ids);
     _preserveToolbar = true;
     _renderAndSave();
 };
@@ -1150,10 +1166,13 @@ const bulkChangeColor = (color) => {
 const bulkChangeStatus = (status) => {
     if (selection.clickedCards.length === 0) return;
     _pushUndo();
+    const n = selection.clickedCards.length;
+    const ids = getSelectedIds();
     for (const card of selection.clickedCards) {
         const item = getItemForCard(card);
         if (item) item.status = status;
     }
+    _logEvent?.(`Changed status on ${n} card${n > 1 ? 's' : ''}`, ids);
     _preserveToolbar = true;
     _renderAndSave();
 };
@@ -1163,22 +1182,28 @@ const bulkAddTag = (tag) => {
     const trimmed = tag.trim().toLowerCase();
     if (!trimmed) return;
     _pushUndo();
+    const n = selection.clickedCards.length;
+    const ids = getSelectedIds();
     for (const card of selection.clickedCards) {
         const item = getItemForCard(card);
         if (!item) continue;
         if (!item.tags) item.tags = [];
         if (!item.tags.includes(trimmed)) item.tags.push(trimmed);
     }
+    _logEvent?.(`Tagged ${n} card${n > 1 ? 's' : ''}`, ids);
     _saveToStorage();
 };
 
 const bulkRemoveTag = (tag) => {
     if (selection.clickedCards.length === 0 || !tag) return;
     _pushUndo();
+    const n = selection.clickedCards.length;
+    const ids = getSelectedIds();
     for (const card of selection.clickedCards) {
         const item = getItemForCard(card);
         if (item?.tags) item.tags = item.tags.filter(t => t !== tag);
     }
+    _logEvent?.(`Removed tag from ${n} card${n > 1 ? 's' : ''}`, ids);
     _saveToStorage();
 };
 
@@ -1202,6 +1227,7 @@ export const addColumn = (hidden = true) => {
     _state.users[column.id] = [];
     _state.activities[column.id] = [];
     _state.slices.forEach(slice => slice.stories[column.id] = []);
+    if (!hidden) _logEvent?.('Added step', [column.id]);
     _renderAndSave();
 
     requestAnimationFrame(() => {
@@ -1222,6 +1248,7 @@ export const addColumnAt = (index, hidden = false) => {
     _state.users[column.id] = [];
     _state.activities[column.id] = [];
     _state.slices.forEach(slice => slice.stories[column.id] = []);
+    if (!hidden) _logEvent?.('Added step', [column.id]);
     _renderAndSave();
 };
 
@@ -1250,6 +1277,11 @@ export const addStory = (columnId, sliceId, rowType = null) => {
         storiesArray = slice.stories[columnId];
     }
 
+    const newStory = storiesArray[storiesArray.length - 1];
+    const addLabel = rowType === 'users' ? 'Added user card'
+                   : rowType === 'activities' ? 'Added activity card'
+                   : 'Added card';
+    _logEvent?.(addLabel, [newStory.id]);
     _renderAndSave();
 
     const storyIndex = storiesArray.length - 1;
@@ -1270,6 +1302,7 @@ export const addSlice = (afterIndex) => {
     _pushUndo();
     const slice = _createSlice('');
     _state.slices.splice(afterIndex, 0, slice);
+    _logEvent?.('Added slice', [slice.id]);
     _renderAndSave();
 
     requestAnimationFrame(() => {
@@ -1305,6 +1338,7 @@ export const deleteColumn = async (columnId) => {
             delete _state.users[columnId];
             delete _state.activities[columnId];
             _state.slices.forEach(slice => delete slice.stories[columnId]);
+            _logEvent?.('Deleted step');
             _renderAndSave();
         }
         return;
@@ -1321,6 +1355,7 @@ export const deleteColumn = async (columnId) => {
     delete _state.users[columnId];
     delete _state.activities[columnId];
     _state.slices.forEach(slice => delete slice.stories[columnId]);
+    _logEvent?.('Deleted step');
     _renderAndSave();
 };
 
@@ -1340,6 +1375,7 @@ export const deleteStory = (columnId, sliceId, storyId, rowType = null) => {
     if (index > -1) {
         _pushUndo();
         stories.splice(index, 1);
+        _logEvent?.('Deleted card');
         _renderAndSave();
     }
 };
@@ -1380,6 +1416,7 @@ export const moveStory = (storyId, fromColumnId, fromSliceId, toColumnId, toSlic
     if (!toStories) return;
 
     toStories.splice(toIndex, 0, story);
+    _logEvent?.('Moved card', [storyId]);
     _renderAndSave();
 };
 
@@ -1390,6 +1427,7 @@ export const deleteSlice = (sliceId) => {
     if (index > -1) {
         _pushUndo();
         _state.slices.splice(index, 1);
+        _logEvent?.('Deleted slice');
         _renderAndSave();
     }
 };

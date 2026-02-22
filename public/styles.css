@@ -706,7 +706,7 @@ body.welcome-visible .header {
 /* Legend body */
 .legend-body {
     padding: 8px;
-    width: 218px;
+    min-width: 218px;
 }
 
 .legend-entries {
@@ -1477,6 +1477,65 @@ input.partials-entry-name-input:focus {
     color: #0d9488;
 }
 
+/* Log */
+.log-body {
+    padding: 8px;
+    width: 300px;
+    max-width: calc(100vw - 48px);
+}
+.log-caption {
+    font-size: 10px;
+    color: var(--color-text-disabled);
+    padding: 0 4px 4px;
+}
+
+.log-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.log-empty {
+    font-size: 12px;
+    color: #94a3b8;
+    padding: 8px 4px;
+    text-align: center;
+}
+
+.log-entry {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 4px 4px;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+.log-entry:hover {
+    background: var(--color-bg-sunken);
+}
+
+.log-dot {
+    flex-shrink: 0;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    position: relative;
+    top: -1px;
+}
+
+.log-time {
+    flex-shrink: 0;
+    font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    min-width: 40px;
+}
+
+.log-text {
+    color: var(--color-text-secondary);
+}
+
 /* Slice Container */
 .slice-container {
     display: flex;
@@ -1645,6 +1704,16 @@ input.partials-entry-name-input:focus {
     animation: undo-highlight 1.5s ease-out forwards;
 }
 
+.log-highlight {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.7) !important;
+    border-radius: 6px;
+    transition: box-shadow 0.15s ease;
+}
+
+.log-locatable:hover {
+    background: rgba(59, 130, 246, 0.08);
+    cursor: pointer;
+}
 /* Slice Stories Area */
 .slice-stories-area {
     flex: 1;

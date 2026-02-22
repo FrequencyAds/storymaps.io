@@ -83,6 +83,7 @@
     <link rel="modulepreload" href="/src/ui.js">
     <link rel="modulepreload" href="/src/render.js">
     <link rel="modulepreload" href="/src/notepad.js">
+    <link rel="modulepreload" href="/src/log.js">
     <link rel="modulepreload" href="/src/exports.js">
     <link rel="modulepreload" href="/src/yaml.js">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" crossorigin="anonymous">
@@ -349,11 +350,18 @@
                     <div class="notes-editor" id="notesEditor"></div>
                 </div>
             </div>
+            <div class="panel-section" id="logPanel" data-section="log">
+                <div class="log-body" id="logBody">
+                    <div class="log-caption">Last 20 events</div>
+                    <div class="log-list" id="logList"></div>
+                </div>
+            </div>
         </div>
         <div class="panel-tabs">
             <button class="panel-tab" id="legendToggle" data-section="legend" title="Legend">Legend</button>
             <button class="panel-tab" id="partialsToggle" data-section="partials" title="Map Partials">Partials</button>
             <button class="panel-tab" id="notesToggle" data-section="notepad" title="Notepad">Notes</button>
+            <button class="panel-tab" id="logToggle" data-section="log" title="Log">Log</button>
         </div>
         <div class="zoom-controls" id="zoomControls">
             <button class="zoom-btn" id="zoomIn" title="Zoom in">+</button>

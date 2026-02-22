@@ -5,6 +5,7 @@ import { CARD_COLORS } from '/src/constants.js';
 
 let _state = null;
 let _notepad = null;
+let _log = null;
 let _dom = null;
 let _isMapEditable = null;
 let _render = null;
@@ -64,9 +65,10 @@ export const ensureSortable = () => {
 
 export const getIsSafari = () => isSafari;
 
-export const init = ({ state, notepad, dom, isMapEditable, render }) => {
+export const init = ({ state, notepad, log, dom, isMapEditable, render }) => {
     _state = state;
     _notepad = notepad;
+    _log = log;
     _dom = dom;
     _isMapEditable = isMapEditable;
     _render = render;
@@ -586,6 +588,7 @@ export const createYjsDoc = async (mapId) => {
             syncToYjs();
         }
         _notepad.bindYjs(ydoc, ytext, provider);
+        _log.bindYjs(ydoc);
     }
 
     return ydoc;
@@ -598,6 +601,7 @@ export const destroyYjs = () => {
     }
     if (ydoc) {
         _notepad.unbindYjs();
+        _log.unbindYjs();
         ydoc.destroy();
         ydoc = null;
         ymap = null;

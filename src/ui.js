@@ -25,10 +25,12 @@ let _stopEditingPartial = null;
 let _deletePartialMap = null;
 let _restorePartialMap = null;
 let _openExpandModal = null;
+let _logEvent = null;
+let _logTextEdit = null;
 
 export const PHANTOM_BUFFER = 3;
 
-export const init = ({ state, dom, isMapEditable, pushUndo, addStory, deleteColumn, deleteStory, deleteSlice, saveToStorage, renderAndSave, scrollElementIntoView, addColumn, addSlice, materializePhantomColumn, handleColumnSelection, startEditingPartial, stopEditingPartial, deletePartialMap, restorePartialMap, openExpandModal }) => {
+export const init = ({ state, dom, isMapEditable, pushUndo, addStory, deleteColumn, deleteStory, deleteSlice, saveToStorage, renderAndSave, scrollElementIntoView, addColumn, addSlice, materializePhantomColumn, handleColumnSelection, startEditingPartial, stopEditingPartial, deletePartialMap, restorePartialMap, openExpandModal, logEvent, logTextEdit }) => {
     _state = state;
     _dom = dom;
     _isMapEditable = isMapEditable;
@@ -49,6 +51,8 @@ export const init = ({ state, dom, isMapEditable, pushUndo, addStory, deleteColu
     _deletePartialMap = deletePartialMap;
     _restorePartialMap = restorePartialMap;
     _openExpandModal = openExpandModal;
+    _logEvent = logEvent;
+    _logTextEdit = logTextEdit;
 };
 
 const _getEditingPartialColIds = () => {
@@ -168,6 +172,7 @@ const toggleSliceCollapsed = (sliceId, collapsed, reason) => {
     slice.collapsed = collapsed;
     if (collapsed && reason) slice.closedReason = reason;
     else delete slice.closedReason;
+    _logEvent?.(collapsed ? 'Collapsed slice' : 'Expanded slice', [sliceId]);
     _renderAndSave();
 };
 
@@ -198,6 +203,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
         if (itemColor === hex.toLowerCase()) swatch.classList.add('selected');
         swatch.addEventListener('click', (e) => {
             e.stopPropagation();
+            _logEvent?.('Changed card color', [item.id]);
             onColorChange(hex);
             menu.classList.remove('visible');
         });
@@ -229,6 +235,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
         if (onColorChange) { // reuse as signal that item is mutable
             _pushUndo();
             item.points = val;
+            _logEvent?.('Changed card points', [item.id]);
             _renderAndSave();
         }
     });
@@ -246,6 +253,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
         if (!item.status) noneSwatch.classList.add('selected');
         noneSwatch.addEventListener('click', (e) => {
             e.stopPropagation();
+            _logEvent?.('Changed card status', [item.id]);
             onStatusChange(null);
             menu.classList.remove('visible');
         });
@@ -257,6 +265,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
             if (item.status === key) swatch.classList.add('selected');
             swatch.addEventListener('click', (e) => {
                 e.stopPropagation();
+                _logEvent?.('Changed card status', [item.id]);
                 onStatusChange(key);
                 menu.classList.remove('visible');
             });
@@ -281,6 +290,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
                 e.stopPropagation();
                 _pushUndo();
                 item.tags = item.tags.filter(t => t !== tag);
+                _logEvent?.('Removed card tag', [item.id]);
                 renderTagPills();
                 _renderAndSave();
             });
@@ -305,6 +315,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
         if (item.tags.includes(trimmed)) return;
         _pushUndo();
         item.tags.push(trimmed);
+        _logEvent?.('Added card tag', [item.id]);
         tagInput.value = '';
         tagAutocomplete.classList.remove('visible');
         renderTagPills();
@@ -347,6 +358,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
         const url = await showPrompt('Enter URL (https:// or http://):', item.url || '');
         if (url !== null) {
             if (url === '' || isValidUrl(url)) {
+                _logEvent?.(url ? 'Added card URL' : 'Removed card URL', [item.id]);
                 onUrlChange(url);
             } else {
                 await showAlert('Invalid URL. Please enter a valid http:// or https:// URL.');
@@ -432,7 +444,7 @@ export const createUrlIndicator = (url) => {
     return indicator;
 };
 
-export const createTextarea = (className, placeholder, value, onChange) => {
+export const createTextarea = (className, placeholder, value, onChange, onTextEdit) => {
     const isCardText = className === 'step-text' || className === 'story-text';
     const isSliceLabel = className === 'slice-label';
     const textarea = el('textarea', className, { placeholder, value, rows: isCardText ? 1 : (isSliceLabel ? 3 : 2) });
@@ -450,6 +462,7 @@ export const createTextarea = (className, placeholder, value, onChange) => {
 
         textarea.addEventListener('input', (e) => {
             onChange(e.target.value);
+            onTextEdit?.();
             autoResize();
             _saveToStorage();
         });
@@ -458,6 +471,7 @@ export const createTextarea = (className, placeholder, value, onChange) => {
     } else {
         textarea.addEventListener('input', (e) => {
             onChange(e.target.value);
+            onTextEdit?.();
             _saveToStorage();
         });
     }
@@ -471,6 +485,7 @@ const createColumnPlaceholder = (column) => {
     placeholder.addEventListener('click', () => {
         column.hidden = false;
         column.color = CARD_COLORS.green;
+        _logEvent?.('Showed step', [column.id]);
         _renderAndSave();
     });
 
@@ -663,7 +678,8 @@ export const createColumnCard = (column) => {
     card.appendChild(dragHandle);
 
     const textarea = createTextarea('step-text', 'Step...', column.name,
-        (val) => column.name = val);
+        (val) => column.name = val,
+        () => _logTextEdit?.('step name', column.id));
 
     const optionsMenu = createOptionsMenu(
         column,
@@ -742,7 +758,8 @@ export const createStoryCard = (story, columnId, sliceId, isBackboneRow = false,
         placeholderText = 'Card...';
     }
     const textarea = createTextarea('story-text', placeholderText, story.name,
-        (val) => story.name = val);
+        (val) => story.name = val,
+        () => _logTextEdit?.('card title', story.id));
 
     const onDelete = () => _deleteStory(columnId, sliceId, story.id, rowTypeKey);
     const deleteMessage = isBackboneRow
@@ -1080,7 +1097,8 @@ export const createSliceContainer = (slice, index) => {
     }
 
     const labelInput = createTextarea('slice-label', 'Release...', slice.name,
-        (val) => slice.name = val);
+        (val) => slice.name = val,
+        () => _logTextEdit?.('slice name', slice.id));
     labelContainer.appendChild(labelInput);
 
     const progress = getSliceProgress(slice);
@@ -1207,6 +1225,7 @@ export const renderLegend = () => {
                 if (entry.label !== input.value) {
                     _pushUndo();
                     entry.label = input.value;
+                    _logEvent?.('Updated legend label');
                     _saveToStorage();
                 }
             });
@@ -1218,6 +1237,7 @@ export const renderLegend = () => {
             removeBtn.addEventListener('click', () => {
                 _pushUndo();
                 _state.legend = _state.legend.filter(e => e.id !== entry.id);
+                _logEvent?.('Removed legend entry');
                 _renderAndSave();
             });
             row.appendChild(removeBtn);
@@ -1250,6 +1270,7 @@ const showLegendColorPicker = (entry, anchorEl) => {
             e.stopPropagation();
             _pushUndo();
             entry.color = hex;
+            _logEvent?.('Changed legend color');
             _renderAndSave();
             picker.remove();
         });

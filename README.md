@@ -37,11 +37,11 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Tags** - categorize cards with free-text tags, autocomplete from existing tags
 - **Legend** - define colour-coded card categories (e.g. Tasks, Notes, Questions, Edge Cases)
 - **Map Partials** - reusable story map fragments that eliminate duplication when multiple user journeys converge on shared steps; extract a sequence of columns once, reference it from anywhere, and expand inline to see the detail
-- **Card title & body** - each card has a short title visible on the map and an optional body for longer descriptions or details, editable in the expanded view
+- **Card title & body** - each card has a short title visible on the map and an optional body for longer descriptions or details
 - **Expanded view** - click the expand button on any card to edit the title and body in a larger modal; cards with body text show an expand indicator
 - **Card colours & links** - 14 colours, external URLs to issue trackers
 - **Drag & drop** - reorder cards, columns, and slices
-- **Hide columns** - insert spacer columns to visually group steps
+- **Spacer columns** - insert spacer columns to visually group steps
 
 ### Search & Filter
 - **Search** (Ctrl+F) - live search with non-matching cards dimmed
@@ -55,6 +55,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Real-time sync** - multiple users editing simultaneously (Yjs CRDTs)
 - **Live cursors** - see other users' cursor positions and drag operations
 - **Collaborative notepad** - shared notes that sync in real-time
+- **Activity log** - real-time feed of the last 20 map edits; hover an entry to highlight the affected card on the map; CLI pushes are logged with a diff summary
 - **Viewer count** - see how many people are viewing the map
 - **Shareable URLs** - each map gets a unique link
 - **Lock maps** - password-protect to prevent edits

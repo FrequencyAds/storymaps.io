@@ -16,6 +16,7 @@ let collabCompartment, readOnlyCompartment;
 let _state = null;
 let _saveToStorage = null;
 let _isMapEditable = null;
+let _logTextEdit = null;
 
 const stripHtmlTags = (text) => text.replace(/<[^>]*>/g, '');
 
@@ -48,6 +49,7 @@ export const init = (opts) => {
     _state = opts.state;
     _saveToStorage = opts.saveToStorage;
     _isMapEditable = opts.isMapEditable;
+    _logTextEdit = opts.logTextEdit;
 
     // Close button closes the entire unified panel
     const close = document.getElementById('notesClose');
@@ -119,6 +121,8 @@ const _createEditor = (parent) => {
                 EditorView.updateListener.of((update) => {
                     if (update.docChanged) {
                         _state.notes = view.state.doc.toString();
+                        const isLocal = update.transactions.some(tr => tr.isUserEvent('input'));
+                        if (isLocal) _logTextEdit?.('notes', 'notes');
                         _saveToStorage();
                     }
                 }),

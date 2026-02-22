@@ -35,12 +35,14 @@ let _dom = null;
 let _serialize = null;
 let _deserialize = null;
 let _renderAndSave = null;
+let _logEvent = null;
 
-export const init = ({ dom, serialize, deserialize, renderAndSave }) => {
+export const init = ({ dom, serialize, deserialize, renderAndSave, logEvent }) => {
     _dom = dom;
     _serialize = serialize;
     _deserialize = deserialize;
     _renderAndSave = renderAndSave;
+    _logEvent = logEvent;
 };
 
 const cloneCardMap = (cardMap) => Object.fromEntries(
@@ -106,6 +108,7 @@ export const undo = () => {
     _dom.boardName.value = state.name;
     _renderAndSave();
     highlightChangedElements(changes);
+    _logEvent?.('Undo');
     updateUndoRedoButtons();
 };
 
@@ -121,6 +124,7 @@ export const redo = () => {
     _dom.boardName.value = state.name;
     _renderAndSave();
     highlightChangedElements(changes);
+    _logEvent?.('Redo');
     updateUndoRedoButtons();
 };
 
