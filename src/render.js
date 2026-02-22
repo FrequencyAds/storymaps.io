@@ -553,6 +553,8 @@ const updateSelectionHighlights = () => {
     }
 };
 
+let _preserveToolbar = false;
+
 export const updateSelectionUI = () => {
     const validColumnIds = new Set(_state.columns.map(c => c.id));
     selection.columnIds = selection.columnIds.filter(id => validColumnIds.has(id));
@@ -561,6 +563,7 @@ export const updateSelectionUI = () => {
 
     updateSelectionHighlights();
 
+    if (_preserveToolbar) { _preserveToolbar = false; return; }
     document.querySelector('.selection-toolbar')?.remove();
 
     if (selection.columnIds.length > 0 && window.matchMedia('(hover: hover)').matches) {
@@ -763,6 +766,9 @@ export const updateSelectionUI = () => {
                 requestAnimationFrame(() => {
                     tagsDropdown.querySelector('.selection-toolbar-tag-input')?.focus();
                 });
+            } else {
+                _preserveToolbar = true;
+                _renderAndSave();
             }
         });
         tagsGroup.append(tagsBtn, tagsDropdown);
@@ -1137,6 +1143,7 @@ const bulkChangeColor = (color) => {
         const item = getItemForCard(card);
         if (item) item.color = color;
     }
+    _preserveToolbar = true;
     _renderAndSave();
 };
 
@@ -1147,6 +1154,7 @@ const bulkChangeStatus = (status) => {
         const item = getItemForCard(card);
         if (item) item.status = status;
     }
+    _preserveToolbar = true;
     _renderAndSave();
 };
 

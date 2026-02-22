@@ -6430,7 +6430,7 @@ html.dark-mode {
     --color-hover-bg: #253044;
 
     /* Shadows */
-    --shadow-card: 1px 1px 3px rgba(0, 0, 0, 0.3), 2px 2px 8px rgba(0, 0, 0, 0.2);
+    --shadow-card: 0 0 8px 2px rgba(20, 184, 166, 0.3);
     --shadow-dropdown: 0 4px 12px rgba(0, 0, 0, 0.3);
     --shadow-hover: 2px 2px 8px rgba(0, 0, 0, 0.3);
     --shadow-modal: 0 4px 24px rgba(0, 0, 0, 0.4);
@@ -6444,25 +6444,52 @@ html.dark-mode {
     --color-loading-spinner-track: #334155;
 }
 
-/* Card darken overlay for dark mode (avoids filter compositing fringe at fractional zoom) */
+/* Card darken for dark mode — semi-transparent overlay via ::after
+   (avoids filter compositing fringe at fractional zoom). */
 html.dark-mode .story-card,
 html.dark-mode .step {
-    isolation: isolate;
-    border: 1px solid rgba(0, 0, 0, 0.25);
-    box-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.3),
-        0 4px 12px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border: none;
 }
 html.dark-mode .story-card::after,
 html.dark-mode .step::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.15);
-    pointer-events: none;
-    border-radius: inherit;
-    z-index: -1;
+    display: none;
+}
+html.dark-mode .tag-input,
+html.dark-mode .selection-toolbar-tag-input {
+    background: var(--color-input-bg);
+    color: var(--color-text-primary);
+    border-color: var(--color-border);
+}
+html.dark-mode .tag-autocomplete {
+    background: #1e293b;
+    border-color: #334155;
+}
+html.dark-mode .tag-suggestion {
+    color: #e2e8f0;
+}
+html.dark-mode .tag-suggestion:hover {
+    background-color: #334155;
+}
+html.dark-mode .selection-toolbar-tag-option {
+    color: #e2e8f0;
+}
+html.dark-mode .selection-toolbar-tag-option:hover {
+    background: #334155;
+    color: #f8fafc;
+}
+html.dark-mode .selection-toolbar-tag-label {
+    color: #93c5fd;
+}
+html.dark-mode .selection-toolbar-status-row {
+    color: #e2e8f0;
+}
+html.dark-mode .selection-toolbar-status-row:hover {
+    background: #334155;
+    color: #f8fafc;
+}
+html.dark-mode .selection-toolbar-status-row.active {
+    background: #334155;
+    color: #f8fafc;
 }
 html.dark-mode .card-expand-modal {
     filter: brightness(0.85) saturate(1.15);
@@ -6764,6 +6791,21 @@ html.dark-mode .selection-toolbar {
     background: rgba(30, 41, 59, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* Column/card selection highlight must combine with dark-mode card shadow */
+html.dark-mode .step.column-selected,
+html.dark-mode .story-card.card-selected {
+    box-shadow:
+        0 0 0 3px rgba(59, 130, 246, 0.8),
+        var(--shadow-card);
+}
+html.dark-mode .step-placeholder.column-selected {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.8);
+    background-color: rgba(59, 130, 246, 0.1);
+}
+html.dark-mode .story-column.column-selected {
+    background-color: rgba(59, 130, 246, 0.1);
 }
 
 /* Read-only banner */

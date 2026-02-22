@@ -6,12 +6,12 @@ A free, open-source user story mapping tool with real-time collaboration.
 
 ## What is User Story Mapping?
 
-User story mapping is a technique for organising stories into a visual map that shows the entire product life cycle at a glance. It helps teams build a shared understanding of what a product does, who it serves, how it delivers value, how it was built, and where it's going next. It's essentially a comprehension tool which shows you the product vision and evolution in a single diagram.
+User story mapping is a technique for laying out a product as a visual map, organised around the journeys its users make. It helps teams build a shared understanding of what a product does, who it serves, how it delivers value, how it was built, and where it's going next. It's essentially a comprehension tool which shows you the product vision and evolution in a single diagram.
 
 If a sprint shows you the tree, a story map shows you the forest.
 
 
-It's not a replacement for Jira, Asana, Phabricator, or any other project management tool. It's the missing layer that sits alongside them. Your issue tracker tells you what work needs doing. Your story map tells you why it matters and where it fits.
+It's not a replacement for your project management tool or your product roadmap. Your project management tool shows you the backlog, the sprint, and what work needs doing. Your roadmap tells you when things ship. But neither one shows you the product as a whole, how all that work fits together and how it's evolved. A story map is that full picture.
 
 ### Why It Matters
 
