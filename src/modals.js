@@ -100,7 +100,7 @@ const dismiss = (ok) => {
     }
 };
 
-const show = (mode, message, defaultValue) => {
+const show = (mode, message, defaultValue, placeholder) => {
     return new Promise((res) => {
         const run = () => {
             ensureDOM();
@@ -113,6 +113,7 @@ const show = (mode, message, defaultValue) => {
             if (mode === 'prompt') {
                 inputEl.style.display = '';
                 inputEl.value = defaultValue ?? '';
+                inputEl.placeholder = placeholder || '';
                 cancelBtn.style.display = '';
             } else if (mode === 'confirm') {
                 inputEl.style.display = 'none';
@@ -140,4 +141,4 @@ const show = (mode, message, defaultValue) => {
 
 export const showAlert = (message) => show('alert', message);
 export const showConfirm = (message) => show('confirm', message);
-export const showPrompt = (message, defaultValue) => show('prompt', message, defaultValue);
+export const showPrompt = (message, defaultValue, placeholder) => show('prompt', message, defaultValue, placeholder);

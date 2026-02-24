@@ -461,8 +461,12 @@ const handleApi = async (req, res) => {
     const stats = await readJson(STATS_FILE, { mapCount: 0 });
 
     if (req.method === 'GET') {
+      let activeUsers = 0;
+      for (const [, doc] of docs) {
+        activeUsers += doc.awareness.getStates().size;
+      }
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
-      res.end(JSON.stringify(stats));
+      res.end(JSON.stringify({ ...stats, activeUsers }));
       return;
     }
 

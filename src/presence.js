@@ -1,6 +1,8 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Presence tracking and cursor display (via Yjs awareness)
 
+import { showPrompt } from '/src/modals.js';
+
 let _dom = null;
 let _getProvider = null;
 let _getYdoc = null;
@@ -55,6 +57,14 @@ let cursorsVisible = localStorage.getItem('cursorsVisible') !== 'false'; // Defa
 let viewerCount = 0;
 let _zoomLevelGetter = null;
 
+// Presence name for cursor labels and log attribution
+let _presenceName = '';
+
+// Touch device detection (skip name prompt, broadcast as mobile)
+const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+
+export const getPresenceName = () => _presenceName;
+
 export const init = ({ getProvider, getYdoc, dom, getZoomLevel, getState }) => {
     _getProvider = getProvider;
     _getYdoc = getYdoc;
@@ -63,40 +73,115 @@ export const init = ({ getProvider, getYdoc, dom, getZoomLevel, getState }) => {
     _getState = getState;
 };
 
-const updateViewerCountUI = (count) => {
+const updateViewerCountUI = (count, awareness) => {
     viewerCount = count;
     const badge = document.getElementById('viewerCount');
-    if (badge) {
-        if (count > 1) {
-            badge.textContent = count;
-            badge.classList.add('visible');
-        } else {
-            badge.classList.remove('visible');
+    if (!badge) return;
+
+    const nameEl = document.getElementById('viewerName');
+    const liveEl = document.getElementById('viewerLive');
+
+    // Always show the badge (name is always visible)
+    badge.classList.add('visible');
+    if (nameEl) nameEl.textContent = _presenceName || 'guest';
+
+    if (count > 1 && liveEl) {
+        liveEl.textContent = count;
+        liveEl.classList.add('visible');
+
+        // Build tooltip listing all connected users (you first)
+        if (awareness) {
+            const others = [];
+            const localId = awareness.clientID;
+            for (const [clientId, state] of awareness.getStates()) {
+                if (clientId === localId) continue;
+                const label = state.user?.device === 'mobile'
+                    ? 'Mobile user'
+                    : (state.user?.name || 'guest');
+                others.push(label);
+            }
+            const lines = [(_presenceName || 'guest') + ' (you)', ...others];
+            liveEl.dataset.tooltip = lines.join('\n');
         }
+    } else if (liveEl) {
+        liveEl.classList.remove('visible');
+        liveEl.dataset.tooltip = '';
     }
 };
 
-export const trackPresence = () => {
+// Allow editing name by clicking the viewer badge
+let _nameClickBound = false;
+const bindNameClick = () => {
+    if (_nameClickBound) return;
+    _nameClickBound = true;
+    const nameEl = document.getElementById('viewerName');
+    if (!nameEl) return;
+    nameEl.addEventListener('click', async () => {
+        const newName = await showPrompt('Change your display name', _presenceName || '');
+        if (newName === null) return; // cancelled
+        _presenceName = newName || '';
+        if (_presenceName) {
+            localStorage.setItem('presenceName', _presenceName);
+        } else {
+            localStorage.removeItem('presenceName');
+        }
+        // Update awareness
+        const provider = _getProvider();
+        if (provider) {
+            const sessionId = getSessionId();
+            provider.awareness.setLocalStateField('user', {
+                sessionId,
+                name: _presenceName || 'guest',
+                device: 'desktop',
+                color: getCursorColor(sessionId),
+                colorLight: getCursorColor(sessionId) + '33',
+                online: true,
+            });
+        }
+        // Update badge text
+        const el = document.getElementById('viewerName');
+        if (el) el.textContent = _presenceName || 'guest';
+    });
+};
+
+export const trackPresence = async () => {
     const provider = _getProvider();
     if (!provider) return;
 
     const awareness = provider.awareness;
     const sessionId = getSessionId();
 
+    // Prompt for name if not stored (skip on touch devices — badge is hidden anyway)
+    if (!isTouchDevice) {
+        let name = localStorage.getItem('presenceName');
+        if (name === null) {
+            name = await showPrompt('Enter your name for live collaboration (optional)', '', 'guest') || '';
+            if (name) localStorage.setItem('presenceName', name);
+        }
+        _presenceName = name || '';
+    } else {
+        _presenceName = '';
+    }
+
     // Set our local awareness state
-    awareness.setLocalStateField('user', { sessionId, name: 'Story Mapper', color: getCursorColor(sessionId), colorLight: getCursorColor(sessionId) + '33', online: true });
+    awareness.setLocalStateField('user', { sessionId, name: _presenceName || 'guest', device: isTouchDevice ? 'mobile' : 'desktop', color: getCursorColor(sessionId), colorLight: getCursorColor(sessionId) + '33', online: true });
 
     // Listen for awareness changes to update viewer count
     awareness.on('change', () => {
-        updateViewerCountUI(awareness.getStates().size);
+        updateViewerCountUI(awareness.getStates().size, awareness);
     });
 
     // Set initial count
-    updateViewerCountUI(awareness.getStates().size);
+    updateViewerCountUI(awareness.getStates().size, awareness);
+
+    // Bind click-to-edit on name (skip on touch — badge is hidden)
+    if (!isTouchDevice) bindNameClick();
 };
 
 export const clearPresence = () => {
-    updateViewerCountUI(0);
+    const badge = document.getElementById('viewerCount');
+    if (badge) badge.classList.remove('visible');
+    viewerCount = 0;
 };
 
 export const toggleCursorsVisibility = () => {
@@ -112,9 +197,9 @@ export const toggleCursorsVisibility = () => {
 };
 
 export const updateCursorsVisibilityUI = () => {
-    if (_dom.toggleCursorsText) {
-        _dom.toggleCursorsText.textContent = cursorsVisible ? 'Hide External Cursors' : 'Show External Cursors';
-        _dom.toggleCursorsBtn.title = cursorsVisible ? 'Hide other users\' cursors on the map' : 'Show other users\' cursors on the map';
+    if (_dom.toggleCursorsBtn) {
+        _dom.toggleCursorsBtn.classList.toggle('active', !cursorsVisible);
+        _dom.toggleCursorsBtn.title = cursorsVisible ? 'Hide external cursors' : 'Show external cursors';
     }
 };
 
@@ -199,6 +284,7 @@ export const trackCursor = () => {
             activeClientIds.add(key);
 
             let cursorEl = cursorElements.get(key);
+            const peerName = state.user?.name || 'guest';
             if (!cursorEl) {
                 cursorEl = document.createElement('div');
                 cursorEl.className = 'remote-cursor';
@@ -208,8 +294,30 @@ export const trackCursor = () => {
                         <path d="${CURSOR_SVG_PATH}" fill="${color}" stroke="#fff" stroke-width="1.5"/>
                     </svg>
                 `;
+                if (peerName) {
+                    const label = document.createElement('span');
+                    label.className = 'cursor-label';
+                    label.textContent = peerName;
+                    label.style.backgroundColor = color;
+                    cursorEl.appendChild(label);
+                }
                 cursorOverlay.appendChild(cursorEl);
                 cursorElements.set(key, cursorEl);
+            } else {
+                // Update label if name changed
+                let label = cursorEl.querySelector('.cursor-label');
+                if (peerName) {
+                    if (!label) {
+                        const color = /^#[0-9a-fA-F]{3,6}$/.test(cursorData.color) ? cursorData.color : '#888';
+                        label = document.createElement('span');
+                        label.className = 'cursor-label';
+                        label.style.backgroundColor = color;
+                        cursorEl.appendChild(label);
+                    }
+                    if (label.textContent !== peerName) label.textContent = peerName;
+                } else if (label) {
+                    label.remove();
+                }
             }
 
             const visualX = cursorData.x * zoomLevel + mapOffsetLeft;

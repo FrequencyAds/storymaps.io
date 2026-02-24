@@ -53,16 +53,19 @@ A story map preserves it. One diagram that shows who the users are, what journey
 
 ### Collaboration
 - **Real-time sync** - multiple users editing simultaneously (Yjs CRDTs)
-- **Live cursors** - see other users' cursor positions and drag operations
+- **Display names** - prompted on first visit; shown on cursor labels, the viewer badge, and in the activity log; click your name to change it anytime; supports emojis
+- **Live cursors** - see other users' cursor positions, names, and drag operations in real-time
+- **Viewer badge** - shows your name and a live count of connected users; hover the count to see everyone on the map
+- **Mobile & tablet** - touch device users join silently without a name prompt; desktop users see them listed as "Mobile user" in the viewer tooltip
 - **Collaborative notepad** - shared notes that sync in real-time
-- **Activity log** - real-time feed of the last 20 map edits; hover an entry to highlight the affected card on the map; CLI pushes are logged with a diff summary
-- **Viewer count** - see how many people are viewing the map
+- **Activity log** - real-time feed of the last 20 map edits; hover an entry to highlight the affected card on the map; entries show the user's name, with icons to distinguish CLI and mobile sources
 - **Shareable URLs** - each map gets a unique link
 - **Lock maps** - password-protect to prevent edits
 
 ### Import & Export
 - **JSON** - import/export story maps as JSON files
 - **YAML** - import/export as human-readable YAML; author maps in a text editor, version-control them in git, or generate from scripts
+- **CSV** - import/export as spreadsheet-friendly CSV
 - **Jira** - export as CSV or via REST API; card body text is used as the issue description
 - **Asana** - export as CSV or via REST API; card body text is used as the task notes
 - **Phabricator** - export via Maniphest API; card body text is used as the task description
@@ -84,9 +87,10 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Backup metadata** - each backup shows the map name, card count, size, and relative age
 
 ### Other
-- **Dark mode** - matches your system theme, or toggle manually from the menu
-- **Full Screen Mode** - toggle from the menu; double-Esc to exit (single Esc still closes modals, search, etc.); auto zoom-to-fit on enter and exit
-- **Focus Mode** - hide card metadata (status, points, tags, links) for a cleaner presentation view; expand icons still appear on hover
+- **View controls** - quick-access toggle buttons for focus mode, full screen, dark mode, and cursor visibility alongside the zoom controls
+- **Dark mode** - matches your system theme, or toggle from the view controls
+- **Full Screen Mode** - toggle from the view controls; double-Esc to exit (single Esc still closes modals, search, etc.); auto zoom-to-fit on enter and exit
+- **Focus Mode** - hide card metadata (status, points, tags, links) for a cleaner presentation view; toggle from the view controls; expand icons still appear on hover
 - **Copy map** - duplicate an existing map to a new URL
 - **Sample maps** - load examples to learn the methodology
 - **Map counter** - community stat showing total maps created
@@ -225,11 +229,11 @@ The server starts on `http://localhost:8080`.
 15. Use **Ctrl+Z** / **Ctrl+Y** to undo and redo, **Ctrl+D** to duplicate
 16. Use **Ctrl+scroll** to zoom, **right-click drag** to pan, **Alt+R** to zoom to fit
 17. Select consecutive columns and use **Menu → Create Partial** to extract shared sequences into reusable map partials; manage them from the **Partials** panel
-18. Use **Menu → Focus Mode** to hide card metadata for a cleaner presentation view
-19. Use **Menu → Full Screen Mode** for a distraction-free view; press **Esc** twice to exit
+18. Use the **view controls** (next to zoom) to toggle focus mode, full screen, dark mode, or cursor visibility
+19. Press **Esc** twice to exit full screen (single Esc still closes modals, search, etc.)
 20. Use **Menu → Backups** to create, restore, or delete map snapshots
-21. Use **Menu → Import** to import from JSON or YAML
-22. Use **Menu → Export** to save as JSON or YAML, or export to Jira, Asana, or Phabricator
+21. Use **Menu → Import** to import from JSON, YAML, or CSV
+22. Use **Menu → Export** to save as JSON, YAML, or CSV, or export to Jira, Asana, or Phabricator
 23. Use **Print** to save as PDF
 
 ## Support

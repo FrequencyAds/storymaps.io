@@ -86,6 +86,7 @@
     <link rel="modulepreload" href="/src/log.js">
     <link rel="modulepreload" href="/src/exports.js">
     <link rel="modulepreload" href="/src/yaml.js">
+    <link rel="modulepreload" href="/src/csv.js">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" crossorigin="anonymous">
     <noscript>
         <div style="padding: 40px; text-align: center; font-family: sans-serif;">
@@ -140,7 +141,8 @@
             </div>
         </div>
         <div class="header-actions">
-            <span class="viewer-count" id="viewerCount" title="People viewing this map"></span>
+            <span class="active-mappers" id="activeMappers"></span>
+            <span class="viewer-count" id="viewerCount"><span class="viewer-name" id="viewerName"></span><span class="viewer-live" id="viewerLive"></span></span>
             <button class="btn btn-secondary btn-icon" id="searchBtn" title="Search (Ctrl+F)" aria-label="Search" disabled><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg></button>
             <button class="btn btn-secondary btn-icon" id="undoBtn" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>↩</button>
             <button class="btn btn-secondary btn-icon" id="redoBtn" title="Redo (Ctrl+Y)" aria-label="Redo" disabled>↪</button>
@@ -173,35 +175,26 @@
                         <div class="dropdown-submenu-content" id="importSubmenu">
                             <button class="dropdown-item" id="importJsonMenuItem">From JSON</button>
                             <button class="dropdown-item" id="importYamlMenuItem">From YAML</button>
+                            <button class="dropdown-item" id="importCsvMenuItem">From CSV</button>
                         </div>
                     </div>
                     <div class="dropdown-submenu">
                         <button class="dropdown-item dropdown-submenu-trigger" id="exportSubmenuTrigger"><span><span class="menu-icon">📤</span> Export</span></button>
                         <div class="dropdown-submenu-content" id="exportSubmenu">
-                            <button class="dropdown-item" id="exportMap"><span class="menu-icon">{ }</span> To JSON</button>
-                            <button class="dropdown-item" id="exportYamlBtn"><span class="menu-icon">📝</span> To YAML</button>
-                            <button class="dropdown-item" id="exportJiraBtn"><span class="menu-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="#0052CC" style="vertical-align: -2px;"><path d="M11.571 11.513H0a5.218 5.218 0 0 0 5.232 5.215h2.13v2.057A5.215 5.215 0 0 0 12.575 24V12.518a1.005 1.005 0 0 0-1.005-1.005zm5.723-5.756H5.736a5.215 5.215 0 0 0 5.215 5.214h2.129v2.058a5.218 5.218 0 0 0 5.215 5.214V6.758a1.001 1.001 0 0 0-1.001-1.001zM23.013 0H11.455a5.215 5.215 0 0 0 5.215 5.215h2.129v2.057A5.215 5.215 0 0 0 24 12.483V1.005A1.005 1.005 0 0 0 23.013 0z"/></svg></span> To Jira CSV</button>
-                            <button class="dropdown-item" id="exportJiraApiBtn"><span class="menu-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="#0052CC" style="vertical-align: -2px;"><path d="M11.571 11.513H0a5.218 5.218 0 0 0 5.232 5.215h2.13v2.057A5.215 5.215 0 0 0 12.575 24V12.518a1.005 1.005 0 0 0-1.005-1.005zm5.723-5.756H5.736a5.215 5.215 0 0 0 5.215 5.214h2.129v2.058a5.218 5.218 0 0 0 5.215 5.214V6.758a1.001 1.001 0 0 0-1.001-1.001zM23.013 0H11.455a5.215 5.215 0 0 0 5.215 5.215h2.129v2.057A5.215 5.215 0 0 0 24 12.483V1.005A1.005 1.005 0 0 0 23.013 0z"/></svg></span> To Jira API</button>
-                            <button class="dropdown-item" id="exportAsanaCsvBtn"><span class="menu-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="#F06A6A" style="vertical-align: -2px;"><circle cx="12" cy="4.5" r="4"/><circle cx="4.5" cy="15" r="4"/><circle cx="19.5" cy="15" r="4"/></svg></span> To Asana CSV</button>
-                            <button class="dropdown-item" id="exportAsanaBtn"><span class="menu-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="#F06A6A" style="vertical-align: -2px;"><circle cx="12" cy="4.5" r="4"/><circle cx="4.5" cy="15" r="4"/><circle cx="19.5" cy="15" r="4"/></svg></span> To Asana API</button>
-                            <button class="dropdown-item" id="exportPhabBtn"><span class="menu-icon"><svg width="14" height="14" viewBox="0 0 592 592" style="vertical-align: -2px;"><path fill="#069" d="M592.2,51.8V0H329.5C329.2,181.6,181.9,328.8.2,328.9V592h52l6.7-116.3a475.94,475.94,0,0,0,69-13.7l50.4,104.4,96.5-40-38-109.6a489.27,489.27,0,0,0,58.3-39l86.6,77.3,73.9-73.9-77.1-86.8a477.47,477.47,0,0,0,39-58.3L527,274.3l40-96.5L462.6,127.2a486.82,486.82,0,0,0,13.6-68.8Z"/><path fill="#900" d="M0,0V199.8c110.4,0,200-89.4,200.2-199.8Z"/></svg></span> To Phabricator</button>
+                            <div class="submenu-group-label">File</div>
+                            <button class="dropdown-item" id="exportMap"><span class="menu-icon">{ }</span> JSON</button>
+                            <button class="dropdown-item" id="exportYamlBtn"><span class="menu-icon">📝</span> YAML</button>
+                            <button class="dropdown-item" id="exportCsvBtn"><span class="menu-icon">📊</span> CSV</button>
+                            <div class="submenu-group-label">Integrations</div>
+                            <button class="dropdown-item" id="exportJiraBtn"><span class="menu-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="#0052CC" style="vertical-align: -2px;"><path d="M11.571 11.513H0a5.218 5.218 0 0 0 5.232 5.215h2.13v2.057A5.215 5.215 0 0 0 12.575 24V12.518a1.005 1.005 0 0 0-1.005-1.005zm5.723-5.756H5.736a5.215 5.215 0 0 0 5.215 5.214h2.129v2.058a5.218 5.218 0 0 0 5.215 5.214V6.758a1.001 1.001 0 0 0-1.001-1.001zM23.013 0H11.455a5.215 5.215 0 0 0 5.215 5.215h2.129v2.057A5.215 5.215 0 0 0 24 12.483V1.005A1.005 1.005 0 0 0 23.013 0z"/></svg></span> Jira CSV</button>
+                            <button class="dropdown-item" id="exportJiraApiBtn"><span class="menu-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="#0052CC" style="vertical-align: -2px;"><path d="M11.571 11.513H0a5.218 5.218 0 0 0 5.232 5.215h2.13v2.057A5.215 5.215 0 0 0 12.575 24V12.518a1.005 1.005 0 0 0-1.005-1.005zm5.723-5.756H5.736a5.215 5.215 0 0 0 5.215 5.214h2.129v2.058a5.218 5.218 0 0 0 5.215 5.214V6.758a1.001 1.001 0 0 0-1.001-1.001zM23.013 0H11.455a5.215 5.215 0 0 0 5.215 5.215h2.129v2.057A5.215 5.215 0 0 0 24 12.483V1.005A1.005 1.005 0 0 0 23.013 0z"/></svg></span> Jira API</button>
+                            <button class="dropdown-item" id="exportAsanaCsvBtn"><span class="menu-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="#F06A6A" style="vertical-align: -2px;"><circle cx="12" cy="4.5" r="4"/><circle cx="4.5" cy="15" r="4"/><circle cx="19.5" cy="15" r="4"/></svg></span> Asana CSV</button>
+                            <button class="dropdown-item" id="exportAsanaBtn"><span class="menu-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="#F06A6A" style="vertical-align: -2px;"><circle cx="12" cy="4.5" r="4"/><circle cx="4.5" cy="15" r="4"/><circle cx="19.5" cy="15" r="4"/></svg></span> Asana API</button>
+                            <button class="dropdown-item" id="exportPhabBtn"><span class="menu-icon"><svg width="14" height="14" viewBox="0 0 592 592" style="vertical-align: -2px;"><path fill="#069" d="M592.2,51.8V0H329.5C329.2,181.6,181.9,328.8.2,328.9V592h52l6.7-116.3a475.94,475.94,0,0,0,69-13.7l50.4,104.4,96.5-40-38-109.6a489.27,489.27,0,0,0,58.3-39l86.6,77.3,73.9-73.9-77.1-86.8a477.47,477.47,0,0,0,39-58.3L527,274.3l40-96.5L462.6,127.2a486.82,486.82,0,0,0,13.6-68.8Z"/><path fill="#900" d="M0,0V199.8c110.4,0,200-89.4,200.2-199.8Z"/></svg></span> Phabricator</button>
                         </div>
                     </div>
                     <button class="dropdown-item" id="printMap"><span class="menu-icon">🖨️</span> Print</button>
                     <button class="dropdown-item" id="backupsBtn"><span class="menu-icon">💾</span> Backups <span class="backup-count-badge hidden" id="backupCountBadge">0</span></button>
-                    <div class="dropdown-divider"></div>
-                    <button class="dropdown-item" id="toggleCursorsBtn" title="Show or hide other users' cursors on the map">
-                        <span class="cursor-toggle-icon">👁</span> <span id="toggleCursorsText">Hide External Cursors</span>
-                    </button>
-                    <button class="dropdown-item" id="toggleFocusModeBtn" title="Hide card metadata (status, points, tags, links) for a cleaner view">
-                        <span class="menu-icon">🔭</span> <span id="toggleFocusModeText">Focus Mode</span>
-                    </button>
-                    <button class="dropdown-item" id="toggleFullscreenBtn" title="Fill the entire screen; double-Esc to exit">
-                        <span class="menu-icon">⛶</span> <span id="toggleFullscreenText">Full Screen Mode</span>
-                    </button>
-                    <button class="dropdown-item" id="toggleDarkModeBtn" title="Switch between light and dark theme">
-                        <span class="menu-icon">🌙</span> <span id="toggleDarkModeText">Dark Mode</span>
-                    </button>
                     <div class="dropdown-divider" id="lockDivider"></div>
                     <button class="dropdown-item" id="lockMapBtn" title="Password-protect this map to prevent edits">
                         <span class="lock-menu-icon">🔓</span> Lock Map (Read-only)
@@ -363,10 +356,26 @@
             <button class="panel-tab" id="notesToggle" data-section="notepad" title="Notepad">Notes</button>
             <button class="panel-tab" id="logToggle" data-section="log" title="Log">Log</button>
         </div>
-        <div class="zoom-controls" id="zoomControls">
-            <button class="zoom-btn" id="zoomIn" title="Zoom in">+</button>
-            <button class="zoom-btn zoom-level" id="zoomReset" title="Reset zoom">100%</button>
-            <button class="zoom-btn" id="zoomOut" title="Zoom out">−</button>
+        <div class="bottom-controls">
+            <div class="view-controls" id="viewControls">
+                <button class="view-btn" id="toggleFocusModeBtn" title="Focus mode">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                </button>
+                <button class="view-btn" id="toggleFullscreenBtn" title="Full screen">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                </button>
+                <button class="view-btn" id="toggleDarkModeBtn" title="Dark mode">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+                <button class="view-btn" id="toggleCursorsBtn" title="Hide external cursors">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2l1 15 3.5-4 4.5 6 2.5-1.5-4.5-6H18L6 2z"/><line x1="3" y1="21" x2="21" y2="3"/></svg>
+                </button>
+            </div>
+            <div class="zoom-controls" id="zoomControls">
+                <button class="zoom-btn" id="zoomIn" title="Zoom in">+</button>
+                <button class="zoom-btn zoom-level" id="zoomReset" title="Reset zoom">100%</button>
+                <button class="zoom-btn" id="zoomOut" title="Zoom out">−</button>
+            </div>
         </div>
     </div>
 
@@ -457,6 +466,42 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="importCsvModal">
+        <div class="modal import-modal">
+            <div class="modal-header">
+                <h2>Import from CSV</h2>
+                <button class="modal-close" id="importCsvModalClose">&times;</button>
+            </div>
+            <div class="modal-body import-modal-body">
+                <div class="import-column import-column-json">
+                    <h3>Paste CSV</h3>
+                    <p>Paste your story map CSV data below</p>
+                    <textarea class="import-textarea" id="importCsvText" placeholder="name:,My Story Map&#10;steps:,Step 1,Step 2&#10;slice:MVP,story:First task,story:Second task"></textarea>
+                    <div class="import-validation-error hidden" id="importCsvValidationError"></div>
+                    <button class="btn" id="importCsvBtn" title="Ctrl+Enter to import">Import CSV</button>
+                </div>
+                <div class="import-divider">
+                    <span>or</span>
+                </div>
+                <div class="import-column import-column-file">
+                    <h3>Upload File</h3>
+                    <p>Select a .csv file from your computer</p>
+                    <div class="import-file-dropzone" id="importCsvDropzone">
+                        <svg class="import-file-icon" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="12" y1="18" x2="12" y2="12"/>
+                            <line x1="9" y1="15" x2="12" y2="12"/>
+                            <line x1="15" y1="15" x2="12" y2="12"/>
+                        </svg>
+                        <span>Drop file here or click to browse</span>
+                        <input type="file" id="importCsvFileInput" accept=".csv" hidden>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="exportModal">
         <div class="modal export-modal">
             <div class="modal-header">
@@ -523,6 +568,39 @@
                             <span class="export-filename-ext">.yaml</span>
                         </div>
                         <button class="btn" id="exportYamlDownloadBtn">Download File</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="exportCsvModal">
+        <div class="modal export-modal">
+            <div class="modal-header">
+                <h2>Export as CSV</h2>
+                <button class="modal-close" id="exportCsvModalClose">&times;</button>
+            </div>
+            <div class="modal-body export-modal-body">
+                <div class="export-column export-column-json">
+                    <h3>CSV Data</h3>
+                    <p>Copy the CSV data below or download as a file</p>
+                    <textarea class="export-textarea" id="exportCsvText" readonly></textarea>
+                    <div class="export-actions">
+                        <button class="btn" id="exportCsvCopyBtn">Copy to Clipboard</button>
+                    </div>
+                </div>
+                <div class="export-divider">
+                    <span>or</span>
+                </div>
+                <div class="export-column export-column-file">
+                    <h3>Download File</h3>
+                    <p>Save as a .csv file to your computer</p>
+                    <div class="export-file-section">
+                        <div class="export-filename-row">
+                            <input type="text" class="export-filename" id="exportCsvFilename" placeholder="story-map">
+                            <span class="export-filename-ext">.csv</span>
+                        </div>
+                        <button class="btn" id="exportCsvDownloadBtn">Download File</button>
                     </div>
                 </div>
             </div>

@@ -3,9 +3,10 @@
 
 // Generate cryptographically secure 8-char ID
 // 6 random bytes → BigInt → base36 string (0-9, a-z) → last 8 chars
+const _crypto = globalThis.crypto ?? (await import('node:crypto')).webcrypto;
 export const generateId = () => {
     const bytes = new Uint8Array(6);
-    crypto.getRandomValues(bytes);
+    _crypto.getRandomValues(bytes);
     const num = Array.from(bytes).reduce((acc, b) => acc * 256n + BigInt(b), 0n);
     return num.toString(36).slice(-8).padStart(8, '0');
 };

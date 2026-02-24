@@ -1,9 +1,10 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Log — real-time feed of map edits synced via Yjs Y.Array
 
-import { getSessionId, getCursorColor } from '/src/presence.js';
+import { getSessionId, getCursorColor, getPresenceName } from '/src/presence.js';
 
 const MAX_ENTRIES = 20;
+const _isMobile = window.matchMedia('(pointer: coarse)').matches;
 
 let _yarray = null;
 let _observer = null;
@@ -48,9 +49,10 @@ export const logEvent = (text, ids = []) => {
 
     const entry = {
         ts: Date.now(),
-        src: 'web',
+        src: _isMobile ? 'mobile' : 'web',
         text,
         sid: getSessionId(),
+        name: getPresenceName(),
         ids,
     };
 
@@ -105,16 +107,26 @@ const render = () => {
         const safeColor = /^#[0-9a-fA-F]{3,6}$/.test(color) ? color : '#888';
         const time = formatTime(entry.ts);
         const isMe = entry.sid === getSessionId();
-        const source = entry.src === 'cli' ? 'CLI' : isMe ? 'You' : 'Web user';
-        const safeText = escapeHtml(`${source}: ${entry.text}`);
+        const source = entry.src === 'cli' ? ''
+            : entry.src === 'mobile' ? ''
+            : isMe ? 'You' : (entry.name || 'Web user');
+        const safeText = escapeHtml(source ? `${source}: ${entry.text}` : entry.text);
 
         const row = document.createElement('div');
         row.className = 'log-entry';
         const ids = entry.ids || [];
 
+        let srcIcon = '';
+        if (entry.src === 'cli') {
+            srcIcon = '<svg class="log-src-icon" viewBox="0 0 16 16" width="12" height="12"><path d="M2 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="9" y1="13" x2="14" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+        } else if (entry.src === 'mobile') {
+            srcIcon = '<span class="log-src-icon">📱</span>';
+        }
+
         row.innerHTML =
             `<span class="log-dot" style="background:${safeColor}"></span>` +
             `<span class="log-time">${time}</span>` +
+            `${srcIcon}` +
             `<span class="log-text">${safeText}</span>`;
 
         if (ids.length > 0) {

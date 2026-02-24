@@ -14,6 +14,7 @@ import * as ui from '/src/ui.js';
 import * as renderMod from '/src/render.js';
 import * as exportsMod from '/src/exports.js';
 import { exportToYaml, importFromYaml } from '/src/yaml.js';
+import { exportToCsv, importFromCsv } from '/src/csv.js';
 import { showAlert, showConfirm, showPrompt } from '/src/modals.js';
 
 // =============================================================================
@@ -48,6 +49,7 @@ const dom = {
     welcomeScreen: document.getElementById('welcomeScreen'),
     welcomeNewBtn: document.getElementById('welcomeNewBtn'),
     welcomeCounter: document.getElementById('welcomeCounter'),
+    activeMappers: document.getElementById('activeMappers'),
     storyMapWrapper: document.getElementById('storyMapWrapper'),
     samplesSubmenuTrigger: document.getElementById('samplesSubmenuTrigger'),
     samplesSubmenu: document.getElementById('samplesSubmenu'),
@@ -85,6 +87,23 @@ const dom = {
     exportYamlCopyBtn: document.getElementById('exportYamlCopyBtn'),
     exportYamlFilename: document.getElementById('exportYamlFilename'),
     exportYamlDownloadBtn: document.getElementById('exportYamlDownloadBtn'),
+    // CSV import
+    importCsvMenuItem: document.getElementById('importCsvMenuItem'),
+    importCsvModal: document.getElementById('importCsvModal'),
+    importCsvModalClose: document.getElementById('importCsvModalClose'),
+    importCsvText: document.getElementById('importCsvText'),
+    importCsvBtn: document.getElementById('importCsvBtn'),
+    importCsvDropzone: document.getElementById('importCsvDropzone'),
+    importCsvFileInput: document.getElementById('importCsvFileInput'),
+    importCsvValidationError: document.getElementById('importCsvValidationError'),
+    // CSV export
+    exportCsvBtn: document.getElementById('exportCsvBtn'),
+    exportCsvModal: document.getElementById('exportCsvModal'),
+    exportCsvModalClose: document.getElementById('exportCsvModalClose'),
+    exportCsvText: document.getElementById('exportCsvText'),
+    exportCsvCopyBtn: document.getElementById('exportCsvCopyBtn'),
+    exportCsvFilename: document.getElementById('exportCsvFilename'),
+    exportCsvDownloadBtn: document.getElementById('exportCsvDownloadBtn'),
     // Jira export
     exportJiraBtn: document.getElementById('exportJiraBtn'),
     jiraExportModal: document.getElementById('jiraExportModal'),
@@ -194,16 +213,11 @@ const dom = {
     asanaCsvCreateSections: document.getElementById('asanaCsvCreateSections'),
     asanaCsvExportCancel: document.getElementById('asanaCsvExportCancel'),
     asanaCsvExportDownload: document.getElementById('asanaCsvExportDownload'),
-    // Cursor toggle
+    // View toggles
     toggleCursorsBtn: document.getElementById('toggleCursorsBtn'),
-    toggleCursorsText: document.getElementById('toggleCursorsText'),
-    // Focus mode
     toggleFocusModeBtn: document.getElementById('toggleFocusModeBtn'),
-    toggleFocusModeText: document.getElementById('toggleFocusModeText'),
     toggleFullscreenBtn: document.getElementById('toggleFullscreenBtn'),
-    toggleFullscreenText: document.getElementById('toggleFullscreenText'),
     toggleDarkModeBtn: document.getElementById('toggleDarkModeBtn'),
-    toggleDarkModeText: document.getElementById('toggleDarkModeText'),
     // Lock feature
     lockMapBtn: document.getElementById('lockMapBtn'),
     relockBtn: document.getElementById('relockBtn'),
@@ -295,7 +309,7 @@ const subscribeToMap = async (mapId) => {
     render();
 
     const deferredTracking = async () => {
-        trackPresence();
+        await trackPresence();
         trackCursor();
         await loadLockState(mapId);
         lockState.sessionUnlocked = checkSessionUnlock(mapId);
@@ -687,6 +701,11 @@ const sanitizeFilename = (name) => {
         .substring(0, 200)
         || 'story-map';
 };
+const formatTimestamp = () => {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${String(d.getFullYear()).slice(2)}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}-${pad(d.getHours())}-${pad(d.getMinutes())}`;
+};
 exportsMod.init({ dom, sanitizeFilename });
 const {
     showJiraExportModal, hideJiraExportModal, confirmCloseJiraExportModal, populateJiraExportEpics, downloadJiraCsv, jiraExportState,
@@ -810,6 +829,143 @@ const downloadExportYamlFile = () => {
     link.click();
     URL.revokeObjectURL(url);
     hideExportYamlModal();
+};
+
+// CSV Import
+const showImportCsvModal = () => {
+    dom.importCsvModal.classList.add('visible');
+    dom.importCsvText.value = '';
+    dom.importCsvValidationError.classList.add('hidden');
+    dom.importCsvText.focus();
+};
+
+const hideImportCsvModal = () => {
+    dom.importCsvModal.classList.remove('visible');
+    dom.importCsvText.value = '';
+};
+
+const importFromCsvText = async (csvText) => {
+    const isFromWelcome = !state.mapId;
+
+    if (!isFromWelcome) {
+        saveToStorage();
+        if (!await confirmOverwrite()) return;
+    }
+
+    dom.importCsvValidationError.classList.add('hidden');
+
+    let data;
+    try {
+        data = importFromCsv(csvText);
+    } catch (err) {
+        dom.importCsvValidationError.textContent = err.message;
+        dom.importCsvValidationError.classList.remove('hidden');
+        return;
+    }
+
+    try {
+        if (isFromWelcome) {
+            hideWelcomeScreen();
+            initState();
+            const mapId = await newMapId();
+            state.mapId = mapId;
+            history.replaceState({ mapId }, '', `/${mapId}`);
+            await createYjsDoc(mapId);
+        } else {
+            await createAutoBackup('Auto: before import');
+            pushUndo();
+        }
+        deserialize(data);
+        dom.boardName.value = state.name;
+        renderAndSave();
+        requestAnimationFrame(zoomToFit);
+        hideImportCsvModal();
+        if (isFromWelcome) {
+            subscribeToMap(state.mapId);
+        }
+    } catch {
+        await showAlert('Failed to import: Invalid data structure');
+    }
+};
+
+const importCsvFile = async (file) => {
+    const isFromWelcome = !state.mapId;
+
+    if (!isFromWelcome) {
+        saveToStorage();
+        if (!await confirmOverwrite()) return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        try {
+            const data = importFromCsv(e.target.result);
+            if (isFromWelcome) {
+                hideWelcomeScreen();
+                initState();
+                const mapId = await newMapId();
+                state.mapId = mapId;
+                history.replaceState({ mapId }, '', `/${mapId}`);
+                await createYjsDoc(mapId);
+            } else {
+                await createAutoBackup('Auto: before import');
+                pushUndo();
+            }
+            deserialize(data);
+            dom.boardName.value = state.name;
+            renderAndSave();
+            requestAnimationFrame(zoomToFit);
+            if (isFromWelcome) {
+                subscribeToMap(state.mapId);
+            }
+        } catch (err) {
+            await showAlert('Failed to import: ' + (err.message || 'Invalid CSV format'));
+        }
+    };
+    reader.readAsText(file);
+};
+
+// CSV Export
+const exportCsv = () => {
+    if (dom.welcomeScreen.classList.contains('visible')) return;
+    saveToStorage();
+    showExportCsvModal();
+};
+
+const showExportCsvModal = () => {
+    dom.exportCsvModal.classList.add('visible');
+    dom.exportCsvFilename.value = sanitizeFilename(state.name || 'story-map');
+    const data = serialize();
+    dom.exportCsvText.value = exportToCsv(data);
+};
+
+const hideExportCsvModal = () => {
+    dom.exportCsvModal.classList.remove('visible');
+};
+
+const copyExportCsv = async () => {
+    const csv = dom.exportCsvText.value;
+    try {
+        await navigator.clipboard.writeText(csv);
+        dom.exportCsvCopyBtn.textContent = 'Copied!';
+        setTimeout(() => dom.exportCsvCopyBtn.textContent = 'Copy to Clipboard', 2000);
+    } catch {
+        dom.exportCsvText.select();
+        document.execCommand('copy');
+        dom.exportCsvCopyBtn.textContent = 'Copied!';
+        setTimeout(() => dom.exportCsvCopyBtn.textContent = 'Copy to Clipboard', 2000);
+    }
+};
+
+const downloadExportCsvFile = () => {
+    const filename = sanitizeFilename(dom.exportCsvFilename.value) + '.csv';
+    const csv = dom.exportCsvText.value;
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = el('a', null, { href: url, download: filename });
+    link.click();
+    URL.revokeObjectURL(url);
+    hideExportCsvModal();
 };
 
 // =============================================================================
@@ -1021,6 +1177,7 @@ const newMap = async () => {
     initState();
     dom.boardName.value = '';
     render();
+    requestAnimationFrame(zoomToFit);
 
     const mapId = await newMapId();
     state.mapId = mapId;
@@ -1328,6 +1485,21 @@ const initEventListeners = () => {
         }
     });
 
+    // Force light mode for printing (dark backgrounds waste ink and browsers
+    // skip background colours by default, causing illegible text).
+    window.addEventListener('beforeprint', () => {
+        if (document.documentElement.classList.contains('dark-mode')) {
+            document.documentElement.dataset.wasDark = '1';
+            document.documentElement.classList.remove('dark-mode');
+        }
+    });
+    window.addEventListener('afterprint', () => {
+        if (document.documentElement.dataset.wasDark) {
+            delete document.documentElement.dataset.wasDark;
+            document.documentElement.classList.add('dark-mode');
+        }
+    });
+
     window.addEventListener('popstate', async (e) => {
         // Ignore popstate from our own history.back() after closing expand modal
         if (_poppingExpandState) {
@@ -1402,21 +1574,19 @@ const initEventListeners = () => {
     });
 
     dom.toggleCursorsBtn?.addEventListener('click', () => {
-        closeMainMenu();
         toggleCursorsVisibility();
     });
     // Focus mode toggle
     let focusMode = localStorage.getItem('focusMode') === 'true';
     function applyFocusMode() {
         document.body.classList.toggle('focus-mode', focusMode);
-        if (dom.toggleFocusModeText) {
-            dom.toggleFocusModeText.textContent = focusMode ? 'Exit Focus Mode' : 'Focus Mode';
-            dom.toggleFocusModeBtn.title = focusMode ? 'Show card metadata again' : 'Hide card metadata (status, points, tags, links) for a cleaner view';
+        if (dom.toggleFocusModeBtn) {
+            dom.toggleFocusModeBtn.classList.toggle('active', focusMode);
+            dom.toggleFocusModeBtn.title = focusMode ? 'Exit focus mode' : 'Focus mode';
         }
     }
     applyFocusMode();
     dom.toggleFocusModeBtn?.addEventListener('click', () => {
-        closeMainMenu();
         focusMode = !focusMode;
         localStorage.setItem('focusMode', focusMode);
         applyFocusMode();
@@ -1431,14 +1601,13 @@ const initEventListeners = () => {
     })();
     function applyDarkMode() {
         document.documentElement.classList.toggle('dark-mode', darkMode);
-        if (dom.toggleDarkModeText) {
-            dom.toggleDarkModeText.textContent = darkMode ? 'Light Mode' : 'Dark Mode';
-            dom.toggleDarkModeBtn.title = darkMode ? 'Switch to light theme' : 'Switch to dark theme';
+        if (dom.toggleDarkModeBtn) {
+            dom.toggleDarkModeBtn.classList.toggle('active', darkMode);
+            dom.toggleDarkModeBtn.title = darkMode ? 'Light mode' : 'Dark mode';
         }
     }
     applyDarkMode();
     dom.toggleDarkModeBtn?.addEventListener('click', () => {
-        closeMainMenu();
         darkMode = !darkMode;
         try { localStorage.setItem('darkMode', darkMode); } catch (e) {}
         applyDarkMode();
@@ -1453,9 +1622,9 @@ const initEventListeners = () => {
     let lastFullscreenEsc = 0;
     let keyboardLocked = false;
     const updateFullscreenLabel = () => {
-        if (dom.toggleFullscreenText) {
-            dom.toggleFullscreenText.textContent = fullscreenMode ? 'Exit Full Screen Mode' : 'Full Screen Mode';
-            dom.toggleFullscreenBtn.title = fullscreenMode ? 'Exit full screen (double-Esc)' : 'Fill the entire screen; double-Esc to exit';
+        if (dom.toggleFullscreenBtn) {
+            dom.toggleFullscreenBtn.classList.toggle('active', fullscreenMode);
+            dom.toggleFullscreenBtn.title = fullscreenMode ? 'Exit full screen' : 'Full screen';
         }
     };
     const enterFullscreenMode = () => {
@@ -1479,10 +1648,9 @@ const initEventListeners = () => {
         }
     };
     if (dom.toggleFullscreenBtn && !document.fullscreenEnabled) {
-        dom.toggleFullscreenBtn.style.display = 'none';
+        dom.toggleFullscreenBtn.remove();
     }
     dom.toggleFullscreenBtn?.addEventListener('click', () => {
-        closeMainMenu();
         if (fullscreenMode) exitFullscreenMode();
         else enterFullscreenMode();
     });
@@ -1516,6 +1684,14 @@ const initEventListeners = () => {
             return;
         }
         showImportYamlModal();
+    });
+    dom.importCsvMenuItem.addEventListener('click', async () => {
+        closeMainMenu();
+        if (lockState.isLocked && !lockState.sessionUnlocked) {
+            await showAlert('This map is read-only. Unlock it first to import.');
+            return;
+        }
+        showImportCsvModal();
     });
 
     // Import JSON modal events
@@ -1604,6 +1780,49 @@ const initEventListeners = () => {
         }
     });
 
+    // Import CSV modal events
+    dom.importCsvModalClose.addEventListener('click', hideImportCsvModal);
+    dom.importCsvModal.addEventListener('click', (e) => {
+        if (e.target === dom.importCsvModal) hideImportCsvModal();
+    });
+    dom.importCsvBtn.addEventListener('click', () => {
+        const csvText = dom.importCsvText.value.trim();
+        if (csvText) importFromCsvText(csvText);
+    });
+    dom.importCsvText.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            const csvText = dom.importCsvText.value.trim();
+            if (csvText) importFromCsvText(csvText);
+        }
+    });
+    dom.importCsvDropzone.addEventListener('click', () => {
+        dom.importCsvFileInput.click();
+    });
+    dom.importCsvFileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) {
+            hideImportCsvModal();
+            importCsvFile(e.target.files[0]);
+            e.target.value = '';
+        }
+    });
+    dom.importCsvDropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dom.importCsvDropzone.classList.add('dragover');
+    });
+    dom.importCsvDropzone.addEventListener('dragleave', () => {
+        dom.importCsvDropzone.classList.remove('dragover');
+    });
+    dom.importCsvDropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dom.importCsvDropzone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && file.name.endsWith('.csv')) {
+            hideImportCsvModal();
+            importCsvFile(file);
+        }
+    });
+
     // Export JSON modal events
     dom.exportModalClose.addEventListener('click', hideExportModal);
     dom.exportModal.addEventListener('click', (e) => {
@@ -1624,6 +1843,18 @@ const initEventListeners = () => {
     });
     dom.exportYamlCopyBtn.addEventListener('click', copyExportYaml);
     dom.exportYamlDownloadBtn.addEventListener('click', downloadExportYamlFile);
+
+    // Export CSV modal events
+    dom.exportCsvBtn.addEventListener('click', () => {
+        closeMainMenu();
+        exportCsv();
+    });
+    dom.exportCsvModalClose.addEventListener('click', hideExportCsvModal);
+    dom.exportCsvModal.addEventListener('click', (e) => {
+        if (e.target === dom.exportCsvModal) hideExportCsvModal();
+    });
+    dom.exportCsvCopyBtn.addEventListener('click', copyExportCsv);
+    dom.exportCsvDownloadBtn.addEventListener('click', downloadExportCsvFile);
 
     // Jira Export Modal
     dom.exportJiraBtn.addEventListener('click', () => {
@@ -1863,33 +2094,44 @@ const initEventListeners = () => {
         }
     });
     const captureMap = async () => {
-        if (!window._htmlToImage) {
-            const mod = await import('/vendor/html-to-image.bundle.js');
-            window._htmlToImage = mod;
+        if (!window._html2canvas) {
+            const mod = await import('/vendor/html2canvas.bundle.js');
+            window._html2canvas = mod.default;
         }
 
         const dpr = Math.max(window.devicePixelRatio || 2, 2);
         const isDark = document.documentElement.classList.contains('dark-mode');
         const bgColor = isDark ? '#0f172a' : '#f8fafc';
 
-        // Capture the map as a canvas (no logo in live DOM — avoids flicker)
-        const mapCanvas = await window._htmlToImage.toCanvas(dom.storyMap, {
+        const mapEl = dom.storyMap;
+
+        // Capture the map as a canvas (style overrides in onclone to avoid flicker)
+        const mapCanvas = await window._html2canvas(mapEl, {
             backgroundColor: bgColor,
-            pixelRatio: dpr,
-            skipFonts: true,
-            style: {
-                transform: 'none',
-                margin: '0',
-                minWidth: '0',
-                padding: '24px',
+            scale: dpr,
+            onclone: (clonedDoc) => {
+                const clonedMap = clonedDoc.getElementById('storyMap');
+                Object.assign(clonedMap.style, {
+                    transform: 'none',
+                    margin: '0',
+                    minWidth: '0',
+                    padding: '24px',
+                });
+                for (const ta of clonedDoc.querySelectorAll('.story-text')) {
+                    const div = clonedDoc.createElement('div');
+                    div.className = ta.className;
+                    div.textContent = ta.value;
+                    div.style.whiteSpace = 'pre-wrap';
+                    div.style.wordBreak = 'break-word';
+                    ta.replaceWith(div);
+                }
             },
         });
 
         // Capture the logo separately
-        const logoCanvas = await window._htmlToImage.toCanvas(dom.logoLink, {
-            backgroundColor: 'transparent',
-            pixelRatio: dpr,
-            skipFonts: true,
+        const logoCanvas = await window._html2canvas(dom.logoLink, {
+            backgroundColor: null,
+            scale: dpr,
         });
 
         // Composite: logo on top, then map below with spacing
@@ -1990,7 +2232,7 @@ const initEventListeners = () => {
             dom.shareBtn.textContent = 'Copied!';
             setTimeout(() => dom.shareBtn.textContent = 'Share', 2000);
         } catch (err) {
-            await showAlert('Screenshot failed: ' + err.message);
+            await showAlert('Screenshot failed: ' + (err?.message || 'could not render the map as an image'));
             dom.shareBtn.textContent = 'Share';
         }
     });
@@ -2003,12 +2245,12 @@ const initEventListeners = () => {
             const dataUrl = canvas.toDataURL('image/png');
             const link = el('a', null, {
                 href: dataUrl,
-                download: sanitizeFilename(state.name || 'story-map') + '.png'
+                download: sanitizeFilename(state.name || 'story-map') + '-' + formatTimestamp() + '.png'
             });
             link.click();
             dom.shareBtn.textContent = 'Share';
         } catch (err) {
-            await showAlert('Screenshot failed: ' + err.message);
+            await showAlert('Screenshot failed: ' + (err?.message || 'could not render the map as an image'));
             dom.shareBtn.textContent = 'Share';
         }
     });
@@ -2255,11 +2497,37 @@ const initEventListeners = () => {
 
 let counterLoaded = false;
 let legendAutoOpened = false;
+let activeMappersInterval = null;
 
 const setCounterValue = (count) => {
     if (!dom.welcomeCounter) return;
     dom.welcomeCounter.innerHTML = `📊 <span class="count">${count.toLocaleString()}</span> story maps created`;
     dom.welcomeCounter.classList.add('visible');
+};
+
+const updateActiveMappers = async () => {
+    try {
+        const res = await fetch('/api/stats');
+        const data = await res.json();
+        if (!counterLoaded) {
+            const count = data.mapCount || 0;
+            if (count > 0) {
+                localStorage.setItem('mapCount', count);
+                setCounterValue(count);
+            }
+            counterLoaded = true;
+        }
+        if (dom.activeMappers) {
+            if (data.activeUsers > 0) {
+                dom.activeMappers.textContent = `${data.activeUsers} ${data.activeUsers === 1 ? 'user' : 'users'} mapping now`;
+                dom.activeMappers.classList.add('visible');
+            } else {
+                dom.activeMappers.classList.remove('visible');
+            }
+        }
+    } catch {
+        // Silently fail - counter is non-essential
+    }
 };
 
 const subscribeToCounter = async () => {
@@ -2270,23 +2538,18 @@ const subscribeToCounter = async () => {
         setCounterValue(parseInt(cached));
     }
 
-    try {
-        const res = await fetch('/api/stats');
-        const data = await res.json();
-        const count = data.mapCount || 0;
-        if (count > 0) {
-            localStorage.setItem('mapCount', count);
-            setCounterValue(count);
-        }
-        counterLoaded = true;
-    } catch {
-        // Silently fail - counter is non-essential
-    }
+    await updateActiveMappers();
+    activeMappersInterval = setInterval(updateActiveMappers, 5_000);
 };
 
 const unsubscribeFromCounter = () => {
     counterLoaded = false;
     dom.welcomeCounter?.classList.remove('visible');
+    dom.activeMappers?.classList.remove('visible');
+    if (activeMappersInterval) {
+        clearInterval(activeMappersInterval);
+        activeMappersInterval = null;
+    }
 };
 
 const incrementMapCounter = async () => {
@@ -2969,7 +3232,9 @@ const init = async () => {
         el.innerHTML = devtoolsHint;
     });
 
-    if (mapId) {
+    if (mapId === 'new') {
+        await startNewMap();
+    } else if (mapId) {
         loadYjs(); // Start downloading Yjs modules in parallel with DOM setup
         showLoading();
         const loaded = await loadMapById(mapId);

@@ -137,6 +137,14 @@ body.welcome-visible {
     background-color: var(--color-welcome-bg-from);
 }
 
+body.welcome-visible .board-name {
+    display: none;
+}
+
+body.welcome-visible .header-actions {
+    margin-left: auto;
+}
+
 body.welcome-visible .header {
     padding-left: 24px;
     padding-right: 24px;
@@ -298,6 +306,7 @@ body.welcome-visible .header {
     display: flex;
     gap: 8px;
     align-items: center;
+    flex-shrink: 0;
 }
 
 /* Share Dropdown */
@@ -350,7 +359,7 @@ body.welcome-visible .header {
 .viewer-count {
     display: none;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     padding: 4px 10px;
     background: #e0f2fe;
     color: #0369a1;
@@ -359,16 +368,99 @@ body.welcome-visible .header {
     font-weight: 500;
 }
 
-.viewer-count::before {
-    content: '';
-    width: 8px;
-    height: 8px;
-    background: #22c55e;
-    border-radius: 50%;
-}
-
 .viewer-count.visible {
     display: flex;
+}
+
+.viewer-name {
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 1px 2px;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.viewer-name:hover {
+    background: rgba(3, 105, 161, 0.1);
+}
+
+.viewer-live {
+    display: none;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0369a1;
+    white-space: nowrap;
+    flex-shrink: 0;
+    cursor: default;
+    position: relative;
+}
+
+.viewer-live.visible {
+    display: flex;
+}
+
+.viewer-live::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    background: #22c55e;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* Tooltip listing connected users */
+.viewer-live::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #1e293b;
+    color: #f1f5f9;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 10px;
+    border-radius: 6px;
+    white-space: pre;
+    line-height: 1.6;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.viewer-live:hover::after {
+    opacity: 1;
+}
+
+.active-mappers {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: #e0f2fe;
+    color: #0369a1;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.active-mappers.visible {
+    display: flex;
+}
+
+.active-mappers::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    background: #22c55e;
+    border-radius: 50%;
+    flex-shrink: 0;
 }
 
 /* Dropdown */
@@ -470,6 +562,20 @@ body.welcome-visible .header {
 
 .dropdown-submenu-content .dropdown-item {
     font-size: 13px;
+}
+
+.submenu-group-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(0, 0, 0, 0.4);
+    padding: 6px 12px 2px;
+    pointer-events: none;
+}
+
+.submenu-group-label:first-child {
+    padding-top: 4px;
 }
 
 .menu-badge {
@@ -958,6 +1064,13 @@ body.welcome-visible .header {
     }
 }
 
+.bottom-controls {
+    display: flex;
+    gap: 6px;
+    align-self: flex-end;
+    margin-top: 6px;
+}
+
 .zoom-controls {
     display: flex;
     gap: 2px;
@@ -966,8 +1079,6 @@ body.welcome-visible .header {
     border-radius: 8px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
     border: 1px solid var(--color-border-medium);
-    align-self: flex-end;
-    margin-top: 6px;
 }
 
 .zoom-controls.hidden {
@@ -1000,6 +1111,40 @@ body.welcome-visible .header {
     font-size: 12px;
     font-weight: 500;
     color: var(--color-text-muted);
+}
+
+.view-controls {
+    display: flex;
+    gap: 2px;
+    background: var(--color-bg-surface);
+    padding: 4px;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+    border: 1px solid var(--color-border-medium);
+}
+
+.view-btn {
+    width: 30px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-secondary);
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.view-btn:hover {
+    background-color: var(--color-hover-bg);
+    color: var(--color-text-primary);
+}
+
+.view-btn.active {
+    color: var(--color-teal);
+    background-color: rgba(20, 184, 166, 0.1);
 }
 
 
@@ -1532,6 +1677,14 @@ input.partials-entry-name-input:focus {
     min-width: 40px;
 }
 
+.log-src-icon {
+    flex-shrink: 0;
+    color: var(--color-text-secondary);
+    opacity: 0.7;
+    font-size: 11px;
+    line-height: 1;
+}
+
 .log-text {
     color: var(--color-text-secondary);
 }
@@ -1943,6 +2096,11 @@ body.main-menu-open .step:hover {
     cursor: pointer;
     opacity: 0.3;
     transition: opacity 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+/* In slices, phantom columns sit at the top instead of stretching to full slice height */
+.slice-container .phantom-column {
+    align-self: flex-start;
 }
 
 .phantom-column:hover {
@@ -3257,11 +3415,21 @@ body.main-menu-open .step:hover {
         font-size: 11px;
     }
 
+    .view-controls {
+        padding: 3px;
+    }
+
+    .view-btn {
+        width: 28px;
+        height: 26px;
+    }
+
     .nav-arrow {
         display: none !important;
     }
 
-    .viewer-count {
+    .viewer-count,
+    .active-mappers {
         display: none !important;
     }
 
@@ -4640,6 +4808,20 @@ body.main-menu-open .step:hover {
     display: block;
 }
 
+.cursor-label {
+    position: absolute;
+    top: 22px;
+    left: 4px;
+    white-space: nowrap;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 3px 6px;
+    border-radius: 4px;
+    color: #fff;
+    pointer-events: none;
+}
+
 .remote-drag-ghost {
     position: absolute;
     pointer-events: none;
@@ -4934,8 +5116,7 @@ body.main-menu-open .step:hover {
 }
 
 .menu-icon,
-.lock-menu-icon,
-.cursor-toggle-icon {
+.lock-menu-icon {
     display: inline-flex;
     width: 22px;
     text-align: center;
@@ -5453,16 +5634,18 @@ body.read-only-mode .empty-backbone-column {
     .selection-toolbar,
     .canvas-context-menu,
     .card-tag-overflow { display: none !important; }
+}
 
-    .btn-options { opacity: 0.5; }
+@media (any-hover: none) {
+    .viewer-count { display: none !important; }
+
+    .story-card.has-body .btn-expand { opacity: 0.5; }
 }
 
 /* On touch devices, stretch tabs to full width so they stay aligned
    when the Partials tab is hidden (touch users can't create partials). */
 @media (pointer: coarse) {
     .panel-tabs { align-self: stretch; }
-
-    .story-card.has-body .btn-expand { opacity: 1; }
 }
 
 .selection-toolbar {
@@ -6645,9 +6828,24 @@ html.dark-mode .activities-row .btn-add-story:hover {
 }
 
 /* Viewer count badge */
-html.dark-mode .viewer-count {
+html.dark-mode .viewer-count,
+html.dark-mode .active-mappers {
     background: #1a3a4f;
     color: #7dd3fc;
+}
+
+html.dark-mode .viewer-name:hover {
+    background: rgba(125, 211, 252, 0.12);
+}
+
+html.dark-mode .viewer-live {
+    color: #7dd3fc;
+}
+
+html.dark-mode .viewer-live::after {
+    background: #0f172a;
+    color: #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 /* Notepad ruled lines (gradient can't inherit variable cleanly) */
@@ -6716,6 +6914,9 @@ html.dark-mode .dropdown-divider {
 }
 html.dark-mode .dropdown-submenu-content {
     background: rgba(255, 255, 255, 0.03);
+}
+html.dark-mode .submenu-group-label {
+    color: rgba(255, 255, 255, 0.35);
 }
 html.dark-mode .backup-count-badge {
     background: rgba(255, 255, 255, 0.1);
@@ -6967,6 +7168,15 @@ html.dark-mode .search-bar input {
 html.dark-mode .zoom-controls {
     background: var(--color-bg-surface);
     border-color: var(--color-border);
+}
+
+html.dark-mode .view-controls {
+    background: var(--color-bg-surface);
+    border-color: var(--color-border);
+}
+
+html.dark-mode .view-btn.active {
+    background-color: rgba(45, 212, 191, 0.15);
 }
 
 /* Btn-add-slice — visible dashed border with teal hint */
@@ -7260,26 +7470,4 @@ html.dark-mode .import-file-dropzone {
 }
 
 /* Print: force light mode */
-@media print {
-    html.dark-mode {
-        --color-bg-page: #fff;
-        --color-bg-surface: #fff;
-        --color-text-primary: #333;
-        --color-text-secondary: #666;
-        --color-border: #ddd;
-    }
-    html.dark-mode .story-card,
-    html.dark-mode .step,
-    html.dark-mode .card-expand-modal {
-        filter: none !important;
-        border: none !important;
-        box-shadow: none !important;
-    }
-    html.dark-mode .story-card::after,
-    html.dark-mode .step::after {
-        display: none !important;
-    }
-    html.dark-mode .step-text {
-        color: inherit;
-    }
-}
+/* Dark mode is stripped via JS beforeprint/afterprint so light styles apply naturally */

@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "better-sqlite3": "^11.0.0",
-    "html-to-image": "^1.11.13",
+    "html2canvas": "^1.4.1",
     "ws": "^8.18.0",
     "y-leveldb": "^0.1.2",
     "y-websocket": "^2.0.4",
