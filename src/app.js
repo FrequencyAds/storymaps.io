@@ -13,9 +13,13 @@ import * as yjs from '/src/yjs.js';
 import * as ui from '/src/ui.js';
 import * as renderMod from '/src/render.js';
 import * as exportsMod from '/src/exports.js';
+import * as importsMod from '/src/imports.js';
+import * as asanaImportsMod from '/src/asana-imports.js';
+import * as phabImportsMod from '/src/phabricator-imports.js';
 import { exportToYaml, importFromYaml } from '/src/yaml.js';
 import { exportToCsv, importFromCsv } from '/src/csv.js';
 import { showAlert, showConfirm, showPrompt } from '/src/modals.js';
+import * as tour from '/src/tour.js';
 
 // =============================================================================
 // DOM References
@@ -48,6 +52,7 @@ const dom = {
     shareDownload: document.getElementById('shareDownload'),
     welcomeScreen: document.getElementById('welcomeScreen'),
     welcomeNewBtn: document.getElementById('welcomeNewBtn'),
+    tourMenuBtn: document.getElementById('tourMenuBtn'),
     welcomeCounter: document.getElementById('welcomeCounter'),
     activeMappers: document.getElementById('activeMappers'),
     storyMapWrapper: document.getElementById('storyMapWrapper'),
@@ -213,6 +218,171 @@ const dom = {
     asanaCsvCreateSections: document.getElementById('asanaCsvCreateSections'),
     asanaCsvExportCancel: document.getElementById('asanaCsvExportCancel'),
     asanaCsvExportDownload: document.getElementById('asanaCsvExportDownload'),
+    // Jira Proxy export
+    exportJiraProxyBtn: document.getElementById('exportJiraProxyBtn'),
+    jiraProxyExportModal: document.getElementById('jiraProxyExportModal'),
+    jiraProxyExportModalClose: document.getElementById('jiraProxyExportModalClose'),
+    jiraProxyExportTitle: document.getElementById('jiraProxyExportTitle'),
+    jiraProxyStage1: document.getElementById('jiraProxyStage1'),
+    jiraProxyStage2: document.getElementById('jiraProxyStage2'),
+    jiraProxyExportSlices: document.getElementById('jiraProxyExportSlices'),
+    jiraProxyExportEpics: document.getElementById('jiraProxyExportEpics'),
+    jiraProxyExportCount: document.getElementById('jiraProxyExportCount'),
+    jiraProxyFilterNone: document.getElementById('jiraProxyFilterNone'),
+    jiraProxyFilterPlanned: document.getElementById('jiraProxyFilterPlanned'),
+    jiraProxyFilterInProgress: document.getElementById('jiraProxyFilterInProgress'),
+    jiraProxyFilterDone: document.getElementById('jiraProxyFilterDone'),
+    jiraProxyExportCancel: document.getElementById('jiraProxyExportCancel'),
+    jiraProxyExportNext: document.getElementById('jiraProxyExportNext'),
+    jiraProxyExportBack: document.getElementById('jiraProxyExportBack'),
+    jiraProxyExportRun: document.getElementById('jiraProxyExportRun'),
+    jiraProxyInstanceUrl: document.getElementById('jiraProxyInstanceUrl'),
+    jiraProxyEmail: document.getElementById('jiraProxyEmail'),
+    jiraProxyToken: document.getElementById('jiraProxyToken'),
+    jiraProxyProjectKey: document.getElementById('jiraProxyProjectKey'),
+    jiraProxyProgress: document.getElementById('jiraProxyProgress'),
+    jiraProxyProgressBar: document.getElementById('jiraProxyProgressBar'),
+    jiraProxyProgressItems: document.getElementById('jiraProxyProgressItems'),
+    jiraProxyProgressSummary: document.getElementById('jiraProxyProgressSummary'),
+    jiraProxySummary: document.getElementById('jiraProxySummary'),
+    jiraProxyVerifyBtn: document.getElementById('jiraProxyVerifyBtn'),
+    jiraProxyVerifyStatus: document.getElementById('jiraProxyVerifyStatus'),
+    // Phabricator Proxy export
+    exportPhabProxyBtn: document.getElementById('exportPhabProxyBtn'),
+    phabProxyExportModal: document.getElementById('phabProxyExportModal'),
+    phabProxyExportModalClose: document.getElementById('phabProxyExportModalClose'),
+    phabProxyExportTitle: document.getElementById('phabProxyExportTitle'),
+    phabProxyStage1: document.getElementById('phabProxyStage1'),
+    phabProxyStage2: document.getElementById('phabProxyStage2'),
+    phabProxyExportSlices: document.getElementById('phabProxyExportSlices'),
+    phabProxyExportEpics: document.getElementById('phabProxyExportEpics'),
+    phabProxyExportCount: document.getElementById('phabProxyExportCount'),
+    phabProxyFilterNone: document.getElementById('phabProxyFilterNone'),
+    phabProxyFilterPlanned: document.getElementById('phabProxyFilterPlanned'),
+    phabProxyFilterInProgress: document.getElementById('phabProxyFilterInProgress'),
+    phabProxyFilterDone: document.getElementById('phabProxyFilterDone'),
+    phabProxyExportCancel: document.getElementById('phabProxyExportCancel'),
+    phabProxyExportNext: document.getElementById('phabProxyExportNext'),
+    phabProxyExportBack: document.getElementById('phabProxyExportBack'),
+    phabProxyExportRun: document.getElementById('phabProxyExportRun'),
+    phabProxyInstanceUrl: document.getElementById('phabProxyInstanceUrl'),
+    phabProxyWikimediaWarning: document.getElementById('phabProxyWikimediaWarning'),
+    phabProxyApiToken: document.getElementById('phabProxyApiToken'),
+    phabProxyTags: document.getElementById('phabProxyTags'),
+    phabProxyProgress: document.getElementById('phabProxyProgress'),
+    phabProxyProgressBar: document.getElementById('phabProxyProgressBar'),
+    phabProxyProgressItems: document.getElementById('phabProxyProgressItems'),
+    phabProxyProgressSummary: document.getElementById('phabProxyProgressSummary'),
+    phabProxySummary: document.getElementById('phabProxySummary'),
+    phabProxyVerifyBtn: document.getElementById('phabProxyVerifyBtn'),
+    phabProxyVerifyStatus: document.getElementById('phabProxyVerifyStatus'),
+    // Asana Proxy export
+    exportAsanaProxyBtn: document.getElementById('exportAsanaProxyBtn'),
+    asanaProxyExportModal: document.getElementById('asanaProxyExportModal'),
+    asanaProxyExportModalClose: document.getElementById('asanaProxyExportModalClose'),
+    asanaProxyExportTitle: document.getElementById('asanaProxyExportTitle'),
+    asanaProxyStage1: document.getElementById('asanaProxyStage1'),
+    asanaProxyStage2: document.getElementById('asanaProxyStage2'),
+    asanaProxyExportSlices: document.getElementById('asanaProxyExportSlices'),
+    asanaProxyExportEpics: document.getElementById('asanaProxyExportEpics'),
+    asanaProxyExportCount: document.getElementById('asanaProxyExportCount'),
+    asanaProxyFilterNone: document.getElementById('asanaProxyFilterNone'),
+    asanaProxyFilterPlanned: document.getElementById('asanaProxyFilterPlanned'),
+    asanaProxyFilterInProgress: document.getElementById('asanaProxyFilterInProgress'),
+    asanaProxyFilterDone: document.getElementById('asanaProxyFilterDone'),
+    asanaProxyExportCancel: document.getElementById('asanaProxyExportCancel'),
+    asanaProxyExportNext: document.getElementById('asanaProxyExportNext'),
+    asanaProxyExportBack: document.getElementById('asanaProxyExportBack'),
+    asanaProxyExportRun: document.getElementById('asanaProxyExportRun'),
+    asanaProxyApiToken: document.getElementById('asanaProxyApiToken'),
+    asanaProxyProjectUrl: document.getElementById('asanaProxyProjectUrl'),
+    asanaProxyCreateSections: document.getElementById('asanaProxyCreateSections'),
+    asanaProxyProgress: document.getElementById('asanaProxyProgress'),
+    asanaProxyProgressBar: document.getElementById('asanaProxyProgressBar'),
+    asanaProxyProgressItems: document.getElementById('asanaProxyProgressItems'),
+    asanaProxyProgressSummary: document.getElementById('asanaProxyProgressSummary'),
+    asanaProxySummary: document.getElementById('asanaProxySummary'),
+    asanaProxyVerifyBtn: document.getElementById('asanaProxyVerifyBtn'),
+    asanaProxyVerifyStatus: document.getElementById('asanaProxyVerifyStatus'),
+    // Jira Import
+    importJiraBtn: document.getElementById('importJiraBtn'),
+    jiraImportModal: document.getElementById('jiraImportModal'),
+    jiraImportModalClose: document.getElementById('jiraImportModalClose'),
+    jiraImportTitle: document.getElementById('jiraImportTitle'),
+    jiraImportStage1: document.getElementById('jiraImportStage1'),
+    jiraImportStage2: document.getElementById('jiraImportStage2'),
+    jiraImportInstanceUrl: document.getElementById('jiraImportInstanceUrl'),
+    jiraImportProjectKey: document.getElementById('jiraImportProjectKey'),
+    jiraImportEmail: document.getElementById('jiraImportEmail'),
+    jiraImportToken: document.getElementById('jiraImportToken'),
+    jiraImportVerifyBtn: document.getElementById('jiraImportVerifyBtn'),
+    jiraImportVerifyStatus: document.getElementById('jiraImportVerifyStatus'),
+    jiraImportProgress: document.getElementById('jiraImportProgress'),
+    jiraImportProgressBar: document.getElementById('jiraImportProgressBar'),
+    jiraImportProgressItems: document.getElementById('jiraImportProgressItems'),
+    jiraImportFetchBtn: document.getElementById('jiraImportFetchBtn'),
+    jiraImportCancel: document.getElementById('jiraImportCancel'),
+    jiraImportBack: document.getElementById('jiraImportBack'),
+    jiraImportPreviewHeader: document.getElementById('jiraImportPreviewHeader'),
+    jiraImportPreview: document.getElementById('jiraImportPreview'),
+    jiraImportCount: document.getElementById('jiraImportCount'),
+    jiraImportConfirmBtn: document.getElementById('jiraImportConfirmBtn'),
+    // Jira CSV Import
+    importJiraCsvBtn: document.getElementById('importJiraCsvBtn'),
+    jiraCsvImportStage1: document.getElementById('jiraCsvImportStage1'),
+    jiraCsvDropzone: document.getElementById('jiraCsvDropzone'),
+    jiraCsvFileInput: document.getElementById('jiraCsvFileInput'),
+    jiraCsvValidationError: document.getElementById('jiraCsvValidationError'),
+    jiraCsvInstanceUrl: document.getElementById('jiraCsvInstanceUrl'),
+    jiraCsvImportCancel: document.getElementById('jiraCsvImportCancel'),
+    jiraCsvImportParseBtn: document.getElementById('jiraCsvImportParseBtn'),
+    // Asana Import
+    importAsanaBtn: document.getElementById('importAsanaBtn'),
+    asanaImportModal: document.getElementById('asanaImportModal'),
+    asanaImportModalClose: document.getElementById('asanaImportModalClose'),
+    asanaImportTitle: document.getElementById('asanaImportTitle'),
+    asanaImportStage1: document.getElementById('asanaImportStage1'),
+    asanaImportStage2: document.getElementById('asanaImportStage2'),
+    asanaImportToken: document.getElementById('asanaImportToken'),
+    asanaImportProjectUrl: document.getElementById('asanaImportProjectUrl'),
+    asanaImportVerifyBtn: document.getElementById('asanaImportVerifyBtn'),
+    asanaImportVerifyStatus: document.getElementById('asanaImportVerifyStatus'),
+    asanaImportProgress: document.getElementById('asanaImportProgress'),
+    asanaImportProgressBar: document.getElementById('asanaImportProgressBar'),
+    asanaImportProgressItems: document.getElementById('asanaImportProgressItems'),
+    asanaImportFetchBtn: document.getElementById('asanaImportFetchBtn'),
+    asanaImportCancel: document.getElementById('asanaImportCancel'),
+    asanaImportBack: document.getElementById('asanaImportBack'),
+    asanaImportPreviewHeader: document.getElementById('asanaImportPreviewHeader'),
+    asanaImportPreview: document.getElementById('asanaImportPreview'),
+    asanaImportCount: document.getElementById('asanaImportCount'),
+    asanaImportConfirmBtn: document.getElementById('asanaImportConfirmBtn'),
+    asanaImportMappingMode: document.getElementById('asanaImportMappingMode'),
+    // Asana CSV Import
+    importAsanaCsvBtn: document.getElementById('importAsanaCsvBtn'),
+    asanaCsvImportStage1: document.getElementById('asanaCsvImportStage1'),
+    asanaCsvDropzone: document.getElementById('asanaCsvDropzone'),
+    asanaCsvFileInput: document.getElementById('asanaCsvFileInput'),
+    asanaCsvValidationError: document.getElementById('asanaCsvValidationError'),
+    asanaCsvImportCancel: document.getElementById('asanaCsvImportCancel'),
+    asanaCsvImportParseBtn: document.getElementById('asanaCsvImportParseBtn'),
+    // Phabricator CSV Import
+    importPhabCsvBtn: document.getElementById('importPhabCsvBtn'),
+    phabImportModal: document.getElementById('phabImportModal'),
+    phabImportModalClose: document.getElementById('phabImportModalClose'),
+    phabImportTitle: document.getElementById('phabImportTitle'),
+    phabCsvImportStage1: document.getElementById('phabCsvImportStage1'),
+    phabCsvDropzone: document.getElementById('phabCsvDropzone'),
+    phabCsvFileInput: document.getElementById('phabCsvFileInput'),
+    phabCsvValidationError: document.getElementById('phabCsvValidationError'),
+    phabCsvImportCancel: document.getElementById('phabCsvImportCancel'),
+    phabCsvImportParseBtn: document.getElementById('phabCsvImportParseBtn'),
+    phabImportStage2: document.getElementById('phabImportStage2'),
+    phabImportPreviewHeader: document.getElementById('phabImportPreviewHeader'),
+    phabImportPreview: document.getElementById('phabImportPreview'),
+    phabImportBack: document.getElementById('phabImportBack'),
+    phabImportCount: document.getElementById('phabImportCount'),
+    phabImportConfirmBtn: document.getElementById('phabImportConfirmBtn'),
     // View toggles
     toggleCursorsBtn: document.getElementById('toggleCursorsBtn'),
     toggleFocusModeBtn: document.getElementById('toggleFocusModeBtn'),
@@ -717,7 +887,70 @@ const {
     showAsanaStage2, showAsanaStage1, generateAsanaImportCall, asanaExportState,
     showAsanaCsvExportModal, hideAsanaCsvExportModal, confirmCloseAsanaCsvModal,
     populateAsanaCsvExportEpics, downloadAsanaCsv, asanaCsvExportState,
+    // Proxy exports
+    showJiraProxyExportModal, hideJiraProxyExportModal, confirmCloseJiraProxyModal,
+    populateJiraProxyExportEpics, showJiraProxyStage2, showJiraProxyStage1,
+    exportToJiraProxy, jiraProxyExportState, verifyJiraProxy,
+    showPhabProxyExportModal, hidePhabProxyExportModal, confirmClosePhabProxyModal,
+    populatePhabProxyExportEpics, showPhabProxyStage2, showPhabProxyStage1,
+    exportToPhabProxy, phabProxyExportState, verifyPhabProxy,
+    showAsanaProxyExportModal, hideAsanaProxyExportModal, confirmCloseAsanaProxyModal,
+    populateAsanaProxyExportEpics, showAsanaProxyStage2, showAsanaProxyStage1,
+    exportToAsanaProxy, asanaProxyExportState, verifyAsanaProxy,
 } = exportsMod;
+
+// Import module
+const onImportComplete = async (data) => {
+    const isFromWelcome = !state.mapId;
+
+    if (!isFromWelcome) {
+        saveToStorage();
+        if (!await confirmOverwrite()) return;
+    }
+
+    try {
+        if (isFromWelcome) {
+            hideWelcomeScreen();
+            initState();
+            const mapId = await newMapId();
+            state.mapId = mapId;
+            history.replaceState({ mapId }, '', `/${mapId}`);
+            await createYjsDoc(mapId);
+        } else {
+            await createAutoBackup('Auto: before import');
+            pushUndo();
+        }
+        deserialize(data);
+        dom.boardName.value = state.name;
+        renderAndSave();
+        log.logEvent('Imported map');
+        requestAnimationFrame(zoomToFit);
+        if (isFromWelcome) {
+            subscribeToMap(state.mapId);
+        }
+    } catch {
+        await showAlert('Failed to import: Invalid data format');
+    }
+};
+importsMod.init({ dom, onImportComplete });
+const {
+    showJiraImportModal, hideJiraImportModal, confirmCloseJiraImportModal,
+    verifyJiraImport, fetchFromJira, showJiraImportStage1, confirmJiraImport,
+    showJiraCsvImportModal, handleJiraCsvFile,
+} = importsMod;
+
+asanaImportsMod.init({ dom, onImportComplete });
+const {
+    showAsanaImportModal, hideAsanaImportModal, confirmCloseAsanaImportModal,
+    verifyAsanaImport, fetchFromAsana, showAsanaImportStage1, confirmAsanaImport,
+    showAsanaCsvImportModal, handleAsanaCsvFile, handleAsanaMappingModeChange,
+} = asanaImportsMod;
+
+phabImportsMod.init({ dom, onImportComplete });
+const {
+    showPhabCsvImportModal, hidePhabImportModal, confirmClosePhabImportModal,
+    handlePhabCsvFile, showPhabImportStage1, confirmPhabImport,
+} = phabImportsMod;
 
 const showExportModal = async () => {
     _exportBackups = null;
@@ -1477,11 +1710,29 @@ const initEventListeners = () => {
 
     dom.welcomeNewBtn.addEventListener('click', startNewMap);
 
+    const launchTour = async () => {
+        closeMainMenu();
+        if (state.mapId && hasContent() && !await showConfirm('Load the tour sample?\n\nYou can return to this map using the back button.')) {
+            return;
+        }
+        await startWithSample('story-mapping-101', { showToast: false });
+        // Close legend panel so tour starts clean
+        dom.controlsRight?.classList.remove('panel-open');
+        dom.panelBody?.querySelectorAll('.panel-section').forEach(s => s.classList.remove('open'));
+        document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+        tour.startTour();
+    };
+    dom.tourMenuBtn.addEventListener('click', launchTour);
+
     document.querySelector('.welcome-samples-list')?.addEventListener('click', (e) => {
         const btn = e.target.closest('.btn-sample');
         if (btn?.dataset.sample) {
             e.stopPropagation();
-            startWithSample(btn.dataset.sample);
+            if (btn.dataset.sample === 'story-mapping-101') {
+                launchTour();
+            } else {
+                startWithSample(btn.dataset.sample);
+            }
         }
     });
 
@@ -1693,6 +1944,178 @@ const initEventListeners = () => {
         }
         showImportCsvModal();
     });
+    dom.importJiraBtn.addEventListener('click', async () => {
+        closeMainMenu();
+        if (lockState.isLocked && !lockState.sessionUnlocked) {
+            await showAlert('This map is read-only. Unlock it first to import.');
+            return;
+        }
+        showJiraImportModal();
+    });
+
+    // Jira Import modal events
+    dom.jiraImportModalClose.addEventListener('click', confirmCloseJiraImportModal);
+    dom.jiraImportModal.addEventListener('click', (e) => {
+        if (e.target === dom.jiraImportModal) confirmCloseJiraImportModal();
+    });
+    dom.jiraImportCancel.addEventListener('click', confirmCloseJiraImportModal);
+    dom.jiraImportVerifyBtn.addEventListener('click', verifyJiraImport);
+    dom.jiraImportFetchBtn.addEventListener('click', fetchFromJira);
+    dom.jiraImportBack.addEventListener('click', showJiraImportStage1);
+    dom.jiraImportConfirmBtn.addEventListener('click', confirmJiraImport);
+
+    // Jira CSV Import
+    dom.importJiraCsvBtn.addEventListener('click', async () => {
+        closeMainMenu();
+        if (lockState.isLocked && !lockState.sessionUnlocked) {
+            await showAlert('This map is read-only. Unlock it first to import.');
+            return;
+        }
+        showJiraCsvImportModal();
+    });
+    dom.jiraCsvDropzone.addEventListener('click', () => dom.jiraCsvFileInput.click());
+    dom.jiraCsvDropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dom.jiraCsvDropzone.classList.add('dragover');
+    });
+    dom.jiraCsvDropzone.addEventListener('dragleave', () => {
+        dom.jiraCsvDropzone.classList.remove('dragover');
+    });
+    dom.jiraCsvDropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dom.jiraCsvDropzone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && (file.name.endsWith('.csv') || file.type === 'text/csv')) {
+            dom.jiraCsvDropzone.querySelector('span').textContent = file.name;
+            dom.jiraCsvImportParseBtn.disabled = false;
+            dom.jiraCsvFileInput._droppedFile = file;
+        }
+    });
+    dom.jiraCsvFileInput.addEventListener('change', () => {
+        const file = dom.jiraCsvFileInput.files[0];
+        if (file) {
+            dom.jiraCsvDropzone.querySelector('span').textContent = file.name;
+            dom.jiraCsvImportParseBtn.disabled = false;
+            dom.jiraCsvFileInput._droppedFile = null;
+        }
+    });
+    dom.jiraCsvImportParseBtn.addEventListener('click', () => {
+        const file = dom.jiraCsvFileInput._droppedFile || dom.jiraCsvFileInput.files[0];
+        handleJiraCsvFile(file);
+    });
+    dom.jiraCsvImportCancel.addEventListener('click', confirmCloseJiraImportModal);
+
+    // Asana Import
+    dom.importAsanaBtn.addEventListener('click', async () => {
+        closeMainMenu();
+        if (lockState.isLocked && !lockState.sessionUnlocked) {
+            await showAlert('This map is read-only. Unlock it first to import.');
+            return;
+        }
+        showAsanaImportModal();
+    });
+
+    // Asana Import modal events
+    dom.asanaImportModalClose.addEventListener('click', confirmCloseAsanaImportModal);
+    dom.asanaImportModal.addEventListener('click', (e) => {
+        if (e.target === dom.asanaImportModal) confirmCloseAsanaImportModal();
+    });
+    dom.asanaImportCancel.addEventListener('click', confirmCloseAsanaImportModal);
+    dom.asanaImportVerifyBtn.addEventListener('click', verifyAsanaImport);
+    dom.asanaImportFetchBtn.addEventListener('click', fetchFromAsana);
+    dom.asanaImportBack.addEventListener('click', showAsanaImportStage1);
+    dom.asanaImportConfirmBtn.addEventListener('click', confirmAsanaImport);
+    dom.asanaImportMappingMode.addEventListener('change', (e) => {
+        if (e.target.name === 'asanaMappingMode') handleAsanaMappingModeChange(e.target.value);
+    });
+
+    // Asana CSV Import
+    dom.importAsanaCsvBtn.addEventListener('click', async () => {
+        closeMainMenu();
+        if (lockState.isLocked && !lockState.sessionUnlocked) {
+            await showAlert('This map is read-only. Unlock it first to import.');
+            return;
+        }
+        showAsanaCsvImportModal();
+    });
+    dom.asanaCsvDropzone.addEventListener('click', () => dom.asanaCsvFileInput.click());
+    dom.asanaCsvDropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dom.asanaCsvDropzone.classList.add('dragover');
+    });
+    dom.asanaCsvDropzone.addEventListener('dragleave', () => {
+        dom.asanaCsvDropzone.classList.remove('dragover');
+    });
+    dom.asanaCsvDropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dom.asanaCsvDropzone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && (file.name.endsWith('.csv') || file.type === 'text/csv')) {
+            dom.asanaCsvDropzone.querySelector('span').textContent = file.name;
+            dom.asanaCsvImportParseBtn.disabled = false;
+            dom.asanaCsvFileInput._droppedFile = file;
+        }
+    });
+    dom.asanaCsvFileInput.addEventListener('change', () => {
+        const file = dom.asanaCsvFileInput.files[0];
+        if (file) {
+            dom.asanaCsvDropzone.querySelector('span').textContent = file.name;
+            dom.asanaCsvImportParseBtn.disabled = false;
+            dom.asanaCsvFileInput._droppedFile = null;
+        }
+    });
+    dom.asanaCsvImportParseBtn.addEventListener('click', () => {
+        const file = dom.asanaCsvFileInput._droppedFile || dom.asanaCsvFileInput.files[0];
+        handleAsanaCsvFile(file);
+    });
+    dom.asanaCsvImportCancel.addEventListener('click', confirmCloseAsanaImportModal);
+
+    // Phabricator CSV Import
+    dom.importPhabCsvBtn.addEventListener('click', async () => {
+        closeMainMenu();
+        if (lockState.isLocked && !lockState.sessionUnlocked) {
+            await showAlert('This map is read-only. Unlock it first to import.');
+            return;
+        }
+        showPhabCsvImportModal();
+    });
+    dom.phabImportModalClose.addEventListener('click', confirmClosePhabImportModal);
+    dom.phabImportModal.addEventListener('click', (e) => {
+        if (e.target === dom.phabImportModal) confirmClosePhabImportModal();
+    });
+    dom.phabCsvImportCancel.addEventListener('click', confirmClosePhabImportModal);
+    dom.phabCsvDropzone.addEventListener('click', () => dom.phabCsvFileInput.click());
+    dom.phabCsvDropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dom.phabCsvDropzone.classList.add('dragover');
+    });
+    dom.phabCsvDropzone.addEventListener('dragleave', () => {
+        dom.phabCsvDropzone.classList.remove('dragover');
+    });
+    dom.phabCsvDropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dom.phabCsvDropzone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && (file.name.endsWith('.csv') || file.type === 'text/csv')) {
+            dom.phabCsvDropzone.querySelector('span').textContent = file.name;
+            dom.phabCsvImportParseBtn.disabled = false;
+            dom.phabCsvFileInput._droppedFile = file;
+        }
+    });
+    dom.phabCsvFileInput.addEventListener('change', () => {
+        const file = dom.phabCsvFileInput.files[0];
+        if (file) {
+            dom.phabCsvDropzone.querySelector('span').textContent = file.name;
+            dom.phabCsvImportParseBtn.disabled = false;
+            dom.phabCsvFileInput._droppedFile = null;
+        }
+    });
+    dom.phabCsvImportParseBtn.addEventListener('click', () => {
+        const file = dom.phabCsvFileInput._droppedFile || dom.phabCsvFileInput.files[0];
+        handlePhabCsvFile(file);
+    });
+    dom.phabImportBack.addEventListener('click', showPhabImportStage1);
+    dom.phabImportConfirmBtn.addEventListener('click', confirmPhabImport);
 
     // Import JSON modal events
     dom.importModalClose.addEventListener('click', hideImportModal);
@@ -2072,6 +2495,119 @@ const initEventListeners = () => {
         });
     });
 
+    // Jira Proxy Export Modal
+    dom.exportJiraProxyBtn.addEventListener('click', () => {
+        if (dom.exportJiraProxyBtn.disabled) return;
+        closeMainMenu();
+        showJiraProxyExportModal();
+    });
+    dom.jiraProxyExportModalClose.addEventListener('click', confirmCloseJiraProxyModal);
+    dom.jiraProxyExportModal.addEventListener('click', (e) => {
+        if (e.target === dom.jiraProxyExportModal) confirmCloseJiraProxyModal();
+    });
+    dom.jiraProxyExportCancel.addEventListener('click', confirmCloseJiraProxyModal);
+    dom.jiraProxyExportNext.addEventListener('click', showJiraProxyStage2);
+    dom.jiraProxyExportBack.addEventListener('click', showJiraProxyStage1);
+    dom.jiraProxyExportRun.addEventListener('click', exportToJiraProxy);
+    dom.jiraProxyVerifyBtn.addEventListener('click', verifyJiraProxy);
+    const jiraProxyStatusFilters = [
+        { el: dom.jiraProxyFilterNone, status: 'none' },
+        { el: dom.jiraProxyFilterPlanned, status: 'planned' },
+        { el: dom.jiraProxyFilterInProgress, status: 'in-progress' },
+        { el: dom.jiraProxyFilterDone, status: 'done' }
+    ];
+    jiraProxyStatusFilters.forEach(({ el: checkbox, status }) => {
+        checkbox.addEventListener('change', (e) => {
+            const label = checkbox.closest('label');
+            if (e.target.checked) {
+                jiraProxyExportState.selectedStatuses.add(status);
+                label.classList.add('checked');
+            } else {
+                jiraProxyExportState.selectedStatuses.delete(status);
+                label.classList.remove('checked');
+            }
+            populateJiraProxyExportEpics();
+        });
+    });
+
+    // Phabricator Proxy Export Modal
+    dom.exportPhabProxyBtn.addEventListener('click', () => {
+        if (dom.exportPhabProxyBtn.disabled) return;
+        closeMainMenu();
+        showPhabProxyExportModal();
+    });
+    dom.phabProxyExportModalClose.addEventListener('click', confirmClosePhabProxyModal);
+    dom.phabProxyExportModal.addEventListener('click', (e) => {
+        if (e.target === dom.phabProxyExportModal) confirmClosePhabProxyModal();
+    });
+    dom.phabProxyExportCancel.addEventListener('click', confirmClosePhabProxyModal);
+    dom.phabProxyExportNext.addEventListener('click', showPhabProxyStage2);
+    dom.phabProxyExportBack.addEventListener('click', showPhabProxyStage1);
+    dom.phabProxyExportRun.addEventListener('click', exportToPhabProxy);
+    dom.phabProxyVerifyBtn.addEventListener('click', verifyPhabProxy);
+    dom.phabProxyInstanceUrl.addEventListener('input', () => {
+        const url = dom.phabProxyInstanceUrl.value.trim().toLowerCase();
+        dom.phabProxyWikimediaWarning.classList.toggle('hidden', !url.includes('phabricator.wikimedia.org'));
+    });
+    document.getElementById('phabProxyTokenHelpLink')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await showAlert('To get your API token:\n\n1. Click your profile picture in Phabricator\n2. Go to Settings\n3. Click "Conduit API Tokens"\n4. Click "Generate Token"');
+    });
+    const phabProxyStatusFilters = [
+        { el: dom.phabProxyFilterNone, status: 'none' },
+        { el: dom.phabProxyFilterPlanned, status: 'planned' },
+        { el: dom.phabProxyFilterInProgress, status: 'in-progress' },
+        { el: dom.phabProxyFilterDone, status: 'done' }
+    ];
+    phabProxyStatusFilters.forEach(({ el: checkbox, status }) => {
+        checkbox.addEventListener('change', (e) => {
+            const label = checkbox.closest('label');
+            if (e.target.checked) {
+                phabProxyExportState.selectedStatuses.add(status);
+                label.classList.add('checked');
+            } else {
+                phabProxyExportState.selectedStatuses.delete(status);
+                label.classList.remove('checked');
+            }
+            populatePhabProxyExportEpics();
+        });
+    });
+
+    // Asana Proxy Export Modal
+    dom.exportAsanaProxyBtn.addEventListener('click', () => {
+        if (dom.exportAsanaProxyBtn.disabled) return;
+        closeMainMenu();
+        showAsanaProxyExportModal();
+    });
+    dom.asanaProxyExportModalClose.addEventListener('click', confirmCloseAsanaProxyModal);
+    dom.asanaProxyExportModal.addEventListener('click', (e) => {
+        if (e.target === dom.asanaProxyExportModal) confirmCloseAsanaProxyModal();
+    });
+    dom.asanaProxyExportCancel.addEventListener('click', confirmCloseAsanaProxyModal);
+    dom.asanaProxyExportNext.addEventListener('click', showAsanaProxyStage2);
+    dom.asanaProxyExportBack.addEventListener('click', showAsanaProxyStage1);
+    dom.asanaProxyExportRun.addEventListener('click', exportToAsanaProxy);
+    dom.asanaProxyVerifyBtn.addEventListener('click', verifyAsanaProxy);
+    const asanaProxyStatusFilters = [
+        { el: dom.asanaProxyFilterNone, status: 'none' },
+        { el: dom.asanaProxyFilterPlanned, status: 'planned' },
+        { el: dom.asanaProxyFilterInProgress, status: 'in-progress' },
+        { el: dom.asanaProxyFilterDone, status: 'done' }
+    ];
+    asanaProxyStatusFilters.forEach(({ el: checkbox, status }) => {
+        checkbox.addEventListener('change', (e) => {
+            const label = checkbox.closest('label');
+            if (e.target.checked) {
+                asanaProxyExportState.selectedStatuses.add(status);
+                label.classList.add('checked');
+            } else {
+                asanaProxyExportState.selectedStatuses.delete(status);
+                label.classList.remove('checked');
+            }
+            populateAsanaProxyExportEpics();
+        });
+    });
+
     // Share dropdown
     dom.shareBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -2094,57 +2630,114 @@ const initEventListeners = () => {
         }
     });
     const captureMap = async () => {
-        if (!window._html2canvas) {
-            const mod = await import('/vendor/html2canvas.bundle.js');
-            window._html2canvas = mod.default;
-        }
-
         const dpr = Math.max(window.devicePixelRatio || 2, 2);
         const isDark = document.documentElement.classList.contains('dark-mode');
         const bgColor = isDark ? '#0f172a' : '#f8fafc';
 
         const mapEl = dom.storyMap;
 
-        // Capture the map as a canvas (style overrides in onclone to avoid flicker)
-        const mapCanvas = await window._html2canvas(mapEl, {
-            backgroundColor: bgColor,
-            scale: dpr,
-            onclone: (clonedDoc) => {
-                const clonedMap = clonedDoc.getElementById('storyMap');
-                Object.assign(clonedMap.style, {
+        let mapCanvas;
+        if (isSafari) {
+            // Safari: use html-to-image (SVG foreignObject) — html2canvas hangs on SVG rendering
+            if (!window._htmlToImage) {
+                const mod = await import('/vendor/html-to-image.bundle.js');
+                window._htmlToImage = mod;
+            }
+            mapCanvas = await window._htmlToImage.toCanvas(mapEl, {
+                backgroundColor: bgColor,
+                pixelRatio: dpr,
+                skipFonts: true,
+                style: {
                     transform: 'none',
                     margin: '0',
                     minWidth: '0',
                     padding: '24px',
-                });
-                for (const ta of clonedDoc.querySelectorAll('.story-text')) {
-                    const div = clonedDoc.createElement('div');
-                    div.className = ta.className;
-                    div.textContent = ta.value;
-                    div.style.whiteSpace = 'pre-wrap';
-                    div.style.wordBreak = 'break-word';
-                    ta.replaceWith(div);
-                }
-            },
-        });
+                },
+            });
+        } else {
+            // Chrome/Firefox: use html2canvas (foreignObject has rendering issues in Firefox)
+            if (!window._html2canvas) {
+                const mod = await import('/vendor/html2canvas.bundle.js');
+                window._html2canvas = mod.default;
+            }
+            mapCanvas = await window._html2canvas(mapEl, {
+                backgroundColor: bgColor,
+                scale: dpr,
+                useCORS: true,
+                onclone: (clonedDoc) => {
+                    const clonedMap = clonedDoc.getElementById('storyMap');
+                    Object.assign(clonedMap.style, {
+                        transform: 'none',
+                        margin: '0',
+                        minWidth: '0',
+                        padding: '24px',
+                    });
+                    for (const ta of clonedDoc.querySelectorAll('.story-text')) {
+                        const div = clonedDoc.createElement('div');
+                        div.className = ta.className;
+                        div.textContent = ta.value;
+                        div.style.whiteSpace = 'pre-wrap';
+                        div.style.wordBreak = 'break-word';
+                        ta.replaceWith(div);
+                    }
+                },
+            });
+        }
 
-        // Capture the logo separately
-        const logoCanvas = await window._html2canvas(dom.logoLink, {
-            backgroundColor: null,
-            scale: dpr,
-        });
+        // Draw logo with canvas API (avoids html2canvas SVG issues in Safari)
+        const logoPad = 24 * dpr;
+        const logoGap = 60 * dpr;
+        const iconSize = 28 * dpr;
+        const logoTextSize = 20 * dpr;
+        const logoFont = `700 ${logoTextSize}px system-ui, -apple-system, sans-serif`;
+        const textColor = isDark ? '#e2e8f0' : '#333';
+
+        // Measure logo text width
+        const measureCanvas = document.createElement('canvas');
+        const measureCtx = measureCanvas.getContext('2d');
+        measureCtx.font = logoFont;
+        const logoTextW = measureCtx.measureText('Storymaps.io').width;
+        const logoGapInner = 10 * dpr; // gap between icon and text
+        const logoW = iconSize + logoGapInner + logoTextW;
+        const logoH = Math.max(iconSize, logoTextSize);
 
         // Composite: logo on top, then map below with spacing
-        const logoPad = 24 * dpr; // padding around edges (matches map padding), scaled by pixelRatio
-        const logoGap = 60 * dpr; // gap between logo and map, scaled by pixelRatio
         const finalCanvas = document.createElement('canvas');
-        finalCanvas.width = Math.max(mapCanvas.width, logoCanvas.width + logoPad * 2);
-        finalCanvas.height = mapCanvas.height + logoCanvas.height + logoGap;
+        finalCanvas.width = Math.max(mapCanvas.width, logoW + logoPad * 2);
+        finalCanvas.height = mapCanvas.height + logoH + logoPad + logoGap;
         const ctx = finalCanvas.getContext('2d');
         ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
-        ctx.drawImage(logoCanvas, logoPad, logoPad);
-        ctx.drawImage(mapCanvas, 0, logoCanvas.height + logoGap);
+
+        // Draw 4-square SVG icon with canvas
+        const ix = logoPad, iy = logoPad;
+        const rectSize = iconSize * 7 / 24; // 7/24 of icon size (matches viewBox)
+        const rr = iconSize * 1 / 24; // corner radius
+        const squares = [
+            { x: iconSize * 3 / 24, y: iconSize * 3 / 24, fill: '#fef08a', stroke: '#d4aa00' },
+            { x: iconSize * 14 / 24, y: iconSize * 3 / 24, fill: '#fecdd3', stroke: '#e88a9a' },
+            { x: iconSize * 3 / 24, y: iconSize * 14 / 24, fill: '#a5f3fc', stroke: '#67c5d6' },
+            { x: iconSize * 14 / 24, y: iconSize * 14 / 24, fill: '#14b8a6', stroke: '#0d9488' },
+        ];
+        for (const sq of squares) {
+            const sx = ix + sq.x, sy = iy + sq.y;
+            ctx.beginPath();
+            ctx.roundRect(sx, sy, rectSize, rectSize, rr);
+            ctx.fillStyle = sq.fill;
+            ctx.fill();
+            ctx.strokeStyle = sq.stroke;
+            ctx.lineWidth = dpr;
+            ctx.stroke();
+        }
+
+        // Draw "Storymaps.io" text
+        ctx.font = logoFont;
+        ctx.fillStyle = textColor;
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Storymaps.io', ix + iconSize + logoGapInner, iy + iconSize / 2);
+        ctx.textBaseline = 'alphabetic';
+
+        ctx.drawImage(mapCanvas, 0, logoH + logoPad + logoGap);
 
         // Draw legend in bottom-right corner
         if (state.legend?.length) {
@@ -2224,10 +2817,12 @@ const initEventListeners = () => {
         dom.shareMenu.classList.remove('visible');
         dom.shareBtn.textContent = 'Capturing...';
         try {
-            const canvas = await captureMap();
-            const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+            // Safari requires ClipboardItem to receive a Promise<Blob>, and clipboard.write()
+            // must be called synchronously within the user gesture (click handler)
             await navigator.clipboard.write([
-                new ClipboardItem({ 'image/png': blob })
+                new ClipboardItem({
+                    'image/png': captureMap().then(c => new Promise(r => c.toBlob(r, 'image/png')))
+                })
             ]);
             dom.shareBtn.textContent = 'Copied!';
             setTimeout(() => dom.shareBtn.textContent = 'Share', 2000);
@@ -2363,8 +2958,12 @@ const initEventListeners = () => {
                 closeMainMenu();
                 return;
             }
-            loadSample(item.dataset.sample);
-            closeMainMenu();
+            if (item.dataset.sample === 'story-mapping-101') {
+                launchTour();
+            } else {
+                loadSample(item.dataset.sample);
+                closeMainMenu();
+            }
         }
     });
 
@@ -2661,7 +3260,7 @@ const showTutorialToast = () => {
     dom.tutorialToastClose.addEventListener('click', dismiss, { once: true });
 };
 
-const startWithSample = async (sampleName) => {
+const startWithSample = async (sampleName, { showToast = true } = {}) => {
     hideWelcomeScreen();
     initState();
     const mapId = await newMapId();
@@ -2678,7 +3277,7 @@ const startWithSample = async (sampleName) => {
     dom.boardName.value = state.name;
     render();
     requestAnimationFrame(zoomToFit);
-    setTimeout(showTutorialToast, 800);
+    if (showToast) setTimeout(showTutorialToast, 800);
 
     await createYjsDoc(mapId);
     subscribeToMap(mapId);
@@ -2730,6 +3329,9 @@ yjs.init({
     isMapEditable,
     render,
 });
+
+// Wire tour module
+tour.init();
 
 // Materialize phantom columns up to and including the given index (0-based).
 // Columns before the target are created hidden (spacers); the target column is visible.

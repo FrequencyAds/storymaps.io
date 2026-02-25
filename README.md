@@ -66,9 +66,9 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **JSON** - import/export story maps as JSON files
 - **YAML** - import/export as human-readable YAML; author maps in a text editor, version-control them in git, or generate from scripts
 - **CSV** - import/export as spreadsheet-friendly CSV
-- **Jira** - export as CSV or via REST API; card body text is used as the issue description
-- **Asana** - export as CSV or via REST API; card body text is used as the task notes
-- **Phabricator** - export via Maniphest API; card body text is used as the task description
+- **Jira** - import from CSV file or via server-proxied REST API; export as CSV or via server-proxied REST API; card body text is used as the issue description
+- **Asana** - export as CSV or via server-proxied REST API; card body text is used as the task notes
+- **Phabricator** - export via server-proxied Maniphest API; card body text is used as the task description
 - **URL endpoints** - append `.json` or `.yaml` to any map URL to fetch its data programmatically (e.g. `curl storymaps.io/abc123.json`); exports include the map ID for traceability
 - **Share as image** - copy map screenshot to clipboard or download as PNG
 - **Print / PDF**
@@ -101,7 +101,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 The app is a single Node.js server (`server.js`) that handles:
 - **WebSocket** - Real-time collaboration via y-websocket
 - **Static files** - Serves the client app from `public/` and `src/`
-- **REST API** - Lock state (`/api/lock/:mapId`), backups (`/api/backups/:mapId`), stats (`/api/stats`), and format endpoints (`/:mapId.json`, `/:mapId.yaml`)
+- **REST API** - Lock state (`/api/lock/:mapId`), backups (`/api/backups/:mapId`), stats (`/api/stats`), format endpoints (`/:mapId.json`, `/:mapId.yaml`), and server-proxied third-party imports/exports with SSE progress streaming
 
 ### Data Storage
 - **LevelDB** - Yjs document persistence in `data/`
@@ -232,7 +232,7 @@ The server starts on `http://localhost:8080`.
 18. Use the **view controls** (next to zoom) to toggle focus mode, full screen, dark mode, or cursor visibility
 19. Press **Esc** twice to exit full screen (single Esc still closes modals, search, etc.)
 20. Use **Menu → Backups** to create, restore, or delete map snapshots
-21. Use **Menu → Import** to import from JSON, YAML, or CSV
+21. Use **Menu → Import** to import from JSON, YAML, CSV, or Jira (CSV file or API)
 22. Use **Menu → Export** to save as JSON, YAML, or CSV, or export to Jira, Asana, or Phabricator
 23. Use **Print** to save as PDF
 

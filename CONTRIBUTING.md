@@ -14,6 +14,10 @@ Thanks for your interest in contributing to Storymaps.io! We welcome bug reports
 
 4. You understand that this project is licensed under AGPL-3.0 and your contributions will be made available under that licence in the open-source repository. The CLA additionally allows the maintainer to offer the combined work under other licences.
 
+## Project Direction
+
+This is a maintainer-led project. Pull requests may be declined, even if technically sound, if they do not align with the maintainer's vision for the product. If you're considering a large change, please open an issue first to discuss the approach.
+
 ## How to Contribute
 
 ### Bug Reports

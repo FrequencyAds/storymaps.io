@@ -45,6 +45,7 @@ process.env.YPERSISTENCE = DATA_DIR;
 const { setupWSConnection, docs, getPersistence } = await import('y-websocket/bin/utils');
 
 import { jsonToYamlObj, dumpYaml, importFromYaml } from './src/yaml.js';
+import { exportToCsv } from './src/csv.js';
 import jsyaml from '#js-yaml';
 
 // Rate limiter: sliding window, 30 req/min per IP
@@ -73,12 +74,99 @@ const isRateLimited = (req) => {
   return false;
 };
 
+// Proxy export rate limiter: 5 req/min per IP
+const PROXY_RATE_LIMIT = 5;
+const proxyRateLimitMap = new Map();
+
+const isProxyRateLimited = (req) => {
+  const ip = getClientIp(req);
+  const now = Date.now();
+  let timestamps = proxyRateLimitMap.get(ip);
+  if (!timestamps) {
+    timestamps = [];
+    proxyRateLimitMap.set(ip, timestamps);
+  }
+  while (timestamps.length && timestamps[0] <= now - RATE_WINDOW) timestamps.shift();
+  if (timestamps.length >= PROXY_RATE_LIMIT) return true;
+  timestamps.push(now);
+  return false;
+};
+
+// SSRF protection: only allow HTTPS to public hosts
+// Set DISABLE_SSRF_CHECK=1 in .env for local development
+const DISABLE_SSRF_CHECK = process.env.DISABLE_SSRF_CHECK === '1';
+
+const validateExternalUrl = (input) => {
+  if (!input) return null;
+  try {
+    const prefixed = input.startsWith('http://') || input.startsWith('https://') ? input : 'https://' + input;
+    const url = new URL(prefixed);
+    if (!DISABLE_SSRF_CHECK && url.protocol !== 'https:') return null;
+    if (DISABLE_SSRF_CHECK) return url.origin;
+    const host = url.hostname.toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return null;
+    if (host.includes('::ffff:')) return null;
+    if (host.endsWith('.local') || host.endsWith('.internal')) return null;
+    // Block RFC1918 / link-local ranges
+    const parts = host.split('.').map(Number);
+    if (parts.length === 4 && parts.every(n => n >= 0 && n <= 255)) {
+      if (parts[0] === 10) return null;
+      if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return null;
+      if (parts[0] === 192 && parts[1] === 168) return null;
+      if (parts[0] === 169 && parts[1] === 254) return null;
+    }
+    return url.origin;
+  } catch {
+    return null;
+  }
+};
+
+const sendSSE = (res, event, data) => {
+  if (!res.destroyed) res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+};
+
+const fetchWithTimeout = (url, opts, ms = 30_000) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { ...opts, signal: controller.signal }).finally(() => clearTimeout(timeout));
+};
+
+const safeJson = async (res) => {
+  const text = await res.text();
+  try { return JSON.parse(text); }
+  catch { throw new Error(`HTTP ${res.status} — expected JSON but got: ${text.slice(0, 200)}`); }
+};
+
+// Convert Jira ADF (Atlassian Document Format) to plain text
+const adfToPlainText = (node, depth = 0) => {
+  if (!node || depth > 20) return '';
+  if (node.type === 'text') return node.text || '';
+  if (!Array.isArray(node.content)) return '';
+  const parts = node.content.slice(0, 500).map(c => adfToPlainText(c, depth + 1));
+  if (node.type === 'paragraph' || node.type === 'heading' || node.type === 'bulletList' || node.type === 'orderedList') {
+    return parts.join('') + '\n';
+  }
+  if (node.type === 'listItem') return '- ' + parts.join('');
+  return parts.join('');
+};
+
+// Map Jira statusCategory.key to storymap status
+const jiraStatusToStorymaps = (statusCategoryKey) => {
+  if (statusCategoryKey === 'done') return 'done';
+  if (statusCategoryKey === 'indeterminate') return 'in-progress';
+  return 'planned'; // 'new' or anything else
+};
+
 // Clean up stale rate limit entries every 5 minutes
 setInterval(() => {
   const cutoff = Date.now() - RATE_WINDOW;
   for (const [ip, timestamps] of rateLimitMap) {
     while (timestamps.length && timestamps[0] <= cutoff) timestamps.shift();
     if (!timestamps.length) rateLimitMap.delete(ip);
+  }
+  for (const [ip, timestamps] of proxyRateLimitMap) {
+    while (timestamps.length && timestamps[0] <= cutoff) timestamps.shift();
+    if (!timestamps.length) proxyRateLimitMap.delete(ip);
   }
 }, 5 * 60_000);
 
@@ -131,7 +219,12 @@ const MIME_TYPES = {
   '.xml': 'application/xml',
   '.txt': 'text/plain',
   '.yaml': 'text/yaml',
+  '.csv': 'text/csv',
 };
+
+const sanitizeFilename = (name) =>
+  (name || '').toLowerCase().replace(/[<>:"/\\|?*\x00-\x1f]/g, '-').replace(/^\.+/, '')
+    .replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '').substring(0, 200) || 'story-map';
 
 // Extensions worth gzipping (text-based formats)
 const COMPRESSIBLE = new Set(['.html', '.css', '.js', '.json', '.svg', '.xml', '.txt']);
@@ -361,6 +454,11 @@ const handleApi = async (req, res) => {
       const yamlStr = dumpYaml(jsonToYamlObj(clean));
       res.writeHead(200, { 'Content-Type': 'text/yaml; charset=utf-8', 'Cache-Control': 'no-cache', 'ETag': etag });
       res.end(yamlStr);
+    } else if (format === 'csv') {
+      const csvStr = exportToCsv(clean);
+      const fn = sanitizeFilename(clean.name) + '.csv';
+      res.writeHead(200, { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': `attachment; filename="${fn}"`, 'Cache-Control': 'no-cache', 'ETag': etag });
+      res.end(csvStr);
     } else {
       const jsonBody = JSON.stringify(clean, null, 2);
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-cache', 'ETag': etag });
@@ -574,6 +672,729 @@ const handleApi = async (req, res) => {
     }
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true }));
+    return;
+  }
+
+  // ==========================================================================
+  // Proxy Export Verify Endpoints
+  // ==========================================================================
+
+  // POST /api/export/jira/verify — verify Jira credentials
+  if (path === '/api/export/jira/verify' && req.method === 'POST') {
+    if (isProxyRateLimited(req)) {
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Rate limit exceeded. Try again in a minute.' }));
+      return;
+    }
+    const { instanceUrl, email, token } = body;
+    if (!instanceUrl || !email || !token) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'Missing required fields: instanceUrl, email, token' }));
+      return;
+    }
+    const origin = validateExternalUrl(instanceUrl);
+    if (!origin) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'Invalid instance URL. Must be HTTPS and a public host.' }));
+      return;
+    }
+    try {
+      const auth = Buffer.from(`${email}:${token}`).toString('base64');
+      const r = await fetchWithTimeout(`${origin}/rest/api/3/myself`, {
+        method: 'GET',
+        headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' }
+      }, 10_000);
+      const data = await safeJson(r);
+      if (r.status === 401 || r.status === 403 || data.errorMessages?.length) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: data.errorMessages?.[0] || 'Authentication failed' }));
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: true, displayName: data.displayName || data.emailAddress || 'Unknown' }));
+    } catch (e) {
+      res.writeHead(502, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: `Connection failed: ${e.message}` }));
+    }
+    return;
+  }
+
+  // POST /api/export/phabricator/verify — verify Phabricator credentials
+  if (path === '/api/export/phabricator/verify' && req.method === 'POST') {
+    if (isProxyRateLimited(req)) {
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Rate limit exceeded. Try again in a minute.' }));
+      return;
+    }
+    const { instanceUrl, token } = body;
+    if (!instanceUrl || !token) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'Missing required fields: instanceUrl, token' }));
+      return;
+    }
+    const origin = validateExternalUrl(instanceUrl);
+    if (!origin) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'Invalid instance URL. Must be HTTPS and a public host.' }));
+      return;
+    }
+    try {
+      const params = new URLSearchParams();
+      params.set('api.token', token);
+      const r = await fetchWithTimeout(`${origin}/api/user.whoami`, {
+        method: 'POST',
+        headers: { 'User-Agent': 'Storymaps.io/1.0' },
+        body: params
+      }, 10_000);
+      const data = await safeJson(r);
+      if (data.error_code) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: data.error_info || 'Authentication failed' }));
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: true, userName: data.result?.userName || data.result?.realName || 'Unknown' }));
+    } catch (e) {
+      res.writeHead(502, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: `Connection failed: ${e.message}` }));
+    }
+    return;
+  }
+
+  // POST /api/export/asana/verify — verify Asana credentials
+  if (path === '/api/export/asana/verify' && req.method === 'POST') {
+    if (isProxyRateLimited(req)) {
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Rate limit exceeded. Try again in a minute.' }));
+      return;
+    }
+    const { token } = body;
+    if (!token) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'Missing required field: token' }));
+      return;
+    }
+    try {
+      const r = await fetchWithTimeout('https://app.asana.com/api/1.0/users/me', {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+      }, 10_000);
+      const data = await safeJson(r);
+      if (r.status === 401 || r.status === 403 || data.errors?.length) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: data.errors?.[0]?.message || 'Authentication failed' }));
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: true, name: data.data?.name || data.data?.email || 'Unknown' }));
+    } catch (e) {
+      res.writeHead(502, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: `Connection failed: ${e.message}` }));
+    }
+    return;
+  }
+
+  // ==========================================================================
+  // Proxy Export Endpoints (SSE streams)
+  // ==========================================================================
+
+  // POST /api/export/jira — create epics + stories via Jira REST API
+  if (path === '/api/export/jira' && req.method === 'POST') {
+    if (isProxyRateLimited(req)) {
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Rate limit exceeded. Try again in a minute.' }));
+      return;
+    }
+    const { instanceUrl, email, token, projectKey, epics } = body;
+    if (!instanceUrl || !email || !token || !projectKey || !Array.isArray(epics)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Missing required fields: instanceUrl, email, token, projectKey, epics' }));
+      return;
+    }
+    const totalStories = epics.reduce((n, e) => n + (e.stories?.length || 0), 0);
+    if (epics.length > 200 || totalStories > 2000) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Too many items. Max 200 epics and 2000 stories.' }));
+      return;
+    }
+    if (!/^[A-Z0-9_]{1,50}$/i.test(projectKey)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid projectKey. Must be 1-50 alphanumeric/underscore characters.' }));
+      return;
+    }
+    const origin = validateExternalUrl(instanceUrl);
+    if (!origin) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid instance URL. Must be HTTPS and a public host.' }));
+      return;
+    }
+    res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' });
+    const auth = Buffer.from(`${email}:${token}`).toString('base64');
+    const headers = { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' };
+    const apiUrl = `${origin}/rest/api/3/issue`;
+    let created = 0, failed = 0;
+    for (const epic of epics) {
+      sendSSE(res, 'progress', { type: 'epic', summary: epic.summary, status: 'creating' });
+      let epicData;
+      try {
+        const epicRes = await fetchWithTimeout(apiUrl, {
+          method: 'POST', headers,
+          body: JSON.stringify({
+            fields: {
+              project: { key: projectKey },
+              summary: epic.summary,
+              description: { type: 'doc', version: 1, content: [{ type: 'paragraph', content: [{ type: 'text', text: epic.description || 'Imported from Storymaps.io' }] }] },
+              issuetype: { name: 'Epic' }
+            }
+          })
+        });
+        epicData = await safeJson(epicRes);
+      } catch (e) {
+        sendSSE(res, 'progress', { type: 'epic', summary: epic.summary, status: 'error', error: e.message });
+        failed++;
+        continue;
+      }
+      if (epicData.errors || epicData.errorMessages?.length) {
+        sendSSE(res, 'progress', { type: 'epic', summary: epic.summary, status: 'error', error: epicData.errors || epicData.errorMessages });
+        failed++;
+        continue;
+      }
+      sendSSE(res, 'progress', { type: 'epic', summary: epic.summary, status: 'created', key: epicData.key });
+      created++;
+      for (const story of (epic.stories || [])) {
+        sendSSE(res, 'progress', { type: 'story', summary: story.summary, parent: epicData.key, status: 'creating' });
+        try {
+          const storyRes = await fetchWithTimeout(apiUrl, {
+            method: 'POST', headers,
+            body: JSON.stringify({
+              fields: {
+                project: { key: projectKey },
+                summary: story.summary,
+                description: { type: 'doc', version: 1, content: [{ type: 'paragraph', content: [{ type: 'text', text: story.description || 'Imported from Storymaps.io' }] }] },
+                issuetype: { name: 'Story' },
+                parent: { key: epicData.key }
+              }
+            })
+          });
+          const storyData = await safeJson(storyRes);
+          if (storyData.errors || storyData.errorMessages?.length) {
+            sendSSE(res, 'progress', { type: 'story', summary: story.summary, status: 'error', error: storyData.errors || storyData.errorMessages });
+            failed++;
+          } else {
+            sendSSE(res, 'progress', { type: 'story', summary: story.summary, status: 'created', key: storyData.key });
+            created++;
+          }
+        } catch (e) {
+          sendSSE(res, 'progress', { type: 'story', summary: story.summary, status: 'error', error: e.message });
+          failed++;
+        }
+      }
+    }
+    sendSSE(res, 'done', { created, failed });
+    res.end();
+    return;
+  }
+
+  // POST /api/export/phabricator — create tasks via Phabricator Conduit API
+  if (path === '/api/export/phabricator' && req.method === 'POST') {
+    if (isProxyRateLimited(req)) {
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Rate limit exceeded. Try again in a minute.' }));
+      return;
+    }
+    const { instanceUrl, token: phabToken, tags, items } = body;
+    if (!instanceUrl || !phabToken || !Array.isArray(items)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Missing required fields: instanceUrl, token, items' }));
+      return;
+    }
+    const totalSubtasks = items.reduce((n, it) => n + (it.subtasks?.length || 0), 0);
+    if (items.length > 200 || totalSubtasks > 2000) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Too many items. Max 200 items and 2000 subtasks.' }));
+      return;
+    }
+    const origin = validateExternalUrl(instanceUrl);
+    if (!origin) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid instance URL. Must be HTTPS and a public host.' }));
+      return;
+    }
+    res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' });
+    const apiUrl = `${origin}/api/maniphest.edit`;
+    const phabStatusMap = { none: 'open', planned: 'open', 'in-progress': 'progress', done: 'resolved' };
+    const userTags = Array.isArray(tags) ? tags : [];
+    let created = 0, failed = 0;
+    for (const item of items) {
+      sendSSE(res, 'progress', { type: 'task', title: item.title, status: 'creating' });
+      const params = new URLSearchParams();
+      params.set('api.token', phabToken);
+      let i = 0;
+      params.set(`transactions[${i}][type]`, 'title');
+      params.set(`transactions[${i++}][value]`, item.title);
+      params.set(`transactions[${i}][type]`, 'description');
+      params.set(`transactions[${i++}][value]`, item.description || '');
+      if (item.status) {
+        params.set(`transactions[${i}][type]`, 'status');
+        params.set(`transactions[${i++}][value]`, phabStatusMap[item.status] || 'open');
+      }
+      const itemTags = item.type === 'epic' ? ['epic', ...userTags] : [...userTags];
+      if (itemTags.length) {
+        params.set(`transactions[${i}][type]`, 'projects.add');
+        itemTags.forEach((tag, j) => params.set(`transactions[${i}][value][${j}]`, tag));
+        i++;
+      }
+      let parentData;
+      try {
+        const parentRes = await fetchWithTimeout(apiUrl, { method: 'POST', body: params, headers: { 'User-Agent': 'Storymaps.io/1.0' } });
+        parentData = await safeJson(parentRes);
+      } catch (e) {
+        sendSSE(res, 'progress', { type: 'task', title: item.title, status: 'error', error: e.message });
+        failed++;
+        continue;
+      }
+      if (parentData.error_code) {
+        sendSSE(res, 'progress', { type: 'task', title: item.title, status: 'error', error: parentData.error_info });
+        failed++;
+        continue;
+      }
+      const parentPhid = parentData.result.object.phid;
+      const parentId = parentData.result.object.id;
+      sendSSE(res, 'progress', { type: 'task', title: item.title, status: 'created', id: `T${parentId}` });
+      created++;
+      for (const sub of (item.subtasks || [])) {
+        sendSSE(res, 'progress', { type: 'subtask', title: sub.title, parent: `T${parentId}`, status: 'creating' });
+        try {
+          const subParams = new URLSearchParams();
+          subParams.set('api.token', phabToken);
+          let si = 0;
+          subParams.set(`transactions[${si}][type]`, 'title');
+          subParams.set(`transactions[${si++}][value]`, sub.title);
+          subParams.set(`transactions[${si}][type]`, 'description');
+          subParams.set(`transactions[${si++}][value]`, sub.description || '');
+          if (sub.status) {
+            subParams.set(`transactions[${si}][type]`, 'status');
+            subParams.set(`transactions[${si++}][value]`, phabStatusMap[sub.status] || 'open');
+          }
+          subParams.set(`transactions[${si}][type]`, 'parent');
+          subParams.set(`transactions[${si++}][value]`, parentPhid);
+          if (userTags.length) {
+            subParams.set(`transactions[${si}][type]`, 'projects.add');
+            userTags.forEach((tag, j) => subParams.set(`transactions[${si}][value][${j}]`, tag));
+          }
+          const subRes = await fetchWithTimeout(apiUrl, { method: 'POST', body: subParams, headers: { 'User-Agent': 'Storymaps.io/1.0' } });
+          const subData = await safeJson(subRes);
+          if (subData.error_code) {
+            sendSSE(res, 'progress', { type: 'subtask', title: sub.title, status: 'error', error: subData.error_info });
+            failed++;
+          } else {
+            sendSSE(res, 'progress', { type: 'subtask', title: sub.title, status: 'created', id: `T${subData.result.object.id}` });
+            created++;
+          }
+        } catch (e) {
+          sendSSE(res, 'progress', { type: 'subtask', title: sub.title, status: 'error', error: e.message });
+          failed++;
+        }
+      }
+    }
+    sendSSE(res, 'done', { created, failed });
+    res.end();
+    return;
+  }
+
+  // POST /api/export/asana — create tasks via Asana REST API
+  if (path === '/api/export/asana' && req.method === 'POST') {
+    if (isProxyRateLimited(req)) {
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Rate limit exceeded. Try again in a minute.' }));
+      return;
+    }
+    const { token: asanaToken, projectGid, createSections, items } = body;
+    if (!asanaToken || !projectGid || !Array.isArray(items)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Missing required fields: token, projectGid, items' }));
+      return;
+    }
+    if (!/^\d+$/.test(projectGid)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid projectGid. Must be numeric.' }));
+      return;
+    }
+    const totalSubtasks = items.reduce((n, it) => n + (it.subtasks?.length || 0), 0);
+    if (items.length > 200 || totalSubtasks > 2000) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Too many items. Max 200 items and 2000 subtasks.' }));
+      return;
+    }
+    res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' });
+    const baseUrl = 'https://app.asana.com/api/1.0';
+    const headers = { 'Authorization': `Bearer ${asanaToken}`, 'Content-Type': 'application/json' };
+    let created = 0, failed = 0;
+    for (const item of items) {
+      let sectionGid = null;
+      if (createSections) {
+        sendSSE(res, 'progress', { type: 'section', name: item.name, status: 'creating' });
+        try {
+          const secRes = await fetchWithTimeout(`${baseUrl}/projects/${projectGid}/sections`, {
+            method: 'POST', headers,
+            body: JSON.stringify({ data: { name: item.name } })
+          });
+          const secData = await safeJson(secRes);
+          if (secData.errors) {
+            sendSSE(res, 'progress', { type: 'section', name: item.name, status: 'error', error: secData.errors });
+          } else {
+            sectionGid = secData.data.gid;
+            sendSSE(res, 'progress', { type: 'section', name: item.name, status: 'created' });
+          }
+        } catch (e) {
+          sendSSE(res, 'progress', { type: 'section', name: item.name, status: 'error', error: e.message });
+        }
+      }
+      sendSSE(res, 'progress', { type: 'task', name: item.name, status: 'creating' });
+      let taskData;
+      try {
+        const taskBody = {
+          data: {
+            name: item.name,
+            notes: item.notes || 'Imported from Storymaps.io',
+            projects: [projectGid],
+            completed: item.completed || false
+          }
+        };
+        if (sectionGid) {
+          taskBody.data.memberships = [{ project: projectGid, section: sectionGid }];
+        }
+        const taskRes = await fetchWithTimeout(`${baseUrl}/tasks`, { method: 'POST', headers, body: JSON.stringify(taskBody) });
+        taskData = await safeJson(taskRes);
+      } catch (e) {
+        sendSSE(res, 'progress', { type: 'task', name: item.name, status: 'error', error: e.message });
+        failed++;
+        continue;
+      }
+      if (taskData.errors) {
+        sendSSE(res, 'progress', { type: 'task', name: item.name, status: 'error', error: taskData.errors });
+        failed++;
+        continue;
+      }
+      const parentGid = taskData.data.gid;
+      sendSSE(res, 'progress', { type: 'task', name: item.name, status: 'created', gid: parentGid });
+      created++;
+      for (const sub of (item.subtasks || [])) {
+        sendSSE(res, 'progress', { type: 'subtask', name: sub.name, parent: parentGid, status: 'creating' });
+        try {
+          const subRes = await fetchWithTimeout(`${baseUrl}/tasks/${parentGid}/subtasks`, {
+            method: 'POST', headers,
+            body: JSON.stringify({
+              data: {
+                name: sub.name,
+                notes: sub.notes || 'Imported from Storymaps.io',
+                completed: sub.completed || false
+              }
+            })
+          });
+          const subData = await safeJson(subRes);
+          if (subData.errors) {
+            sendSSE(res, 'progress', { type: 'subtask', name: sub.name, status: 'error', error: subData.errors });
+            failed++;
+          } else {
+            sendSSE(res, 'progress', { type: 'subtask', name: sub.name, status: 'created', gid: subData.data.gid });
+            created++;
+          }
+        } catch (e) {
+          sendSSE(res, 'progress', { type: 'subtask', name: sub.name, status: 'error', error: e.message });
+          failed++;
+        }
+      }
+    }
+    sendSSE(res, 'done', { created, failed });
+    res.end();
+    return;
+  }
+
+  // ==========================================================================
+  // Proxy Import Endpoints (SSE streams)
+  // ==========================================================================
+
+  // POST /api/import/jira - fetch epics + stories from Jira project
+  if (path === '/api/import/jira' && req.method === 'POST') {
+    if (isProxyRateLimited(req)) {
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Rate limit exceeded. Try again in a minute.' }));
+      return;
+    }
+    const { instanceUrl, email, token, projectKey } = body;
+    if (!instanceUrl || !email || !token || !projectKey) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Missing required fields: instanceUrl, email, token, projectKey' }));
+      return;
+    }
+    if (!/^[A-Z0-9_]{1,50}$/i.test(projectKey)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid projectKey. Must be 1-50 alphanumeric/underscore characters.' }));
+      return;
+    }
+    const origin = validateExternalUrl(instanceUrl);
+    if (!origin) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid instance URL. Must be HTTPS and a public host.' }));
+      return;
+    }
+
+    res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' });
+    const auth = Buffer.from(`${email}:${token}`).toString('base64');
+    const headers = { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' };
+    const searchUrl = `${origin}/rest/api/3/search/jql`;
+    const safeKey = projectKey.replace(/[^A-Za-z0-9_]/g, '');
+    const MAX_RESULTS = 100;
+    const MAX_ISSUES = 10_000;
+
+    // Paginated JQL fetch helper (token-based pagination)
+    const fetchAllIssues = async (jql, fields, phase) => {
+      const issues = [];
+      let nextPageToken = null;
+      do {
+        const params = new URLSearchParams({
+          jql, fields, maxResults: String(MAX_RESULTS)
+        });
+        if (nextPageToken) params.set('nextPageToken', nextPageToken);
+        let data;
+        try {
+          const r = await fetchWithTimeout(`${searchUrl}?${params}`, { method: 'GET', headers }, 30_000);
+          data = await safeJson(r);
+        } catch (e) {
+          sendSSE(res, 'error', { phase, error: e.message });
+          return null;
+        }
+        if (data.errorMessages?.length) {
+          sendSSE(res, 'error', { phase, error: data.errorMessages.join(', ') });
+          return null;
+        }
+        issues.push(...(data.issues || []));
+        nextPageToken = data.nextPageToken || null;
+        sendSSE(res, 'progress', { phase, fetched: issues.length });
+      } while (nextPageToken && issues.length < MAX_ISSUES);
+      return issues;
+    };
+
+    // Phase 1: Fetch epics
+    sendSSE(res, 'progress', { phase: 'epics', fetched: 0 });
+    const epics = await fetchAllIssues(
+      `project = "${safeKey}" AND issuetype = Epic ORDER BY rank ASC`,
+      'summary,description,status,labels,priority',
+      'epics'
+    );
+    if (!epics) { res.end(); return; }
+
+    // Phase 2: Fetch stories
+    sendSSE(res, 'progress', { phase: 'stories', fetched: 0 });
+    const stories = await fetchAllIssues(
+      `project = "${safeKey}" AND issuetype = Story ORDER BY rank ASC`,
+      'summary,description,status,parent,labels,priority,story_points,customfield_10016',
+      'stories'
+    );
+    if (!stories) { res.end(); return; }
+
+    // Phase 3: Group stories under epics
+    const epicMap = new Map();
+    const epicList = [];
+    for (const epic of epics) {
+      const epicObj = {
+        key: epic.key,
+        summary: epic.fields.summary || '',
+        description: adfToPlainText(epic.fields.description).trim(),
+        status: jiraStatusToStorymaps(epic.fields.status?.statusCategory?.key),
+        labels: epic.fields.labels || [],
+        stories: []
+      };
+      epicMap.set(epic.key, epicObj);
+      epicList.push(epicObj);
+    }
+
+    const orphanStories = [];
+    for (const story of stories) {
+      const parentKey = story.fields.parent?.key;
+      const storyObj = {
+        key: story.key,
+        summary: story.fields.summary || '',
+        description: adfToPlainText(story.fields.description).trim(),
+        status: jiraStatusToStorymaps(story.fields.status?.statusCategory?.key),
+        labels: story.fields.labels || [],
+        points: story.fields.story_points ?? story.fields.customfield_10016 ?? null
+      };
+      if (parentKey && epicMap.has(parentKey)) {
+        epicMap.get(parentKey).stories.push(storyObj);
+      } else {
+        orphanStories.push(storyObj);
+      }
+    }
+
+    // Add orphan stories as "Other" pseudo-epic
+    if (orphanStories.length > 0) {
+      epicList.push({
+        key: null,
+        summary: 'Other',
+        description: '',
+        status: 'planned',
+        labels: [],
+        stories: orphanStories
+      });
+    }
+
+    sendSSE(res, 'done', { projectKey: safeKey, epics: epicList, epicCount: epicList.length, storyCount: stories.length });
+    res.end();
+    return;
+  }
+
+  // POST /api/import/asana - fetch tasks + subtasks from Asana project
+  // Mapping: Task -> Step (backbone column), Subtask -> Story card
+  if (path === '/api/import/asana' && req.method === 'POST') {
+    if (isProxyRateLimited(req)) {
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Rate limit exceeded. Try again in a minute.' }));
+      return;
+    }
+    const { token, projectGid } = body;
+    if (!token || !projectGid) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Missing required fields: token, projectGid' }));
+      return;
+    }
+    if (token.length > 256) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Token too long.' }));
+      return;
+    }
+    if (!/^\d+$/.test(projectGid)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid projectGid. Must be numeric.' }));
+      return;
+    }
+
+    res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' });
+    const asanaHeaders = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' };
+    const BASE = 'https://app.asana.com/api/1.0';
+
+    // Phase 1: Fetch project name
+    sendSSE(res, 'progress', { phase: 'project', fetched: 0 });
+    let projectName;
+    try {
+      const r = await fetchWithTimeout(`${BASE}/projects/${projectGid}?opt_fields=name`, { method: 'GET', headers: asanaHeaders }, 15_000);
+      const data = await safeJson(r);
+      if (data.errors?.length) {
+        sendSSE(res, 'error', { phase: 'project', error: data.errors[0].message });
+        res.end();
+        return;
+      }
+      projectName = data.data?.name || 'Asana Project';
+    } catch (e) {
+      sendSSE(res, 'error', { phase: 'project', error: e.message });
+      res.end();
+      return;
+    }
+
+    // Phase 2: Fetch all top-level tasks (paginated)
+    sendSSE(res, 'progress', { phase: 'tasks', fetched: 0 });
+    const allTasks = [];
+    let offset = null;
+    const MAX_TASKS = 10_000;
+    const MAX_SUBTASKS = 50_000;
+    try {
+      do {
+        if (res.destroyed) break;
+        const params = new URLSearchParams({
+          project: projectGid,
+          limit: '100',
+          opt_fields: 'name,notes,completed,num_subtasks,gid,memberships.section.gid,memberships.section.name'
+        });
+        if (offset) params.set('offset', offset);
+        const r = await fetchWithTimeout(`${BASE}/tasks?${params}`, { method: 'GET', headers: asanaHeaders }, 30_000);
+        const data = await safeJson(r);
+        if (data.errors?.length) {
+          sendSSE(res, 'error', { phase: 'tasks', error: data.errors[0].message });
+          res.end();
+          return;
+        }
+        allTasks.push(...(data.data || []));
+        offset = data.next_page?.offset || null;
+        sendSSE(res, 'progress', { phase: 'tasks', fetched: allTasks.length });
+      } while (offset && allTasks.length < MAX_TASKS);
+    } catch (e) {
+      sendSSE(res, 'error', { phase: 'tasks', error: e.message });
+      res.end();
+      return;
+    }
+
+    // Phase 2.5: Fetch project sections (non-fatal)
+    sendSSE(res, 'progress', { phase: 'sections', fetched: 0 });
+    const sections = [];
+    try {
+      const r = await fetchWithTimeout(
+        `${BASE}/projects/${projectGid}/sections?opt_fields=name&limit=100`,
+        { method: 'GET', headers: asanaHeaders }, 15_000
+      );
+      const data = await safeJson(r);
+      if (!data.errors?.length) {
+        for (const s of (data.data || [])) {
+          sections.push({ gid: s.gid, name: s.name });
+        }
+      }
+    } catch { /* non-fatal - sections toggle just won't appear */ }
+
+    // Phase 3: For each task with subtasks, fetch its subtasks
+    sendSSE(res, 'progress', { phase: 'subtasks', fetched: 0 });
+    const epicList = [];
+    let subtaskTotal = 0;
+    for (const task of allTasks) {
+      if (res.destroyed) break;
+      const membership = (task.memberships || []).find(m => m.section?.gid);
+      const epic = {
+        key: task.gid || '',
+        summary: task.name || '',
+        description: (task.notes || '').trim() || undefined,
+        status: task.completed ? 'done' : 'planned',
+        sectionGid: membership?.section?.gid || '',
+        sectionName: membership?.section?.name || '',
+        stories: []
+      };
+
+      if (task.num_subtasks > 0 && /^\d+$/.test(task.gid) && subtaskTotal < MAX_SUBTASKS) {
+        try {
+          let subOffset = null;
+          do {
+            const params = new URLSearchParams({
+              limit: '100',
+              opt_fields: 'name,notes,completed,gid'
+            });
+            if (subOffset) params.set('offset', subOffset);
+            const r = await fetchWithTimeout(`${BASE}/tasks/${task.gid}/subtasks?${params}`, { method: 'GET', headers: asanaHeaders }, 30_000);
+            const data = await safeJson(r);
+            if (data.errors?.length) break;
+            for (const sub of (data.data || [])) {
+              epic.stories.push({
+                key: sub.gid || '',
+                summary: sub.name || '',
+                description: (sub.notes || '').trim() || undefined,
+                status: sub.completed ? 'done' : 'planned'
+              });
+            }
+            subOffset = data.next_page?.offset || null;
+          } while (subOffset && subtaskTotal + epic.stories.length < MAX_SUBTASKS);
+          subtaskTotal += epic.stories.length;
+          sendSSE(res, 'progress', { phase: 'subtasks', fetched: subtaskTotal });
+        } catch { /* skip subtask fetch errors, keep task with empty stories */ }
+      }
+
+      epicList.push(epic);
+    }
+
+    sendSSE(res, 'done', {
+      projectName,
+      epics: epicList,
+      sections,
+      taskCount: allTasks.length,
+      subtaskCount: subtaskTotal
+    });
+    res.end();
     return;
   }
 
@@ -974,17 +1795,21 @@ const server = createServer(async (req, res) => {
       }
     }
 
-    // Format extension: /:mapId.json or /:mapId.yaml
-    if (!content && !reqPath.includes('/', 1) && (ext === '.json' || ext === '.yaml')) {
+    // Format extension: /:mapId.json, /:mapId.yaml, or /:mapId.csv
+    if (!content && !reqPath.includes('/', 1) && (ext === '.json' || ext === '.yaml' || ext === '.csv')) {
       const mapId = reqPath.slice(1, -ext.length);
       if (mapId) {
         const data = await loadAndSerialize(mapId, req.headers.host);
         if (data) {
-          const body = ext === '.yaml'
-            ? dumpYaml(jsonToYamlObj(data))
-            : JSON.stringify(data, null, 2);
-          const ct = ext === '.yaml' ? 'text/yaml' : 'application/json';
-          res.writeHead(200, { 'Content-Type': ct + '; charset=utf-8', 'Cache-Control': 'no-store' });
+          const body = ext === '.csv'
+            ? exportToCsv(data)
+            : ext === '.yaml'
+              ? dumpYaml(jsonToYamlObj(data))
+              : JSON.stringify(data, null, 2);
+          const ct = ext === '.csv' ? 'text/csv' : ext === '.yaml' ? 'text/yaml' : 'application/json';
+          const headers = { 'Content-Type': ct + '; charset=utf-8', 'Cache-Control': 'no-store' };
+          if (ext === '.csv') headers['Content-Disposition'] = `attachment; filename="${sanitizeFilename(data.name) + '.csv'}"`;
+          res.writeHead(200, headers);
           res.end(body);
           return;
         }

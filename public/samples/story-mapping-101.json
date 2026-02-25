@@ -1,0 +1,172 @@
+{
+  "app": "storymap",
+  "v": 1,
+  "name": "Build a Lego House",
+  "users": [
+    [
+      {
+        "name": "Adult or Kid",
+        "color": "#fda4af"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    []
+  ],
+  "activities": [
+    [
+      {
+        "name": "Build a Lego House",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    []
+  ],
+  "steps": [
+    {
+      "name": "Look at picture on box",
+      "color": "#86efac"
+    },
+    {
+      "name": "Open box",
+      "color": "#86efac"
+    },
+    {
+      "name": "Layout lego pieces",
+      "color": "#86efac"
+    },
+    {
+      "name": "Read instructions",
+      "color": "#86efac"
+    },
+    {
+      "name": "Start: Build walls"
+    },
+    {
+      "name": "Add doors and windows"
+    },
+    {
+      "name": "Add roof"
+    },
+    {
+      "name": "Done!"
+    }
+  ],
+  "slices": [
+    {
+      "name": "MVP:\nBasic House",
+      "stories": [
+        [],
+        [
+          {
+            "name": "Find a good space to build our lego house",
+            "color": "#fef08a"
+          },
+          {
+            "name": "Table top is usually a good place to build",
+            "color": "#a5f3fc"
+          }
+        ],
+        [
+          {
+            "name": "Open lego bags",
+            "color": "#fef08a"
+          },
+          {
+            "name": "Sort pieces into groups",
+            "color": "#fef08a",
+            "status": "done"
+          }
+        ],
+        [
+          {
+            "name": "Show steps to follow",
+            "color": "#fef08a",
+            "status": "done"
+          },
+          {
+            "name": "Indicate the pieces required at each step",
+            "color": "#fef08a"
+          },
+          {
+            "name": "Show estimated time for each step",
+            "color": "#fef08a"
+          }
+        ],
+        [
+          {
+            "name": "Place the base plate on a flat surface",
+            "color": "#fef08a",
+            "status": "in-progress"
+          },
+          {
+            "name": "Use the red bricks to build the walls",
+            "color": "#fef08a",
+            "status": "planned"
+          },
+          {
+            "name": "Connect the pieces together as you build",
+            "color": "#fef08a"
+          }
+        ],
+        [
+          {
+            "name": "Fit the door inbetween the red bricks",
+            "color": "#fef08a",
+            "status": "planned"
+          },
+          {
+            "name": "Add a window",
+            "color": "#fef08a"
+          },
+          {
+            "name": "continue adding wall bricks above",
+            "color": "#fef08a"
+          }
+        ],
+        [
+          {
+            "name": "use the triangle pieces fo the edges of the roof",
+            "color": "#fef08a",
+            "status": "planned"
+          },
+          {
+            "name": "add the roof top piece to the edges to cover",
+            "color": "#fef08a"
+          }
+        ],
+        [
+          {
+            "name": "You now have a lego house",
+            "color": "#a5f3fc",
+            "status": "planned"
+          }
+        ]
+      ]
+    }
+  ],
+  "legend": [
+    {
+      "color": "#fef08a",
+      "label": "Task"
+    },
+    {
+      "color": "#bef264",
+      "label": "Question"
+    },
+    {
+      "color": "#a5f3fc",
+      "label": "Note"
+    }
+  ]
+}

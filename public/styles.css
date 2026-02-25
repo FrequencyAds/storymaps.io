@@ -2795,6 +2795,9 @@ body.main-menu-open .step:hover {
 .btn-sample-purple { background: var(--color-bg-surface); border-color: #e5e7eb; }
 .btn-sample-purple::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #d8b4fe; margin-right: 8px; flex-shrink: 0; }
 
+.btn-sample-green { background: var(--color-bg-surface); border-color: #e5e7eb; }
+.btn-sample-green::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #4ade80; margin-right: 8px; flex-shrink: 0; }
+
 /* Bottom section — learn more */
 .welcome-bottom {
     border-top: 1px solid #e8ecf0;
@@ -4656,6 +4659,7 @@ body.main-menu-open .step:hover {
 
 .export-step-content {
     padding-left: 40px;
+    padding-bottom: 8px;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -4731,6 +4735,15 @@ body.main-menu-open .step:hover {
     padding: 6px 10px;
     border-radius: 5px;
     max-width: fit-content;
+}
+
+.export-info-banner.export-info-warning {
+    color: #92400e;
+    background: #fffbeb;
+    border-color: #fde68a;
+}
+.export-info-banner.export-info-warning .export-info-icon {
+    color: #f59e0b;
 }
 
 .export-info-icon {
@@ -7118,7 +7131,9 @@ html.dark-mode .export-filename,
 html.dark-mode .jira-export-epic-name,
 html.dark-mode .jira-export-epic-type,
 html.dark-mode .jira-export-epic-description,
-html.dark-mode .export-epic-type {
+html.dark-mode .export-epic-name,
+html.dark-mode .export-epic-type,
+html.dark-mode .export-epic-description {
     background: var(--color-bg-surface);
     color: var(--color-text-primary);
     border-color: var(--color-border);
@@ -7128,6 +7143,7 @@ html.dark-mode .export-epic-type {
 html.dark-mode .jira-export-epic,
 html.dark-mode .export-epic {
     background: var(--color-bg-surface-alt);
+    border-color: var(--color-border);
 }
 
 /* Jira project type select */
@@ -7141,6 +7157,43 @@ html.dark-mode .jira-export-actions,
 html.dark-mode .export-actions {
     background: var(--color-bg-surface);
     border-top-color: var(--color-border);
+}
+
+/* Export modal inputs, selects, checkboxes */
+html.dark-mode .jira-project-input,
+html.dark-mode .jira-status-input {
+    background: var(--color-bg-surface);
+    color: var(--color-text-primary);
+    border-color: var(--color-border);
+}
+html.dark-mode .jira-slice-checkbox,
+html.dark-mode .export-slice-checkbox {
+    background: #1e293b;
+    border-color: var(--color-border);
+}
+html.dark-mode .jira-slice-checkbox:hover,
+html.dark-mode .export-slice-checkbox:hover {
+    background: #334155;
+}
+html.dark-mode .jira-slice-checkbox.checked,
+html.dark-mode .export-slice-checkbox.checked {
+    background: #1e3a5f;
+    border-color: #3b82f6;
+}
+html.dark-mode .jira-export-task:hover .jira-export-task-name,
+html.dark-mode .export-task:hover .export-task-name {
+    color: #f1f5f9;
+}
+html.dark-mode .jira-csv-warning {
+    background: var(--color-bg-surface-alt);
+    border-color: var(--color-border);
+    color: var(--color-text-secondary);
+}
+html.dark-mode .jira-csv-warning a {
+    color: var(--color-text-secondary);
+}
+html.dark-mode .jira-export-help-link {
+    color: #93c5fd;
 }
 
 /* Backup entries */
@@ -7469,5 +7522,884 @@ html.dark-mode .import-file-dropzone {
     color: var(--color-text-secondary);
 }
 
+/* Export: hidden utility for export elements */
+.export-progress.hidden,
+.export-info-banner.hidden { display: none; }
+
+/* Export summary strip */
+.export-summary {
+    font-size: 13px;
+    color: #475569;
+    padding: 10px 14px;
+    background: #f0fdfa;
+    border: 1px solid #ccfbf1;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+.export-summary strong {
+    font-weight: 700;
+    color: #0d9488;
+    font-size: 14px;
+}
+
+/* Verify row */
+.export-verify-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+.btn-verify {
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    border-radius: 6px;
+    border: 1px solid #14b8a6;
+    background: #fff;
+    color: #0f766e;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-verify:hover { background: #f0fdfa; }
+.btn-verify:disabled { opacity: 0.5; cursor: default; }
+.btn-verify svg { flex-shrink: 0; }
+.export-verify-status {
+    font-size: 12px;
+    color: #94a3b8;
+}
+.export-verify-status.success {
+    color: #059669;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.export-verify-status.success::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: #10b981;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.export-verify-status.error { color: #dc2626; }
+.export-verify-status.loading {
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.spinner-sm {
+    width: 14px;
+    height: 14px;
+    border: 2px solid #d1d5db;
+    border-top-color: #14b8a6;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+/* Progress header */
+.export-progress-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.export-progress-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.export-progress-count {
+    font-size: 12px;
+    color: #94a3b8;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Progress bar */
+.export-progress-bar-container {
+    height: 4px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+.export-progress-bar {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #14b8a6, #10b981);
+    border-radius: 2px;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.export-progress-bar.indeterminate {
+    width: 40% !important;
+    animation: indeterminate-slide 1.4s ease-in-out infinite;
+}
+@keyframes indeterminate-slide {
+    0% { transform: translateX(-100%); }
+    50% { transform: translateX(150%); }
+    100% { transform: translateX(-100%); }
+}
+
+/* Item-level progress */
+.export-progress-items {
+    max-height: 220px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.1) transparent;
+}
+.export-progress-item {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: 5px;
+    transition: background 0.15s;
+}
+.export-progress-item.parent {
+    font-weight: 600;
+    margin-top: 4px;
+}
+.export-progress-item.child {
+    padding-left: 30px;
+    font-weight: 400;
+}
+.export-progress-item .status-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.export-progress-item .item-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.export-progress-item .item-result {
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    margin-left: auto;
+    font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+}
+
+/* Item states */
+.export-progress-item.pending { color: #cbd5e1; }
+.export-progress-item.pending .status-icon { color: #e2e8f0; }
+.export-progress-item.creating { color: #0f766e; background: #f0fdfa; }
+.export-progress-item.creating .status-icon { color: #14b8a6; animation: spin 0.8s linear infinite; }
+.export-progress-item.done { color: var(--color-text-primary); }
+.export-progress-item.done .status-icon { color: #10b981; }
+.export-progress-item.done .item-result { color: #6b7280; }
+.export-progress-item.done .item-result a { color: #0d9488; text-decoration: none; display: inline-flex; align-items: center; gap: 3px; }
+.export-progress-item.done .item-result a:hover { text-decoration: underline; }
+.export-progress-item.done .item-result a svg { opacity: 0.5; }
+.export-progress-item.done .item-result a:hover svg { opacity: 1; }
+.export-progress-item.failed { color: #dc2626; background: #fef2f2; }
+.export-progress-item.failed .status-icon { color: #dc2626; }
+.export-progress-item.failed .item-result { color: #dc2626; font-family: inherit; }
+.export-progress-item.skipped { color: #94a3b8; }
+.export-progress-item.skipped .status-icon { color: #cbd5e1; }
+.export-progress-item.skipped .item-result { color: #94a3b8; font-style: italic; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Done summary card */
+.export-done-summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    margin-top: 12px;
+}
+.export-done-summary .done-icon {
+    width: 28px;
+    height: 28px;
+    background: #10b981;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    flex-shrink: 0;
+}
+.export-done-summary .done-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: #065f46;
+}
+.export-done-summary .done-detail {
+    font-size: 12px;
+    color: #047857;
+    font-weight: 400;
+}
+.export-done-summary.has-failures {
+    background: #fffbeb;
+    border-color: #fde68a;
+}
+.export-done-summary.has-failures .done-icon {
+    background: #f59e0b;
+}
+.export-done-summary.has-failures .done-text { color: #92400e; }
+.export-done-summary.has-failures .done-detail { color: #a16207; }
+
+.export-progress-summary { margin-top: 8px; font-weight: 600; font-size: 13px; }
+
+/* Dark mode: export summary */
+html.dark-mode .export-summary {
+    background: rgba(20,184,166,0.08);
+    border-color: rgba(20,184,166,0.2);
+    color: #94a3b8;
+}
+html.dark-mode .export-summary strong { color: #2dd4bf; }
+
+/* Dark mode: verify row */
+html.dark-mode .export-verify-row {
+    background: #0f172a;
+    border-color: #334155;
+}
+html.dark-mode .btn-verify {
+    background: #1e293b;
+    border-color: #14b8a6;
+    color: #5eead4;
+}
+html.dark-mode .btn-verify:hover { background: rgba(20,184,166,0.1); }
+html.dark-mode .export-verify-status.success { color: #4ade80; }
+html.dark-mode .export-verify-status.success::before { background: #4ade80; }
+html.dark-mode .export-verify-status.error { color: #f87171; }
+html.dark-mode .export-verify-status.loading { color: #9ca3af; }
+html.dark-mode .spinner-sm { border-color: #4b5563; border-top-color: #2dd4bf; }
+
+/* Dark mode: progress */
+html.dark-mode .export-progress-label { color: #94a3b8; }
+html.dark-mode .export-progress-count { color: #64748b; }
+html.dark-mode .export-progress-bar-container { background: #334155; }
+
+/* Dark mode: item progress */
+html.dark-mode .export-progress-item.pending { color: #475569; }
+html.dark-mode .export-progress-item.pending .status-icon { color: #334155; }
+html.dark-mode .export-progress-item.creating { color: #5eead4; background: rgba(20,184,166,0.06); }
+html.dark-mode .export-progress-item.creating .status-icon { color: #2dd4bf; }
+html.dark-mode .export-progress-item.done { color: var(--color-text-primary); }
+html.dark-mode .export-progress-item.done .status-icon { color: #4ade80; }
+html.dark-mode .export-progress-item.done .item-result { color: #64748b; }
+html.dark-mode .export-progress-item.done .item-result a { color: #2dd4bf; }
+html.dark-mode .export-progress-item.failed { color: #f87171; background: rgba(220,38,38,0.06); }
+html.dark-mode .export-progress-item.failed .status-icon { color: #f87171; }
+html.dark-mode .export-progress-item.skipped { color: #475569; }
+html.dark-mode .export-progress-item.skipped .status-icon { color: #334155; }
+
+/* Dark mode: done summary */
+html.dark-mode .export-done-summary {
+    background: rgba(16,185,129,0.08);
+    border-color: rgba(16,185,129,0.2);
+}
+html.dark-mode .export-done-summary .done-text { color: #6ee7b7; }
+html.dark-mode .export-done-summary .done-detail { color: #34d399; }
+html.dark-mode .export-done-summary.has-failures {
+    background: rgba(245,158,11,0.08);
+    border-color: rgba(245,158,11,0.2);
+}
+html.dark-mode .export-done-summary.has-failures .done-text { color: #fbbf24; }
+html.dark-mode .export-done-summary.has-failures .done-detail { color: #f59e0b; }
+
+/* ==================== Import Styles ==================== */
+
+.import-progress-items {
+    max-height: 160px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    padding: 8px 0;
+}
+
+.import-progress-line {
+    padding: 2px 0;
+}
+
+.import-progress-line.success {
+    color: #059669;
+}
+
+.import-progress-line.error {
+    color: #dc2626;
+}
+
+.import-mapping-mode {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    padding: 8px 0;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--color-border-medium);
+    font-size: 13px;
+}
+.import-mapping-label {
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+}
+.import-mapping-option {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    color: var(--color-text);
+}
+.import-mapping-option input[type="radio"] {
+    margin: 0;
+}
+
+.import-preview-header {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: var(--border-radius);
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: #166534;
+}
+.import-toggle-all {
+    color: inherit;
+    opacity: 0.7;
+    font-size: 13px;
+    margin-left: 8px;
+    text-decoration: underline;
+    cursor: pointer;
+}
+.import-toggle-all:hover { opacity: 1; }
+
+html.dark-mode .import-preview-header {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.2);
+    color: #6ee7b7;
+}
+
+.import-preview {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid var(--color-border-medium);
+    border-radius: var(--border-radius);
+    padding: 8px;
+}
+
+.import-epic {
+    margin-bottom: 4px;
+}
+
+.import-epic-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    user-select: none;
+}
+
+.import-epic-header:hover {
+    background: var(--color-hover-bg);
+}
+
+.import-epic-header input[type="checkbox"] {
+    flex-shrink: 0;
+}
+
+.import-epic.excluded .import-epic-header {
+    opacity: 0.5;
+}
+
+.import-epic-toggle {
+    flex-shrink: 0;
+    width: 16px;
+    text-align: center;
+    font-size: 10px;
+    color: var(--color-text-muted);
+    transition: transform 0.15s;
+}
+
+.import-epic.expanded .import-epic-toggle {
+    transform: rotate(90deg);
+}
+
+.import-issue-key {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 11px;
+    background: var(--color-bg-elevated);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--color-text-secondary);
+    flex-shrink: 0;
+}
+
+.import-epic-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--color-text-primary);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.import-story-count {
+    font-size: 11px;
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+}
+
+.import-stories {
+    display: none;
+    padding-left: 24px;
+}
+
+.import-epic.expanded .import-stories {
+    display: block;
+}
+
+.import-story {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    font-size: 13px;
+    border-radius: var(--border-radius-sm);
+}
+
+.import-story:hover {
+    background: var(--color-hover-bg);
+}
+
+.import-story.excluded {
+    opacity: 0.5;
+}
+
+.import-story-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--color-text-primary);
+}
+
+.import-status-badge {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-weight: 600;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+.import-status-badge.planned {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.import-status-badge.in-progress {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.import-status-badge.done {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+html.dark-mode .import-status-badge.planned {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+}
+
+html.dark-mode .import-status-badge.in-progress {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+}
+
+html.dark-mode .import-status-badge.done {
+    background: rgba(16, 185, 129, 0.2);
+    color: #6ee7b7;
+}
+
+.import-points-badge {
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: var(--color-bg-elevated);
+    color: var(--color-text-secondary);
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.import-count {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    flex: 1;
+    text-align: center;
+}
+
 /* Print: force light mode */
 /* Dark mode is stripped via JS beforeprint/afterprint so light styles apply naturally */
+
+/* ==========================================================================
+   Guided Tour
+   ========================================================================== */
+
+/* Backdrop — click-catcher behind spotlight */
+.tour-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    cursor: pointer;
+}
+
+.tour-backdrop.visible {
+    display: block;
+    background: rgba(10, 15, 20, 0.6);
+}
+
+/* Only apply backdrop-filter when no clip-path cutouts (no-target steps) */
+.tour-backdrop-dim {
+    -webkit-backdrop-filter: blur(1px);
+    backdrop-filter: blur(1px);
+}
+
+/* Spotlight — glow border around target element(s) */
+.tour-spotlight {
+    display: none;
+    position: fixed;
+    z-index: 10001;
+    pointer-events: none;
+    box-shadow:
+        0 0 0 2px rgba(20, 184, 166, 0.35),
+        0 0 20px 4px rgba(20, 184, 166, 0.12);
+    border-radius: 8px;
+    transition: none;
+}
+
+.tour-spotlight-extra {
+    transition: none;
+}
+
+.tour-spotlight.visible {
+    display: block;
+}
+
+/* Tooltip card */
+.tour-tooltip {
+    display: none;
+    position: fixed;
+    z-index: 10002;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.06),
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        0 12px 40px rgba(0, 0, 0, 0.14);
+    max-width: 380px;
+    width: max-content;
+    min-width: 280px;
+    padding: 0;
+    overflow: hidden;
+    animation: tourCardIn 0.3s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.tour-tooltip.visible {
+    display: block;
+}
+
+/* Wider tooltip for centered (no-target) steps */
+.tour-backdrop-dim + .tour-spotlight + .tour-tooltip {
+    max-width: 440px;
+}
+
+@keyframes tourCardIn {
+    from { opacity: 0; transform: translateY(8px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Teal accent bar across top of tooltip */
+.tour-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #14b8a6, #0ea5e9);
+    border-radius: 14px 14px 0 0;
+}
+
+/* Arrow — rotated square for a softer look */
+.tour-tooltip::before {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 2px;
+    box-shadow: -1px -1px 2px rgba(0, 0, 0, 0.04);
+    z-index: -1;
+}
+
+.tour-tooltip[data-arrow="top"]::before {
+    top: -7px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+}
+
+.tour-tooltip[data-arrow="bottom"]::before {
+    bottom: -7px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.tour-tooltip[data-arrow="left"]::before {
+    left: -7px;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+}
+
+.tour-tooltip[data-arrow="right"]::before {
+    right: -7px;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+    box-shadow: 1px -1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* Tooltip content area */
+.tour-tooltip-content {
+    padding: 22px 24px 0;
+}
+
+/* Step content enter animation */
+.tour-step-enter {
+    animation: tourStepFade 0.25s ease;
+}
+
+@keyframes tourStepFade {
+    from { opacity: 0; transform: translateX(8px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.tour-tooltip-icon {
+    display: block;
+    font-size: 26px;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.tour-tooltip-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+}
+
+.tour-tooltip-body {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #4b5563;
+    margin-bottom: 0;
+}
+
+.tour-tooltip-body strong {
+    color: #111827;
+    font-weight: 600;
+}
+
+/* Progress dots */
+.tour-tooltip-progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 14px 24px 0;
+}
+
+.tour-progress-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 6px;
+    background: #e5e7eb;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tour-progress-dot.visited {
+    background: #99f6e4;
+}
+
+.tour-progress-dot.active {
+    width: 20px;
+    background: linear-gradient(90deg, #14b8a6, #0ea5e9);
+}
+
+/* Footer */
+.tour-tooltip-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 14px;
+    gap: 8px;
+}
+
+.tour-tooltip-nav {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+}
+
+.tour-btn-skip {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: #9ca3af;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 7px 12px;
+    border-radius: 8px;
+    transition: color 0.15s, background 0.15s;
+}
+
+.tour-btn-skip:hover {
+    color: #6b7280;
+    background: #f3f4f6;
+}
+
+.tour-btn-skip:active {
+    background: #e5e7eb;
+}
+
+.tour-btn-back {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: #4b5563;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    padding: 7px 14px;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+}
+
+.tour-btn-back:hover {
+    background: #e5e7eb;
+    border-color: #d1d5db;
+}
+
+.tour-btn-back:active {
+    background: #d1d5db;
+    transform: scale(0.97);
+}
+
+.tour-btn-next {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
+    border: none;
+    cursor: pointer;
+    padding: 7px 18px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+    box-shadow: 0 1px 3px rgba(20, 184, 166, 0.25);
+}
+
+.tour-btn-next:hover {
+    background: linear-gradient(135deg, #0d9488, #0f766e);
+    box-shadow: 0 2px 8px rgba(20, 184, 166, 0.35);
+    transform: translateY(-1px);
+}
+
+.tour-btn-next:active {
+    transform: translateY(0) scale(0.97);
+    box-shadow: 0 1px 2px rgba(20, 184, 166, 0.2);
+}
+
+.tour-btn-next-arrow {
+    transition: transform 0.2s ease;
+}
+
+.tour-btn-next:hover .tour-btn-next-arrow {
+    transform: translateX(2px);
+}
+
+/* Welcome screen tour button */
+/* Suppress tutorial toast during tour */
+body.tour-active .tutorial-toast {
+    display: none !important;
+}
+
+/* Raise sidebar z-index during tour so panel tabs are spotlightable, but disable interaction */
+body.tour-active .controls-right {
+    z-index: 10003;
+    pointer-events: none;
+}
+
+@media print {
+    .tour-backdrop,
+    .tour-spotlight,
+    .tour-tooltip {
+        display: none !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .tour-tooltip {
+        max-width: calc(100vw - 24px);
+        min-width: 0;
+    }
+
+    .tour-tooltip-content {
+        padding: 18px 18px 0;
+    }
+
+    .tour-tooltip-icon {
+        font-size: 22px;
+    }
+
+    .tour-tooltip-title {
+        font-size: 15px;
+    }
+
+    .tour-tooltip-body {
+        font-size: 13px;
+    }
+
+}
