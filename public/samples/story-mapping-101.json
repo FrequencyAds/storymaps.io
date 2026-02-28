@@ -64,35 +64,33 @@
   ],
   "slices": [
     {
-      "name": "MVP:\nBasic House",
+      "name": "V1:\nBasic House",
       "stories": [
         [],
         [
           {
-            "name": "Find a good space to build our lego house",
+            "name": "Design easy-open packaging",
             "color": "#fef08a"
           },
           {
-            "name": "Table top is usually a good place to build",
-            "color": "#a5f3fc"
+            "name": "Include a 'getting started' card",
+            "color": "#fef08a"
           }
         ],
         [
           {
-            "name": "Open lego bags",
+            "name": "Package pieces in numbered bags",
             "color": "#fef08a"
           },
           {
-            "name": "Sort pieces into groups",
-            "color": "#fef08a",
-            "status": "done"
+            "name": "Include a parts checklist",
+            "color": "#fef08a"
           }
         ],
         [
           {
-            "name": "Show steps to follow",
-            "color": "#fef08a",
-            "status": "done"
+            "name": "Write instructions",
+            "color": "#fef08a"
           },
           {
             "name": "Indicate the pieces required at each step",
@@ -105,51 +103,46 @@
         ],
         [
           {
-            "name": "Place the base plate on a flat surface",
-            "color": "#fef08a",
-            "status": "in-progress"
+            "name": "Include base plate in set",
+            "color": "#fef08a"
           },
           {
-            "name": "Use the red bricks to build the walls",
-            "color": "#fef08a",
-            "status": "planned"
+            "name": "Design interlocking wall sections",
+            "color": "#fef08a"
           },
           {
-            "name": "Connect the pieces together as you build",
+            "name": "Ensure pieces snap together easily",
             "color": "#fef08a"
           }
         ],
         [
           {
-            "name": "Fit the door inbetween the red bricks",
-            "color": "#fef08a",
-            "status": "planned"
-          },
-          {
-            "name": "Add a window",
+            "name": "Design door piece to fit standard wall gap",
             "color": "#fef08a"
           },
           {
-            "name": "continue adding wall bricks above",
+            "name": "Include window frame pieces",
             "color": "#fef08a"
-          }
-        ],
-        [
-          {
-            "name": "use the triangle pieces fo the edges of the roof",
-            "color": "#fef08a",
-            "status": "planned"
           },
           {
-            "name": "add the roof top piece to the edges to cover",
+            "name": "Provide extra wall bricks for upper level",
             "color": "#fef08a"
           }
         ],
         [
           {
-            "name": "You now have a lego house",
-            "color": "#a5f3fc",
-            "status": "planned"
+            "name": "Include angled roof pieces",
+            "color": "#fef08a"
+          },
+          {
+            "name": "Design ridge cap to seal roof",
+            "color": "#fef08a"
+          }
+        ],
+        [
+          {
+            "name": "Add display stand or mini-figures",
+            "color": "#fef08a"
           }
         ]
       ]
@@ -167,6 +160,10 @@
     {
       "color": "#a5f3fc",
       "label": "Note"
+    },
+    {
+      "color": "#fecdd3",
+      "label": "Edge Case"
     }
   ]
 }

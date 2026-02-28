@@ -172,7 +172,6 @@ const toggleSliceCollapsed = (sliceId, collapsed, reason) => {
     slice.collapsed = collapsed;
     if (collapsed && reason) slice.closedReason = reason;
     else delete slice.closedReason;
-    _logEvent?.(collapsed ? 'Collapsed slice' : 'Expanded slice', [sliceId]);
     _renderAndSave();
 };
 
@@ -485,7 +484,6 @@ const createColumnPlaceholder = (column) => {
     placeholder.addEventListener('click', () => {
         column.hidden = false;
         column.color = CARD_COLORS.green;
-        _logEvent?.('Showed step', [column.id]);
         _renderAndSave();
     });
 

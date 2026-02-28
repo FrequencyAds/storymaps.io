@@ -467,6 +467,38 @@ const handleApi = async (req, res) => {
     return;
   }
 
+  // GET /api/maps/:id/log — activity log entries
+  const logMatch = path.match(/^\/api\/maps\/([a-z0-9]+)\/log$/);
+  if (logMatch && req.method === 'GET') {
+    const mapId = logMatch[1];
+    let doc = docs.get(mapId);
+    let created = false;
+    if (!doc) {
+      const persistence = getPersistence();
+      if (!persistence) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Persistence unavailable' }));
+        return;
+      }
+      doc = new Y.Doc();
+      await persistence.bindState(mapId, doc);
+      created = true;
+    }
+    // Check if map has any data (empty doc = map not found)
+    const ymap = doc.getMap('storymap');
+    if (ymap.size === 0) {
+      if (created) doc.destroy();
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Map not found' }));
+      return;
+    }
+    const entries = doc.getArray('log').toArray().reverse();
+    if (created) doc.destroy();
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
+    res.end(JSON.stringify(entries));
+    return;
+  }
+
   // PUT /api/maps/:id — push map data
   const putMapMatch = path.match(/^\/api\/maps\/([a-z0-9]+)$/);
   if (putMapMatch && req.method === 'PUT') {

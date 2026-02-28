@@ -63,7 +63,7 @@ let _presenceName = '';
 // Touch device detection (skip name prompt, broadcast as mobile)
 const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
 
-export const getPresenceName = () => _presenceName;
+export const getPresenceName = () => _presenceName || 'guest';
 
 export const init = ({ getProvider, getYdoc, dom, getZoomLevel, getState }) => {
     _getProvider = getProvider;
@@ -151,8 +151,9 @@ export const trackPresence = async () => {
     const awareness = provider.awareness;
     const sessionId = getSessionId();
 
-    // Prompt for name if not stored (skip on touch devices — badge is hidden anyway)
-    if (!isTouchDevice) {
+    // Prompt for name if not stored (skip on touch devices and during tour)
+    const isTourActive = document.body.classList.contains('tour-active');
+    if (!isTouchDevice && !isTourActive) {
         let name = localStorage.getItem('presenceName');
         if (name === null) {
             name = await showPrompt('Enter your name for live collaboration (optional)', '', 'guest') || '';

@@ -233,14 +233,22 @@
         <div class="welcome-split">
             <div class="welcome-content">
                 <h1>Welcome to Storymaps.io</h1>
-                <p class="welcome-subtitle">Create, preserve, and collaborate on<br class="mobile-only"> user story maps.<br>Export to <span class="nowrap"><svg class="inline-logo" viewBox="0 0 24 24" fill="#0052CC"><path d="M11.571 11.513H0a5.218 5.218 0 0 0 5.232 5.215h2.13v2.057A5.215 5.215 0 0 0 12.575 24V12.518a1.005 1.005 0 0 0-1.005-1.005zm5.723-5.756H5.736a5.215 5.215 0 0 0 5.215 5.214h2.129v2.058a5.218 5.218 0 0 0 5.215 5.214V6.758a1.001 1.001 0 0 0-1.001-1.001zM23.013 0H11.455a5.215 5.215 0 0 0 5.215 5.215h2.129v2.057A5.215 5.215 0 0 0 24 12.483V1.005A1.005 1.005 0 0 0 23.013 0z"/></svg>&nbsp;Jira</span> <span class="nowrap"><svg class="inline-logo" viewBox="0 0 24 24" fill="#F06A6A"><circle cx="12" cy="4.5" r="4"/><circle cx="4.5" cy="15" r="4"/><circle cx="19.5" cy="15" r="4"/></svg>&nbsp;Asana</span> <span class="nowrap"><svg class="inline-logo" viewBox="0 0 592 592"><path fill="#069" d="M592.2,51.8V0H329.5C329.2,181.6,181.9,328.8.2,328.9V592h52l6.7-116.3a475.94,475.94,0,0,0,69-13.7l50.4,104.4,96.5-40-38-109.6a489.27,489.27,0,0,0,58.3-39l86.6,77.3,73.9-73.9-77.1-86.8a477.47,477.47,0,0,0,39-58.3L527,274.3l40-96.5L462.6,127.2a486.82,486.82,0,0,0,13.6-68.8Z"/><path fill="#900" d="M0,0V199.8c110.4,0,200-89.4,200.2-199.8Z"/></svg>&nbsp;Phabricator.</span></p>
+                <p class="welcome-subtitle">Create, preserve, and collaborate on<br class="mobile-only"> user story maps.</p>
+                <p class="welcome-integrations-text">or import the story map hidden inside your existing backlog:</p>
+                <div class="welcome-integrations">
+                    <button class="welcome-integration" data-import="jira"><svg viewBox="0 0 24 24" fill="#0052CC"><path d="M11.571 11.513H0a5.218 5.218 0 0 0 5.232 5.215h2.13v2.057A5.215 5.215 0 0 0 12.575 24V12.518a1.005 1.005 0 0 0-1.005-1.005zm5.723-5.756H5.736a5.215 5.215 0 0 0 5.215 5.214h2.129v2.058a5.218 5.218 0 0 0 5.215 5.214V6.758a1.001 1.001 0 0 0-1.001-1.001zM23.013 0H11.455a5.215 5.215 0 0 0 5.215 5.215h2.129v2.057A5.215 5.215 0 0 0 24 12.483V1.005A1.005 1.005 0 0 0 23.013 0z"/></svg>Jira</button>
+                    <button class="welcome-integration" data-import="asana"><svg viewBox="0 0 24 24" fill="#F06A6A"><circle cx="12" cy="4.5" r="4"/><circle cx="4.5" cy="15" r="4"/><circle cx="19.5" cy="15" r="4"/></svg>Asana</button>
+                    <button class="welcome-integration" data-import="phabricator"><svg viewBox="0 0 592 592"><path fill="#069" d="M592.2,51.8V0H329.5C329.2,181.6,181.9,328.8.2,328.9V592h52l6.7-116.3a475.94,475.94,0,0,0,69-13.7l50.4,104.4,96.5-40-38-109.6a489.27,489.27,0,0,0,58.3-39l86.6,77.3,73.9-73.9-77.1-86.8a477.47,477.47,0,0,0,39-58.3L527,274.3l40-96.5L462.6,127.2a486.82,486.82,0,0,0,13.6-68.8Z"/><path fill="#900" d="M0,0V199.8c110.4,0,200-89.4,200.2-199.8Z"/></svg>Phabricator</button>
+                </div>
                 <div class="welcome-actions">
-                    <button class="btn btn-large" id="welcomeNewBtn">New Story Map</button>
+                    <div class="welcome-cta-row">
+                        <button class="btn btn-large" id="welcomeNewBtn">New Story Map</button>
+                        <button class="btn btn-large btn-secondary" id="welcomeTourBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" stroke="none"/></svg>Take the Tour</button>
+                    </div>
                     <span class="welcome-counter" id="welcomeCounter"></span>
                     <div class="welcome-samples">
                         <p class="welcome-samples-label">Try a sample:</p>
                         <div class="welcome-samples-list">
-                            <button class="btn-sample btn-sample-green" data-sample="story-mapping-101">Story Mapping Tour</button>
                             <button class="btn-sample btn-sample-purple" data-sample="recipe-app">Recipe App</button>
                             <button class="btn-sample btn-sample-cyan" data-sample="mobile-banking">Mobile Banking</button>
                             <button class="btn-sample btn-sample-yellow" data-sample="brochure-site">Build Brochure Site</button>
@@ -278,7 +286,7 @@
                     <div class="welcome-learn-group">
                         <span class="welcome-learn-group-label">Read</span>
                         <div class="welcome-learn-group-cards">
-                            <a href="https://raw.githubusercontent.com/jackgleeson/storymaps.io/main/resources/story_mapping_slides.pdf" target="_blank" rel="noopener" class="welcome-learn-card">
+                            <a href="https://raw.githubusercontent.com/jackgleeson/storymaps.io/main/public/resources/story_mapping_slides.pdf" target="_blank" rel="noopener" class="welcome-learn-card">
                                 <svg class="welcome-learn-icon" viewBox="0 0 24 24" width="48" height="48" fill="#E53935">
                                     <path d="M20 3H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h6l-2 4h2l2-4h0l2 4h2l-2-4h6c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 12H4V5h16v10z"/>
                                     <path d="M10 7v6l5-3-5-3z"/>

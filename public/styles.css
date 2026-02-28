@@ -2661,13 +2661,51 @@ body.main-menu-open .step:hover {
     font-size: 15px;
     line-height: 1.6;
     color: #555;
+    margin-bottom: 12px;
+}
+
+.welcome-integrations-text {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.welcome-integrations {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     margin-bottom: 32px;
 }
 
-.welcome-subtitle .inline-logo {
-    width: 15px;
-    height: 15px;
-    vertical-align: -2px;
+.welcome-integration {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    background: var(--color-bg-surface);
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 7px 14px 7px 10px;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.welcome-integration:hover {
+    border-color: var(--color-teal);
+    box-shadow: 0 2px 8px rgba(20, 184, 166, 0.15);
+    transform: translateY(-1px);
+}
+
+.welcome-integration svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
 }
 
 .nowrap {
@@ -2732,6 +2770,13 @@ body.main-menu-open .step:hover {
     font-variant-numeric: tabular-nums;
 }
 
+.welcome-cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+}
+
 .btn-large {
     padding: 14px 36px;
     font-size: 16px;
@@ -2740,6 +2785,13 @@ body.main-menu-open .step:hover {
 
 .btn-large:hover {
     box-shadow: 0 4px 16px rgba(20, 184, 166, 0.35);
+}
+
+.btn-large.btn-secondary {
+    box-shadow: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 
@@ -2795,8 +2847,6 @@ body.main-menu-open .step:hover {
 .btn-sample-purple { background: var(--color-bg-surface); border-color: #e5e7eb; }
 .btn-sample-purple::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #d8b4fe; margin-right: 8px; flex-shrink: 0; }
 
-.btn-sample-green { background: var(--color-bg-surface); border-color: #e5e7eb; }
-.btn-sample-green::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #4ade80; margin-right: 8px; flex-shrink: 0; }
 
 /* Bottom section — learn more */
 .welcome-bottom {
@@ -3091,6 +3141,10 @@ body.main-menu-open .step:hover {
 
     .welcome-subtitle {
         font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .welcome-integrations {
         margin-bottom: 20px;
     }
 
@@ -3961,6 +4015,66 @@ body.main-menu-open .step:hover {
 
     .import-file-dropzone {
         min-height: 150px;
+    }
+
+    .export-fields-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .export-fields-row .export-field[style] {
+        flex: none !important;
+    }
+
+    .export-step-content {
+        padding-left: 0 !important;
+        gap: 12px;
+    }
+
+    .export-verify-row {
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+
+    .api-export-modal-body {
+        gap: 12px;
+    }
+
+    .export-field-input {
+        width: auto;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .export-step-content,
+    .export-fields-row,
+    .export-field {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .modal-overlay {
+        padding: 10px;
+    }
+
+    .modal-header {
+        padding: 14px 16px;
+    }
+
+    .modal-body {
+        padding: 12px;
+    }
+
+    .api-export-modal .export-actions,
+    .export-modal .export-actions {
+        margin: 0 -12px -12px;
+        padding: 12px;
+        bottom: -12px;
+    }
+
+    .export-instructions {
+        gap: 16px;
     }
 }
 
@@ -6947,6 +7061,18 @@ html.dark-mode .welcome-content h1 {
 html.dark-mode .welcome-subtitle {
     color: #94a3b8;
 }
+html.dark-mode .welcome-integrations-text {
+    color: #64748b;
+}
+html.dark-mode .welcome-integration {
+    background: var(--color-bg-surface);
+    color: var(--color-text-primary);
+    border-color: var(--color-border);
+}
+html.dark-mode .welcome-integration:hover {
+    border-color: var(--color-teal);
+    box-shadow: 0 2px 8px rgba(45, 212, 191, 0.15);
+}
 html.dark-mode .welcome-counter {
     color: #64748b;
 }
@@ -8401,5 +8527,19 @@ body.tour-active .controls-right {
     .tour-tooltip-body {
         font-size: 13px;
     }
+}
 
+/* Hide tour options on touch devices (tour requires desktop) */
+@media (pointer: coarse) {
+    [data-sample="story-mapping-101"],
+    #tourMenuBtn,
+    #welcomeTourBtn {
+        display: none !important;
+    }
+
+    #welcomeNewBtn {
+        width: 100%;
+        padding: 16px 32px;
+        font-size: 18px;
+    }
 }

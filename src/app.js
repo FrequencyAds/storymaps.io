@@ -52,6 +52,7 @@ const dom = {
     shareDownload: document.getElementById('shareDownload'),
     welcomeScreen: document.getElementById('welcomeScreen'),
     welcomeNewBtn: document.getElementById('welcomeNewBtn'),
+    welcomeTourBtn: document.getElementById('welcomeTourBtn'),
     tourMenuBtn: document.getElementById('tourMenuBtn'),
     welcomeCounter: document.getElementById('welcomeCounter'),
     activeMappers: document.getElementById('activeMappers'),
@@ -1722,17 +1723,25 @@ const initEventListeners = () => {
         document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
         tour.startTour();
     };
+    dom.welcomeTourBtn.addEventListener('click', launchTour);
     dom.tourMenuBtn.addEventListener('click', launchTour);
+
+    document.querySelector('.welcome-integrations')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('.welcome-integration');
+        if (!btn?.dataset.import) return;
+        const importMap = {
+            jira: showJiraImportModal,
+            asana: showAsanaImportModal,
+            phabricator: showPhabCsvImportModal,
+        };
+        importMap[btn.dataset.import]?.();
+    });
 
     document.querySelector('.welcome-samples-list')?.addEventListener('click', (e) => {
         const btn = e.target.closest('.btn-sample');
         if (btn?.dataset.sample) {
             e.stopPropagation();
-            if (btn.dataset.sample === 'story-mapping-101') {
-                launchTour();
-            } else {
-                startWithSample(btn.dataset.sample);
-            }
+            startWithSample(btn.dataset.sample);
         }
     });
 
@@ -2958,12 +2967,8 @@ const initEventListeners = () => {
                 closeMainMenu();
                 return;
             }
-            if (item.dataset.sample === 'story-mapping-101') {
-                launchTour();
-            } else {
-                loadSample(item.dataset.sample);
-                closeMainMenu();
-            }
+            loadSample(item.dataset.sample);
+            closeMainMenu();
         }
     });
 
@@ -3116,7 +3121,7 @@ const updateActiveMappers = async () => {
             }
             counterLoaded = true;
         }
-        if (dom.activeMappers) {
+        if (dom.activeMappers && document.body.classList.contains('welcome-visible')) {
             if (data.activeUsers > 0) {
                 dom.activeMappers.textContent = `${data.activeUsers} ${data.activeUsers === 1 ? 'user' : 'users'} mapping now`;
                 dom.activeMappers.classList.add('visible');
@@ -3331,7 +3336,14 @@ yjs.init({
 });
 
 // Wire tour module
-tour.init();
+tour.init({
+    addSlice,
+    deleteSlice,
+    getState: () => state,
+    renderAndSave,
+    createStory,
+    zoomToFit,
+});
 
 // Materialize phantom columns up to and including the given index (0-based).
 // Columns before the target are created hidden (spacers); the target column is visible.

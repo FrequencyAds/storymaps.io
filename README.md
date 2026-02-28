@@ -92,6 +92,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Full Screen Mode** - toggle from the view controls; double-Esc to exit (single Esc still closes modals, search, etc.); auto zoom-to-fit on enter and exit
 - **Focus Mode** - hide card metadata (status, points, tags, links) for a cleaner presentation view; toggle from the view controls; expand icons still appear on hover
 - **Copy map** - duplicate an existing map to a new URL
+- **Guided tour** - interactive walkthrough that teaches story mapping concepts using a Lego house example, with live demos of slices, legend cards, and dark mode
 - **Sample maps** - load examples to learn the methodology
 - **Map counter** - community stat showing total maps created
 - **Auto-save** - continuous save to local storage and server
@@ -101,7 +102,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 The app is a single Node.js server (`server.js`) that handles:
 - **WebSocket** - Real-time collaboration via y-websocket
 - **Static files** - Serves the client app from `public/` and `src/`
-- **REST API** - Lock state (`/api/lock/:mapId`), backups (`/api/backups/:mapId`), stats (`/api/stats`), format endpoints (`/:mapId.json`, `/:mapId.yaml`), and server-proxied third-party imports/exports with SSE progress streaming
+- **REST API** - Lock state (`/api/lock/:mapId`), backups (`/api/backups/:mapId`), activity log (`/api/maps/:id/log`), stats (`/api/stats`), format endpoints (`/:mapId.json`, `/:mapId.yaml`), and server-proxied third-party imports/exports with SSE progress streaming
 
 ### Data Storage
 - **LevelDB** - Yjs document persistence in `data/`
@@ -213,7 +214,7 @@ The server starts on `http://localhost:8080`.
 
 ## Usage
 1. Visit [storymaps.io](https://storymaps.io) or self-host your own instance
-2. Click **New Story Map** or try a sample to get started
+2. Click **New Story Map**, **Take the Tour** for an interactive walkthrough, or try a sample to get started
 3. Click **+** to add steps (columns) to the backbone
 4. Click **+** in a column to add tasks
 5. Click **+ Add Slice** to create release groupings
