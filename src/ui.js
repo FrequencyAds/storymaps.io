@@ -4,6 +4,7 @@
 import { CARD_COLORS, DEFAULT_CARD_COLORS, STATUS_OPTIONS, el, isValidUrl } from '/src/constants.js';
 import { partialMapEditState } from '/src/state.js';
 import { showAlert, showConfirm, showPrompt } from '/src/modals.js';
+import { quoted } from '/src/log.js';
 
 let _state = null;
 let _dom = null;
@@ -202,7 +203,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
         if (itemColor === hex.toLowerCase()) swatch.classList.add('selected');
         swatch.addEventListener('click', (e) => {
             e.stopPropagation();
-            _logEvent?.('Changed card color', [item.id]);
+            _logEvent?.(`Changed card color${quoted(item.name)}`, [item.id]);
             onColorChange(hex);
             menu.classList.remove('visible');
         });
@@ -234,7 +235,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
         if (onColorChange) { // reuse as signal that item is mutable
             _pushUndo();
             item.points = val;
-            _logEvent?.('Changed card points', [item.id]);
+            _logEvent?.(`Changed card points${quoted(item.name)}`, [item.id]);
             _renderAndSave();
         }
     });
@@ -252,7 +253,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
         if (!item.status) noneSwatch.classList.add('selected');
         noneSwatch.addEventListener('click', (e) => {
             e.stopPropagation();
-            _logEvent?.('Changed card status', [item.id]);
+            _logEvent?.(`Changed card status${quoted(item.name)}`, [item.id]);
             onStatusChange(null);
             menu.classList.remove('visible');
         });
@@ -264,7 +265,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
             if (item.status === key) swatch.classList.add('selected');
             swatch.addEventListener('click', (e) => {
                 e.stopPropagation();
-                _logEvent?.('Changed card status', [item.id]);
+                _logEvent?.(`Changed card status${quoted(item.name)}`, [item.id]);
                 onStatusChange(key);
                 menu.classList.remove('visible');
             });
@@ -289,7 +290,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
                 e.stopPropagation();
                 _pushUndo();
                 item.tags = item.tags.filter(t => t !== tag);
-                _logEvent?.('Removed card tag', [item.id]);
+                _logEvent?.(`Removed card tag${quoted(item.name)}`, [item.id]);
                 renderTagPills();
                 _renderAndSave();
             });
@@ -314,7 +315,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
         if (item.tags.includes(trimmed)) return;
         _pushUndo();
         item.tags.push(trimmed);
-        _logEvent?.('Added card tag', [item.id]);
+        _logEvent?.(`Added card tag${quoted(item.name)}`, [item.id]);
         tagInput.value = '';
         tagAutocomplete.classList.remove('visible');
         renderTagPills();
@@ -357,7 +358,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
         const url = await showPrompt('Enter URL (https:// or http://):', item.url || '');
         if (url !== null) {
             if (url === '' || isValidUrl(url)) {
-                _logEvent?.(url ? 'Added card URL' : 'Removed card URL', [item.id]);
+                _logEvent?.(`${url ? 'Added card URL' : 'Removed card URL'}${quoted(item.name)}`, [item.id]);
                 onUrlChange(url);
             } else {
                 await showAlert('Invalid URL. Please enter a valid http:// or https:// URL.');

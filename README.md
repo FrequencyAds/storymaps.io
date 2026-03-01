@@ -69,7 +69,8 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Jira** - import from CSV file or via server-proxied REST API; export as CSV or via server-proxied REST API; card body text is used as the issue description
 - **Asana** - export as CSV or via server-proxied REST API; card body text is used as the task notes
 - **Phabricator** - export via server-proxied Maniphest API; card body text is used as the task description
-- **URL endpoints** - append `.json` or `.yaml` to any map URL to fetch its data programmatically (e.g. `curl storymaps.io/abc123.json`); exports include the map ID for traceability
+- **Linear** - import from CSV file or via server-proxied REST API
+- **URL endpoints** - append `.json`, `.yaml`, or `.csv` to any map URL to fetch its data programmatically (e.g. `curl storymaps.io/abc123.csv`); exports include the map ID for traceability
 - **Share as image** - copy map screenshot to clipboard or download as PNG
 - **Print / PDF**
 
@@ -92,7 +93,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Full Screen Mode** - toggle from the view controls; double-Esc to exit (single Esc still closes modals, search, etc.); auto zoom-to-fit on enter and exit
 - **Focus Mode** - hide card metadata (status, points, tags, links) for a cleaner presentation view; toggle from the view controls; expand icons still appear on hover
 - **Copy map** - duplicate an existing map to a new URL
-- **Guided tour** - interactive walkthrough that teaches story mapping concepts using a Lego house example, with live demos of slices, legend cards, and dark mode
+- **Guided tour** - interactive walkthrough that teaches story mapping concepts using a Lego house example, with live demos of slices, legend cards, dark mode, the notepad, and the activity log
 - **Sample maps** - load examples to learn the methodology
 - **Map counter** - community stat showing total maps created
 - **Auto-save** - continuous save to local storage and server
@@ -128,7 +129,7 @@ Storymaps is a single Docker container behind a Caddy reverse proxy. It runs on 
    git clone https://github.com/jackgleeson/userstorymaps.git
    cd userstorymaps
    ```
-2. Edit the `Caddyfile` - replace `storymaps.io` with your domain and remove the `www` and `new` redirect blocks:
+2. Edit the `Caddyfile` - replace `storymaps.io` with your domain and remove the `www` redirect block:
    ```
    storymaps.yourcompany.com {
        reverse_proxy app:8080

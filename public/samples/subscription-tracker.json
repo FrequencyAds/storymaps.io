@@ -1,0 +1,461 @@
+{
+  "app": "storymap",
+  "v": 1,
+  "name": "Monthly Subscription Tracker",
+  "users": [
+    [
+      {
+        "name": "Subscriber",
+        "color": "#fda4af"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    []
+  ],
+  "activities": [
+    [
+      {
+        "name": "Manage Subscriptions",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    []
+  ],
+  "steps": [
+    {
+      "name": "Add Subscription",
+      "color": "#86efac"
+    },
+    {
+      "name": "View Dashboard",
+      "color": "#86efac"
+    },
+    {
+      "name": "Get Reminders",
+      "color": "#86efac"
+    },
+    {
+      "name": "Review Spending",
+      "color": "#86efac"
+    },
+    {
+      "name": "Cancel / Pause",
+      "color": "#86efac"
+    },
+    {
+      "name": "Share Plan",
+      "color": "#86efac"
+    }
+  ],
+  "slices": [
+    {
+      "name": "MVP",
+      "stories": [
+        [
+          {
+            "name": "Enter name, cost, and billing cycle",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "frontend"
+            ]
+          },
+          {
+            "name": "Pick category ",
+            "body": "(streaming, music, fitness, etc.)",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "frontend"
+            ]
+          },
+          {
+            "name": "Set renewal date",
+            "status": "done",
+            "points": 1,
+            "tags": [
+              "frontend"
+            ]
+          },
+          {
+            "name": "Should we auto-detect billing cycle from bank data?",
+            "color": "#bef264"
+          }
+        ],
+        [
+          {
+            "name": "List all active subscriptions",
+            "status": "done",
+            "points": 3,
+            "tags": [
+              "frontend",
+              "backend"
+            ]
+          },
+          {
+            "name": "Show total monthly cost",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "frontend"
+            ]
+          },
+          {
+            "name": "Sort by next renewal date",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "frontend"
+            ]
+          }
+        ],
+        [
+          {
+            "name": "Email reminder 3 days before renewal",
+            "status": "done",
+            "points": 3,
+            "tags": [
+              "backend",
+              "notifications"
+            ]
+          },
+          {
+            "name": "In-app notification badge",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "frontend"
+            ]
+          },
+          {
+            "name": "What if the user has notifications disabled?",
+            "color": "#fecdd3"
+          }
+        ],
+        [
+          {
+            "name": "Monthly spending total",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "frontend",
+              "backend"
+            ]
+          },
+          {
+            "name": "Breakdown by category",
+            "status": "done",
+            "points": 3,
+            "tags": [
+              "frontend"
+            ]
+          },
+          {
+            "name": "Spending trend graph (3-6-12 months)",
+            "status": "in-progress",
+            "tags": [
+              "frontend"
+            ]
+          },
+          {
+            "name": "Need to handle currency conversion",
+            "color": "#a5f3fc"
+          },
+          {
+            "name": "Chart library: Chart.js vs D3 - keep it lightweight",
+            "color": "#d8b4fe"
+          }
+        ],
+        [
+          {
+            "name": "Mark subscription as cancelled",
+            "status": "done",
+            "points": 1,
+            "tags": [
+              "frontend",
+              "backend"
+            ]
+          },
+          {
+            "name": "Pause subscription tracking",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "frontend",
+              "backend"
+            ]
+          },
+          {
+            "name": "Keep cancelled subs in history or delete?",
+            "color": "#bef264"
+          }
+        ],
+        [
+          {
+            "name": "Export list as CSV",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "frontend"
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "name": "V1",
+      "stories": [
+        [
+          {
+            "name": "Auto-detect subscription from email receipts",
+            "status": "in-progress",
+            "tags": [
+              "backend",
+              "api"
+            ]
+          },
+          {
+            "name": "Import from bank statement CSV",
+            "status": "planned",
+            "tags": [
+              "backend"
+            ]
+          },
+          {
+            "name": "Gmail vs Outlook API scope differences",
+            "color": "#a5f3fc"
+          }
+        ],
+        [
+          {
+            "name": "Price change indicator",
+            "status": "in-progress",
+            "tags": [
+              "frontend",
+              "backend"
+            ]
+          },
+          {
+            "name": "Upcoming renewals calendar view",
+            "status": "planned",
+            "tags": [
+              "frontend"
+            ]
+          },
+          {
+            "name": "Filter by category or status",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "frontend"
+            ]
+          }
+        ],
+        [
+          {
+            "name": "Push notifications (mobile)",
+            "status": "in-progress",
+            "tags": [
+              "mobile",
+              "notifications"
+            ]
+          },
+          {
+            "name": "Customisable reminder timing",
+            "status": "planned",
+            "tags": [
+              "frontend",
+              "backend"
+            ]
+          },
+          {
+            "name": "Free trial expiry alerts",
+            "status": "planned",
+            "tags": [
+              "backend",
+              "notifications"
+            ]
+          }
+        ],
+        [
+          {
+            "name": "Year-over-year comparison",
+            "status": "planned",
+            "tags": [
+              "frontend",
+              "backend"
+            ]
+          }
+        ],
+        [
+          {
+            "name": "Direct cancel link to provider",
+            "status": "planned",
+            "tags": [
+              "backend"
+            ]
+          },
+          {
+            "name": "Show savings since cancellation",
+            "status": "planned",
+            "tags": [
+              "frontend"
+            ]
+          },
+          {
+            "name": "Cancel links may break if providers change their URLs",
+            "color": "#fecdd3"
+          }
+        ],
+        [
+          {
+            "name": "Share subscription list with partner",
+            "status": "planned",
+            "tags": [
+              "frontend",
+              "backend"
+            ]
+          },
+          {
+            "name": "Read-only shared view",
+            "status": "planned",
+            "tags": [
+              "frontend"
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "name": "V2",
+      "stories": [
+        [
+          {
+            "name": "Bank account sync via Plaid",
+            "status": "planned",
+            "tags": [
+              "backend",
+              "api"
+            ]
+          },
+          {
+            "name": "Plaid costs per-connection - need pricing model",
+            "color": "#d8b4fe"
+          }
+        ],
+        [
+          {
+            "name": "Budget goal per category",
+            "status": "planned",
+            "tags": [
+              "frontend",
+              "backend"
+            ]
+          },
+          {
+            "name": "Unused subscription detection",
+            "status": "planned",
+            "tags": [
+              "backend",
+              "ai"
+            ]
+          },
+          {
+            "name": "How do we define 'unused' without app usage data?",
+            "color": "#bef264"
+          }
+        ],
+        [
+          {
+            "name": "Smart digest: weekly spending summary",
+            "status": "planned",
+            "tags": [
+              "backend",
+              "notifications"
+            ]
+          }
+        ],
+        [
+          {
+            "name": "AI-powered savings suggestions",
+            "status": "planned",
+            "tags": [
+              "ai",
+              "backend"
+            ]
+          },
+          {
+            "name": "Compare similar services (e.g. Spotify vs Apple Music)",
+            "status": "planned",
+            "tags": [
+              "backend",
+              "ai"
+            ]
+          }
+        ],
+        [
+          {
+            "name": "One-click cancel through API",
+            "status": "planned",
+            "tags": [
+              "backend",
+              "api"
+            ]
+          },
+          {
+            "name": "Provider APIs are inconsistent, may need per-provider adapters",
+            "color": "#fecdd3"
+          }
+        ],
+        [
+          {
+            "name": "Family plan: split costs between members",
+            "status": "planned",
+            "tags": [
+              "frontend",
+              "backend"
+            ]
+          },
+          {
+            "name": "Collaborative household budget",
+            "status": "planned",
+            "tags": [
+              "frontend",
+              "backend"
+            ]
+          }
+        ]
+      ]
+    }
+  ],
+  "legend": [
+    {
+      "color": "#fef08a",
+      "label": "Tasks"
+    },
+    {
+      "color": "#a5f3fc",
+      "label": "Notes"
+    },
+    {
+      "color": "#bef264",
+      "label": "Open Questions"
+    },
+    {
+      "color": "#fecdd3",
+      "label": "Edge Cases"
+    },
+    {
+      "color": "#d8b4fe",
+      "label": "Design Decisions"
+    }
+  ],
+  "notes": "MVP Looks good - core tracking and basic reminders. \n\nV1 focus: email auto-detect is highest priority, most-requested feature\n\nPlaid integration deferred to V2 due to cost and compliance review\n\nAccessibility: screen reader audit planned for post-V1"
+}

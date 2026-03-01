@@ -165,5 +165,6 @@
       "color": "#fecdd3",
       "label": "Edge Case"
     }
-  ]
+  ],
+  "notes": "Planning meeting 12 Jan\n- Agreed on V1 scope: basic house with walls, doors, windows, roof\n- Target age range: 6-12\n- Keep piece count under 200 for V1\n\nOpen items\n- Need to finalise box art before printing deadline\n- Staircase design for V2 still in review\n- Check choking hazard compliance for small window pieces"
 }

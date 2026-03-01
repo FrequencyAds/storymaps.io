@@ -5,6 +5,7 @@ import { el, DEFAULT_CARD_COLORS, CARD_COLORS, STATUS_OPTIONS, generateId } from
 import { createColumnCard, createStoryCard, createStoryColumn, createSliceContainer, createBackboneRow, createEmptyBackboneRow, createPhantomStep, PHANTOM_BUFFER, renderLegend as uiRenderLegend, getAllTagsInMap, createPartialMapRef, createPartialMapRefCell, renderPartialsList as uiRenderPartialsList } from '/src/ui.js';
 import { partialMapEditState } from '/src/state.js';
 import { showAlert, showConfirm, showPrompt } from '/src/modals.js';
+import { quoted } from '/src/log.js';
 
 let _state = null;
 let _dom = null;
@@ -1227,7 +1228,7 @@ export const addColumn = (hidden = true) => {
     _state.users[column.id] = [];
     _state.activities[column.id] = [];
     _state.slices.forEach(slice => slice.stories[column.id] = []);
-    if (!hidden) _logEvent?.('Added step', [column.id]);
+    if (!hidden) _logEvent?.(`Added step${quoted(column.name)}`, [column.id]);
     _renderAndSave();
 
     requestAnimationFrame(() => {
@@ -1248,7 +1249,7 @@ export const addColumnAt = (index, hidden = false) => {
     _state.users[column.id] = [];
     _state.activities[column.id] = [];
     _state.slices.forEach(slice => slice.stories[column.id] = []);
-    if (!hidden) _logEvent?.('Added step', [column.id]);
+    if (!hidden) _logEvent?.(`Added step${quoted(column.name)}`, [column.id]);
     _renderAndSave();
 };
 
@@ -1281,7 +1282,7 @@ export const addStory = (columnId, sliceId, rowType = null) => {
     const addLabel = rowType === 'users' ? 'Added user card'
                    : rowType === 'activities' ? 'Added activity card'
                    : 'Added card';
-    _logEvent?.(addLabel, [newStory.id]);
+    _logEvent?.(`${addLabel}${quoted(newStory.name)}`, [newStory.id]);
     _renderAndSave();
 
     const storyIndex = storiesArray.length - 1;
@@ -1302,7 +1303,7 @@ export const addSlice = (afterIndex) => {
     _pushUndo();
     const slice = _createSlice('');
     _state.slices.splice(afterIndex, 0, slice);
-    _logEvent?.('Added slice', [slice.id]);
+    _logEvent?.(`Added slice${quoted(slice.name)}`, [slice.id]);
     _renderAndSave();
 
     requestAnimationFrame(() => {
@@ -1338,7 +1339,7 @@ export const deleteColumn = async (columnId) => {
             delete _state.users[columnId];
             delete _state.activities[columnId];
             _state.slices.forEach(slice => delete slice.stories[columnId]);
-            _logEvent?.('Deleted step');
+            _logEvent?.(`Deleted step${quoted(col.name)}`);
             _renderAndSave();
         }
         return;
@@ -1355,7 +1356,7 @@ export const deleteColumn = async (columnId) => {
     delete _state.users[columnId];
     delete _state.activities[columnId];
     _state.slices.forEach(slice => delete slice.stories[columnId]);
-    _logEvent?.('Deleted step');
+    _logEvent?.(`Deleted step${quoted(col.name)}`);
     _renderAndSave();
 };
 
@@ -1374,8 +1375,9 @@ export const deleteStory = (columnId, sliceId, storyId, rowType = null) => {
     const index = stories.findIndex(s => s.id === storyId);
     if (index > -1) {
         _pushUndo();
+        const story = stories[index];
         stories.splice(index, 1);
-        _logEvent?.('Deleted card');
+        _logEvent?.(`Deleted card${quoted(story.name)}`);
         _renderAndSave();
     }
 };
@@ -1416,7 +1418,7 @@ export const moveStory = (storyId, fromColumnId, fromSliceId, toColumnId, toSlic
     if (!toStories) return;
 
     toStories.splice(toIndex, 0, story);
-    _logEvent?.('Moved card', [storyId]);
+    _logEvent?.(`Moved card${quoted(story.name)}`, [storyId]);
     _renderAndSave();
 };
 
@@ -1426,8 +1428,9 @@ export const deleteSlice = (sliceId) => {
     const index = _state.slices.findIndex(s => s.id === sliceId);
     if (index > -1) {
         _pushUndo();
+        const slice = _state.slices[index];
         _state.slices.splice(index, 1);
-        _logEvent?.('Deleted slice');
+        _logEvent?.(`Deleted slice${quoted(slice.name)}`);
         _renderAndSave();
     }
 };

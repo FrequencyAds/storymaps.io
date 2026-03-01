@@ -522,6 +522,10 @@ body.welcome-visible .header {
     cursor: not-allowed;
     pointer-events: none;
 }
+body.welcome-visible #mainMenu > .dropdown-item:disabled,
+body.welcome-visible #mainMenu > .dropdown-submenu:has(> .dropdown-submenu-trigger:disabled) {
+    display: none;
+}
 
 .dropdown-divider {
     height: 0;

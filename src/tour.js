@@ -99,6 +99,43 @@ const removeDemoLegendCards = () => {
     _renderAndSave();
 };
 
+const DEMO_LOG_ENTRIES = [
+    { time: '10:42', color: '#f472b6', text: 'Sarah: Added step "Add roof"' },
+    { time: '10:40', color: '#60a5fa', text: 'Mike: Added card "Design ridge cap to seal roof"' },
+    { time: '10:38', color: '#60a5fa', text: 'Mike: Added card "Include angled roof pieces"' },
+    { time: '10:35', color: '#f472b6', text: 'Sarah: Edited notes' },
+    { time: '10:33', color: '#34d399', text: 'Jordan: Added card "Include window frame pieces"' },
+    { time: '10:31', color: '#f472b6', text: 'Sarah: Added step "Add doors and windows"' },
+    { time: '10:28', color: '#34d399', text: 'Jordan: Added card "Design interlocking wall sections"' },
+    { time: '10:25', color: '#60a5fa', text: 'Mike: Added step "Start: Build walls"' },
+    { time: '10:22', color: '#f472b6', text: 'Sarah: Added card "Package pieces in numbered bags"' },
+    { time: '10:18', color: '#34d399', text: 'Jordan: Created map' },
+];
+
+const injectDemoLogEntries = () => {
+    const container = document.getElementById('logList');
+    if (!container) return;
+    container.innerHTML = '';
+    for (const entry of DEMO_LOG_ENTRIES) {
+        const row = document.createElement('div');
+        row.className = 'log-entry tour-demo-log';
+        row.innerHTML =
+            `<span class="log-dot" style="background:${entry.color}"></span>` +
+            `<span class="log-time">${entry.time}</span>` +
+            `<span class="log-text">${entry.text}</span>`;
+        container.appendChild(row);
+    }
+};
+
+const clearDemoLogEntries = () => {
+    const container = document.getElementById('logList');
+    if (!container) return;
+    container.querySelectorAll('.tour-demo-log').forEach(el => el.remove());
+    if (container.children.length === 0) {
+        container.innerHTML = '<div class="log-empty">No activity yet</div>';
+    }
+};
+
 const openLegendPanel = () => {
     const section = document.querySelector('.panel-section[data-section="legend"]');
     const tab = document.querySelector('.panel-tab[data-section="legend"]');
@@ -108,6 +145,44 @@ const openLegendPanel = () => {
     section.classList.add('open');
     tab?.classList.add('active');
     document.getElementById('controlsRight')?.classList.add('panel-open');
+};
+
+const openNotepadPanel = () => {
+    const section = document.querySelector('.panel-section[data-section="notepad"]');
+    const tab = document.querySelector('.panel-tab[data-section="notepad"]');
+    if (!section || section.classList.contains('open')) return;
+    document.querySelectorAll('.panel-section').forEach(s => s.classList.remove('open'));
+    document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+    section.classList.add('open');
+    tab?.classList.add('active');
+    document.getElementById('controlsRight')?.classList.add('panel-open');
+};
+
+const closeNotepadPanel = () => {
+    const section = document.querySelector('.panel-section[data-section="notepad"]');
+    if (!section || !section.classList.contains('open')) return;
+    section.classList.remove('open');
+    document.querySelector('.panel-tab[data-section="notepad"]')?.classList.remove('active');
+    document.getElementById('controlsRight')?.classList.remove('panel-open');
+};
+
+const openLogPanel = () => {
+    const section = document.querySelector('.panel-section[data-section="log"]');
+    const tab = document.querySelector('.panel-tab[data-section="log"]');
+    if (!section || section.classList.contains('open')) return;
+    document.querySelectorAll('.panel-section').forEach(s => s.classList.remove('open'));
+    document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+    section.classList.add('open');
+    tab?.classList.add('active');
+    document.getElementById('controlsRight')?.classList.add('panel-open');
+};
+
+const closeLogPanel = () => {
+    const section = document.querySelector('.panel-section[data-section="log"]');
+    if (!section || !section.classList.contains('open')) return;
+    section.classList.remove('open');
+    document.querySelector('.panel-tab[data-section="log"]')?.classList.remove('active');
+    document.getElementById('controlsRight')?.classList.remove('panel-open');
 };
 
 const closeLegendPanel = () => {
@@ -148,7 +223,7 @@ const STEPS = [
     {
         target: '.steps-row > :nth-child(2)',
         title: 'Steps',
-        body: 'Steps are the journey from start to finish, read left-to-right. First up: <strong>look at the picture on the box</strong>.',
+        body: 'Steps capture the user\'s journey from start to finish. They describe how users will use your product. First up: <strong>look at the picture on the box</strong>.',
         icon: '\u{1F9ED}',
     },
     {
@@ -178,26 +253,26 @@ const STEPS = [
     {
         target: '.slice-container .story-column:nth-child(4) .story-card:nth-child(2)',
         title: 'Task Cards',
-        body: '\u2026and then <strong>indicate the pieces required at each step</strong>, and so on. Task cards are arranged vertically in order of priority - you work on the most important work first. Later you\u2019ll see how task cards are grouped into priority slices to manage versions.',
+        body: '\u2026and then <strong>indicate the pieces required at each step</strong>, and so on. Task cards are arranged vertically in order of priority - you work on the most important work first. Later you\u2019ll see how task cards are grouped into priority &amp; release slices to manage versions.',
         icon: '\u{1F4CB}',
     },
     {
         target: '.slice-label-container',
         title: 'Release Slices',
-        body: 'Horizontal rows group tasks into releases. This map has one slice, <strong>V1: Basic House</strong>. It represents version 1 of the product, the essentials you ship first.',
+        body: 'Horizontal rows group tasks into releases. This map has one slice, <strong>Version 1: Basic House</strong>. It represents version 1 of the product, the essentials you ship first.',
         icon: '\u{1F4E6}',
     },
     {
         target: '.slice-label-container .btn-add-slice',
         title: 'Add a Slice',
-        body: 'Add another slice. Imagine you want to upgrade the Lego house set to include a two-story build. That additional work goes in a dedicated release slice called V2. This is how story maps group work into versions.',
+        body: 'Add another slice. Imagine you want to upgrade the Lego house set to include a two-story build. That additional work goes in a dedicated release slice called Version 2. This is how story maps group work into versions.',
         icon: '\u{2795}',
         onEnter: () => ensureDemoSlice(),
     },
     {
         target: '.slice-container + .slice-container',
-        title: 'Your V2 Slice',
-        body: 'Here\'s your V2 slice with the extra work needed for a two-story house. Same steps across the top, but a whole new set of tasks underneath. Each version builds on the last, and your map keeps everything in context.',
+        title: 'Your Version 2 Slice',
+        body: 'Here\'s your Version 2 slice with the extra work needed for a two-story house. Same steps across the top, but a whole new set of tasks underneath. Each version builds on the last, and your map keeps everything in context.',
         icon: '\u{1F3D7}',
         onEnter: () => ensureDemoSlice(),
         onLeave: () => removeDemoSlice(),
@@ -205,7 +280,7 @@ const STEPS = [
     {
         target: null,
         title: 'That\'s Story Mapping!',
-        body: 'That covers the basics of user story mapping. You know enough now to start using the technique in your own work.<br><br>Future tutorials will cover advanced formats like technical story maps, retrospective story maps, and more.',
+        body: 'That covers the basics of user story mapping. It really is that simple - just map out the user\'s journey through your product from their eyes in a logical sequence and you have a story map! You know enough now to start testing out the technique in your own work.<br><br>Future tutorials will cover advanced topics like story map partials, technical story maps, retrospective story maps, and more.',
         icon: '\u{1F389}',
     },
     {
@@ -227,17 +302,22 @@ const STEPS = [
         },
     },
     {
-        target: '#notesToggle',
+        target: '#notesPanel',
+        tooltipTarget: '#notesPanel',
         title: 'Storymaps.io Extras: Notepad',
         body: 'A shared scratchpad for meeting notes, decisions, or anything your team needs to capture alongside the map.',
         icon: '\u{1F4DD}',
-        onEnter: () => _zoomToFit?.(),
+        onEnter: () => { _zoomToFit?.(); document.getElementById('notesToggle')?.click(); },
+        onLeave: () => closeNotepadPanel(),
     },
     {
-        target: '#logToggle',
+        target: '#logPanel',
+        tooltipTarget: '#logPanel',
         title: 'Storymaps.io Extras: Activity Log',
         body: 'The activity log tracks every change made to the map, who made it, and when. Useful for seeing what happened while you were away or reviewing decisions after a mapping session.',
         icon: '\u{1F4DC}',
+        onEnter: () => { document.getElementById('logToggle')?.click(); injectDemoLogEntries(); },
+        onLeave: () => { clearDemoLogEntries(); closeLogPanel(); },
     },
     {
         target: '#logToggle',
@@ -255,7 +335,7 @@ const STEPS = [
     {
         target: null,
         title: 'Tour Complete!',
-        body: 'Feel free to edit this Lego house map. Every story map gets a unique URL, so nobody will find it unless you share the link.<br><br>Head back to the homepage to create a fresh map, try the other samples, or import the story map hidden inside your existing backlog using the Import options in the menu.',
+        body: 'Feel free to edit this Lego house map. Every story map gets a unique URL, so this one is yours to play with. You can also share them and collaborate live with colleagues and friends on your story maps.<br><br>Head back to the homepage to create a fresh map, try the other samples, or import the story map hidden inside your existing backlog using the Import options on the homepage.',
         icon: '\u{1F389}',
     },
 ];
@@ -560,6 +640,11 @@ const onKeyDown = (e) => {
     }
 };
 
+const onWheel = (e) => {
+    if (!_active) return;
+    e.preventDefault();
+};
+
 const onResize = () => {
     if (!_active) return;
     renderStep();
@@ -585,6 +670,7 @@ export const startTour = () => {
     tooltip().classList.add('visible');
 
     document.addEventListener('keydown', onKeyDown, true);
+    window.addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('resize', onResize);
 
     buildProgressDots();
@@ -604,6 +690,7 @@ export const endTour = () => {
     document.querySelectorAll('.tour-spotlight-extra').forEach(el => el.remove());
 
     document.removeEventListener('keydown', onKeyDown, true);
+    window.removeEventListener('wheel', onWheel);
     window.removeEventListener('resize', onResize);
 
     if (_wasDarkOnStart) {

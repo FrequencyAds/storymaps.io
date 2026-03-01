@@ -5,7 +5,3 @@ storymaps.io {
 www.storymaps.io {
     redir https://storymaps.io{uri} permanent
 }
-
-new.storymaps.io {
-    redir https://storymaps.io{uri} permanent
-}

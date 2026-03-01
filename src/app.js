@@ -16,6 +16,7 @@ import * as exportsMod from '/src/exports.js';
 import * as importsMod from '/src/imports.js';
 import * as asanaImportsMod from '/src/asana-imports.js';
 import * as phabImportsMod from '/src/phabricator-imports.js';
+import * as linearImportsMod from '/src/linear-imports.js';
 import { exportToYaml, importFromYaml } from '/src/yaml.js';
 import { exportToCsv, importFromCsv } from '/src/csv.js';
 import { showAlert, showConfirm, showPrompt } from '/src/modals.js';
@@ -384,6 +385,36 @@ const dom = {
     phabImportBack: document.getElementById('phabImportBack'),
     phabImportCount: document.getElementById('phabImportCount'),
     phabImportConfirmBtn: document.getElementById('phabImportConfirmBtn'),
+    // Linear Import
+    importLinearBtn: document.getElementById('importLinearBtn'),
+    linearImportModal: document.getElementById('linearImportModal'),
+    linearImportModalClose: document.getElementById('linearImportModalClose'),
+    linearImportTitle: document.getElementById('linearImportTitle'),
+    linearImportStage1: document.getElementById('linearImportStage1'),
+    linearImportStage2: document.getElementById('linearImportStage2'),
+    linearImportApiKey: document.getElementById('linearImportApiKey'),
+    linearImportTeamKey: document.getElementById('linearImportTeamKey'),
+    linearImportVerifyBtn: document.getElementById('linearImportVerifyBtn'),
+    linearImportVerifyStatus: document.getElementById('linearImportVerifyStatus'),
+    linearImportProgress: document.getElementById('linearImportProgress'),
+    linearImportProgressBar: document.getElementById('linearImportProgressBar'),
+    linearImportProgressItems: document.getElementById('linearImportProgressItems'),
+    linearImportFetchBtn: document.getElementById('linearImportFetchBtn'),
+    linearImportCancel: document.getElementById('linearImportCancel'),
+    linearImportBack: document.getElementById('linearImportBack'),
+    linearImportPreviewHeader: document.getElementById('linearImportPreviewHeader'),
+    linearImportPreview: document.getElementById('linearImportPreview'),
+    linearImportCount: document.getElementById('linearImportCount'),
+    linearImportConfirmBtn: document.getElementById('linearImportConfirmBtn'),
+    linearImportMappingMode: document.getElementById('linearImportMappingMode'),
+    // Linear CSV Import
+    importLinearCsvBtn: document.getElementById('importLinearCsvBtn'),
+    linearCsvImportStage1: document.getElementById('linearCsvImportStage1'),
+    linearCsvDropzone: document.getElementById('linearCsvDropzone'),
+    linearCsvFileInput: document.getElementById('linearCsvFileInput'),
+    linearCsvValidationError: document.getElementById('linearCsvValidationError'),
+    linearCsvImportCancel: document.getElementById('linearCsvImportCancel'),
+    linearCsvImportParseBtn: document.getElementById('linearCsvImportParseBtn'),
     // View toggles
     toggleCursorsBtn: document.getElementById('toggleCursorsBtn'),
     toggleFocusModeBtn: document.getElementById('toggleFocusModeBtn'),
@@ -952,6 +983,13 @@ const {
     showPhabCsvImportModal, hidePhabImportModal, confirmClosePhabImportModal,
     handlePhabCsvFile, showPhabImportStage1, confirmPhabImport,
 } = phabImportsMod;
+
+linearImportsMod.init({ dom, onImportComplete });
+const {
+    showLinearImportModal, hideLinearImportModal, confirmCloseLinearImportModal,
+    verifyLinearImport, fetchFromLinear, showLinearImportStage1, confirmLinearImport,
+    showLinearCsvImportModal, handleLinearCsvFile, handleLinearMappingModeChange,
+} = linearImportsMod;
 
 const showExportModal = async () => {
     _exportBackups = null;
@@ -1733,6 +1771,7 @@ const initEventListeners = () => {
             jira: showJiraImportModal,
             asana: showAsanaImportModal,
             phabricator: showPhabCsvImportModal,
+            linear: showLinearImportModal,
         };
         importMap[btn.dataset.import]?.();
     });
@@ -2125,6 +2164,71 @@ const initEventListeners = () => {
     });
     dom.phabImportBack.addEventListener('click', showPhabImportStage1);
     dom.phabImportConfirmBtn.addEventListener('click', confirmPhabImport);
+
+    // Linear API Import
+    dom.importLinearBtn.addEventListener('click', async () => {
+        closeMainMenu();
+        if (lockState.isLocked && !lockState.sessionUnlocked) {
+            await showAlert('This map is read-only. Unlock it first to import.');
+            return;
+        }
+        showLinearImportModal();
+    });
+
+    // Linear Import modal events
+    dom.linearImportModalClose.addEventListener('click', confirmCloseLinearImportModal);
+    dom.linearImportModal.addEventListener('click', (e) => {
+        if (e.target === dom.linearImportModal) confirmCloseLinearImportModal();
+    });
+    dom.linearImportCancel.addEventListener('click', confirmCloseLinearImportModal);
+    dom.linearImportVerifyBtn.addEventListener('click', verifyLinearImport);
+    dom.linearImportFetchBtn.addEventListener('click', fetchFromLinear);
+    dom.linearImportBack.addEventListener('click', showLinearImportStage1);
+    dom.linearImportConfirmBtn.addEventListener('click', confirmLinearImport);
+    dom.linearImportMappingMode.addEventListener('change', (e) => {
+        if (e.target.name === 'linearMappingMode') handleLinearMappingModeChange(e.target.value);
+    });
+
+    // Linear CSV Import
+    dom.importLinearCsvBtn.addEventListener('click', async () => {
+        closeMainMenu();
+        if (lockState.isLocked && !lockState.sessionUnlocked) {
+            await showAlert('This map is read-only. Unlock it first to import.');
+            return;
+        }
+        showLinearCsvImportModal();
+    });
+    dom.linearCsvDropzone.addEventListener('click', () => dom.linearCsvFileInput.click());
+    dom.linearCsvDropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dom.linearCsvDropzone.classList.add('dragover');
+    });
+    dom.linearCsvDropzone.addEventListener('dragleave', () => {
+        dom.linearCsvDropzone.classList.remove('dragover');
+    });
+    dom.linearCsvDropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dom.linearCsvDropzone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && (file.name.endsWith('.csv') || file.type === 'text/csv')) {
+            dom.linearCsvDropzone.querySelector('span').textContent = file.name;
+            dom.linearCsvImportParseBtn.disabled = false;
+            dom.linearCsvFileInput._droppedFile = file;
+        }
+    });
+    dom.linearCsvFileInput.addEventListener('change', () => {
+        const file = dom.linearCsvFileInput.files[0];
+        if (file) {
+            dom.linearCsvDropzone.querySelector('span').textContent = file.name;
+            dom.linearCsvImportParseBtn.disabled = false;
+            dom.linearCsvFileInput._droppedFile = null;
+        }
+    });
+    dom.linearCsvImportParseBtn.addEventListener('click', () => {
+        const file = dom.linearCsvFileInput._droppedFile || dom.linearCsvFileInput.files[0];
+        handleLinearCsvFile(file);
+    });
+    dom.linearCsvImportCancel.addEventListener('click', confirmCloseLinearImportModal);
 
     // Import JSON modal events
     dom.importModalClose.addEventListener('click', hideImportModal);

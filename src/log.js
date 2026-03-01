@@ -4,6 +4,13 @@
 import { getSessionId, getCursorColor, getPresenceName } from '/src/presence.js';
 
 const MAX_ENTRIES = 20;
+
+export const quoted = (name, max = 30) => {
+    if (!name) return '';
+    const trimmed = name.length > max ? name.slice(0, max) + '...' : name;
+    return ` "${trimmed}"`;
+};
+
 const _isMobile = window.matchMedia('(pointer: coarse)').matches;
 
 let _yarray = null;
