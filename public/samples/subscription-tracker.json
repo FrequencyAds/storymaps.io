@@ -85,7 +85,7 @@
             ]
           },
           {
-            "name": "Should we auto-detect billing cycle from bank data?",
+            "name": "Auto-detect billing cycle from bank data?",
             "color": "#bef264"
           }
         ],
@@ -135,7 +135,7 @@
             ]
           },
           {
-            "name": "What if the user has notifications disabled?",
+            "name": "What if notifications are disabled?",
             "color": "#fecdd3"
           }
         ],
@@ -169,7 +169,8 @@
             "color": "#a5f3fc"
           },
           {
-            "name": "Chart library: Chart.js vs D3 - keep it lightweight",
+            "name": "Chart.js vs D3 for charts",
+            "body": "Keep it lightweight",
             "color": "#d8b4fe"
           }
         ],
@@ -214,7 +215,7 @@
       "stories": [
         [
           {
-            "name": "Auto-detect subscription from email receipts",
+            "name": "Detect subscriptions from email receipts",
             "status": "in-progress",
             "tags": [
               "backend",
@@ -310,7 +311,7 @@
             ]
           },
           {
-            "name": "Cancel links may break if providers change their URLs",
+            "name": "Cancel links may break if URLs change",
             "color": "#fecdd3"
           }
         ],
@@ -346,7 +347,8 @@
             ]
           },
           {
-            "name": "Plaid costs per-connection - need pricing model",
+            "name": "Plaid costs per-connection",
+            "body": "Need pricing model",
             "color": "#d8b4fe"
           }
         ],
@@ -368,7 +370,8 @@
             ]
           },
           {
-            "name": "How do we define 'unused' without app usage data?",
+            "name": "How to define 'unused' subscriptions?",
+            "body": "Without app usage data, defining 'unused' is unclear",
             "color": "#bef264"
           }
         ],
@@ -392,7 +395,8 @@
             ]
           },
           {
-            "name": "Compare similar services (e.g. Spotify vs Apple Music)",
+            "name": "Compare similar services",
+            "body": "e.g. Spotify vs Apple Music",
             "status": "planned",
             "tags": [
               "backend",
@@ -410,7 +414,8 @@
             ]
           },
           {
-            "name": "Provider APIs are inconsistent, may need per-provider adapters",
+            "name": "Provider APIs are inconsistent",
+            "body": "May need per-provider adapters",
             "color": "#fecdd3"
           }
         ],

@@ -575,11 +575,64 @@ body.welcome-visible #mainMenu > .dropdown-submenu:has(> .dropdown-submenu-trigg
     letter-spacing: 0.05em;
     color: rgba(0, 0, 0, 0.4);
     padding: 6px 12px 2px;
-    pointer-events: none;
 }
 
-.submenu-group-label:first-child {
-    padding-top: 4px;
+.integration-icons {
+    display: flex;
+    gap: 6px;
+    padding: 4px 8px;
+}
+
+.integration-icon {
+    background: none;
+    border: 1.5px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 5px 8px 4px;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+    flex: 1;
+}
+
+.integration-icon span {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: rgba(0, 0, 0, 0.5);
+    line-height: 1;
+}
+
+.integration-icon .file-icon {
+    font-size: 16px;
+    color: var(--color-text-primary);
+    line-height: 18px;
+}
+
+.integration-icon:hover {
+    background: rgba(20, 184, 166, 0.08);
+    border-color: rgba(20, 184, 166, 0.2);
+}
+
+.integration-icon.active {
+    background: rgba(20, 184, 166, 0.12);
+    border-color: rgba(20, 184, 166, 0.5);
+}
+
+.integration-options {
+    display: none;
+    padding-left: 12px;
+}
+
+.integration-options.visible {
+    display: block;
+}
+
+.integration-options .dropdown-item {
+    font-size: 13px;
 }
 
 .menu-badge {
@@ -596,35 +649,53 @@ body.welcome-visible #mainMenu > .dropdown-submenu:has(> .dropdown-submenu-trigg
 }
 
 .btn {
-    background-color: var(--color-teal);
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
     color: #fff;
     border: none;
     padding: 10px 18px;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.15s ease;
+    transition: all 0.15s ease;
+    box-shadow: 0 1px 3px rgba(20, 184, 166, 0.25);
 }
 
 .btn:hover {
-    background-color: #0d9488;
+    background: linear-gradient(135deg, #0d9488, #0f766e);
+    box-shadow: 0 2px 8px rgba(20, 184, 166, 0.35);
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0) scale(0.97);
+    box-shadow: 0 1px 2px rgba(20, 184, 166, 0.2);
 }
 
 .btn-secondary {
-    background-color: var(--color-bg-surface);
+    background: var(--color-bg-surface);
     color: #0f766e;
     border: 1px solid #5eead4;
+    box-shadow: none;
 }
 
 .btn-secondary:hover {
-    background-color: #f0fdfa;
+    background: #f0fdfa;
+    transform: none;
+    box-shadow: none;
 }
 
 .btn-icon {
     padding: 8px 10px;
     font-size: 16px;
     line-height: 1;
+}
+
+#shareBtn {
+    padding: 0 14px;
+    font-size: 13px;
+    line-height: 1;
+    height: 34px;
 }
 
 
@@ -2022,6 +2093,21 @@ body.main-menu-open .step:hover {
     color: rgba(51, 51, 51, 0.5);
 }
 
+.story-text.limit-hit,
+.step-text.limit-hit {
+    animation: shake 0.3s ease;
+    box-shadow: 0 0 0 1.5px rgba(239, 68, 68, 0.5);
+    border-radius: 2px;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-2px); }
+    40% { transform: translateX(2px); }
+    60% { transform: translateX(-2px); }
+    80% { transform: translateX(1px); }
+}
+
 /* Add Story Button */
 .btn-add-story {
     background-color: rgba(254, 240, 138, 0.3);
@@ -2789,6 +2875,7 @@ body.main-menu-open .step:hover {
 
 .btn-large:hover {
     box-shadow: 0 4px 16px rgba(20, 184, 166, 0.35);
+    transform: translateY(-1px);
 }
 
 .btn-large.btn-secondary {
@@ -2796,6 +2883,10 @@ body.main-menu-open .step:hover {
     display: inline-flex;
     align-items: center;
     gap: 8px;
+}
+
+.btn-large.btn-secondary:hover {
+    transform: none;
 }
 
 
@@ -3269,6 +3360,11 @@ body.main-menu-open .step:hover {
     .header-actions .btn-icon svg {
         width: 12px;
         height: 12px;
+    }
+
+    .header-actions #shareBtn {
+        height: 28px;
+        padding: 0 10px;
     }
 
     .search-bar {
@@ -7049,6 +7145,17 @@ html.dark-mode .dropdown-submenu-content {
 html.dark-mode .submenu-group-label {
     color: rgba(255, 255, 255, 0.35);
 }
+html.dark-mode .integration-icon span {
+    color: rgba(255, 255, 255, 0.5);
+}
+html.dark-mode .integration-icon:hover {
+    background: rgba(20, 184, 166, 0.12);
+    border-color: rgba(20, 184, 166, 0.3);
+}
+html.dark-mode .integration-icon.active {
+    background: rgba(20, 184, 166, 0.18);
+    border-color: rgba(20, 184, 166, 0.6);
+}
 html.dark-mode .backup-count-badge {
     background: rgba(255, 255, 255, 0.1);
 }
@@ -8545,5 +8652,14 @@ body.tour-active .controls-right {
         width: 100%;
         padding: 16px 32px;
         font-size: 18px;
+        background: linear-gradient(135deg, #14b8a6, #0d9488);
+        color: #fff;
+        border: none;
+        box-shadow: 0 2px 8px rgba(20, 184, 166, 0.3);
+    }
+
+    body.welcome-visible #mainMenu > .dropdown-item:disabled,
+    body.welcome-visible #mainMenu > .dropdown-submenu:has(> .dropdown-submenu-trigger:disabled) {
+        display: none !important;
     }
 }

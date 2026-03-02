@@ -263,7 +263,7 @@
             "color": "#fecdd3"
           },
           {
-            "name": "Stripe webhooks handle async payment events",
+            "name": "Stripe webhooks handle async events",
             "color": "#a5f3fc"
           }
         ],
@@ -368,7 +368,7 @@
             ]
           },
           {
-            "name": "Currency conversion rates differ across providers",
+            "name": "Currency conversion rates vary by provider",
             "color": "#a5f3fc"
           }
         ],

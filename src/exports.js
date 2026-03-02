@@ -1519,7 +1519,7 @@ const renderExportProgress = (container, barEl, summaryEl, epicData, buildUrl) =
         countEl.textContent = `${completed}/${totalItems}`;
     };
 
-    const setItemState = (idx, state, resultText) => {
+    const setItemState = (idx, state, resultText, directUrl) => {
         const item = flatItems[idx];
         if (!item) return;
         item.el.className = `export-progress-item ${item.isParent ? 'parent' : 'child'} ${state}`;
@@ -1529,19 +1529,16 @@ const renderExportProgress = (container, barEl, summaryEl, epicData, buildUrl) =
         else if (state === 'failed') item.iconEl.innerHTML = ICON_FAILED;
         else if (state === 'skipped') item.iconEl.innerHTML = ICON_SKIPPED;
         if (resultText) {
-            if (state === 'done' && buildUrl) {
-                const url = buildUrl(resultText);
-                if (url) {
-                    item.resultEl.innerHTML = '';
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.target = '_blank';
-                    a.rel = 'noopener';
-                    a.innerHTML = `${resultText} <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M4.5 1.5H2.5a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1v-2M7.5 1.5h3m0 0v3m0-3L5.5 6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-                    item.resultEl.append(a);
-                } else {
-                    item.resultEl.textContent = resultText;
-                }
+            const url = directUrl || (state === 'done' && buildUrl ? buildUrl(resultText) : null);
+            if (url) {
+                item.resultEl.innerHTML = '';
+                const a = document.createElement('a');
+                a.href = url;
+                a.target = '_blank';
+                a.rel = 'noopener';
+                a.textContent = resultText + ' ';
+                a.insertAdjacentHTML('beforeend', '<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M4.5 1.5H2.5a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1v-2M7.5 1.5h3m0 0v3m0-3L5.5 6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+                item.resultEl.append(a);
             } else {
                 item.resultEl.textContent = resultText;
             }
@@ -1569,7 +1566,7 @@ const renderExportProgress = (container, barEl, summaryEl, epicData, buildUrl) =
             }
         } else if (data.status === 'created') {
             const resultId = data.key || data.id || data.gid || '';
-            setItemState(pointer, 'done', resultId);
+            setItemState(pointer, 'done', resultId, data.url);
             doneCount++;
             pointer++;
             updateBar();
@@ -2397,4 +2394,248 @@ export const exportToAsanaProxy = async () => {
     }
     dom.asanaProxyExportRun.disabled = false;
     dom.asanaProxyExportBack.disabled = false;
+};
+
+// ==================== Linear Proxy Export ====================
+
+export const linearProxyExportState = {
+    selectedSlices: new Set(),
+    selectedStatuses: new Set(['none', 'planned', 'in-progress', 'done']),
+    epicData: []
+};
+
+export const showLinearProxyExportModal = () => {
+    populateLinearProxyExportSlices();
+    populateLinearProxyExportEpics();
+    dom.linearProxyStage1.classList.remove('hidden');
+    dom.linearProxyStage2.classList.add('hidden');
+    dom.linearProxyExportTitle.textContent = 'Export to Linear';
+    dom.linearProxyProgress.classList.add('hidden');
+    cleanupProgressUI(dom.linearProxyProgress);
+    dom.linearProxyProgressItems.innerHTML = '';
+    dom.linearProxyProgressBar.style.width = '0';
+    dom.linearProxyProgressSummary.textContent = '';
+    dom.linearProxyExportRun.disabled = false;
+    dom.linearProxyExportModal.classList.add('visible');
+};
+
+export const hideLinearProxyExportModal = () => {
+    dom.linearProxyExportModal.classList.remove('visible');
+};
+
+export const confirmCloseLinearProxyModal = async () => {
+    if (await showConfirm('Close export dialog?')) {
+        hideLinearProxyExportModal();
+    }
+};
+
+export const showLinearProxyStage1 = () => {
+    dom.linearProxyStage1.classList.remove('hidden');
+    dom.linearProxyStage2.classList.add('hidden');
+    dom.linearProxyExportTitle.textContent = 'Step 1: Select Issues';
+};
+
+export const showLinearProxyStage2 = () => {
+    dom.linearProxyStage1.classList.add('hidden');
+    dom.linearProxyStage2.classList.remove('hidden');
+    dom.linearProxyExportTitle.textContent = 'Step 2: Export';
+    dom.linearProxyProgress.classList.add('hidden');
+    cleanupProgressUI(dom.linearProxyProgress);
+    dom.linearProxyProgressItems.innerHTML = '';
+    dom.linearProxyProgressBar.style.width = '0';
+    dom.linearProxyProgressSummary.textContent = '';
+    dom.linearProxyExportRun.disabled = false;
+    dom.linearProxyVerifyStatus.textContent = 'Optional - test before exporting';
+    dom.linearProxyVerifyStatus.className = 'export-verify-status';
+    dom.linearProxyVerifyBtn.disabled = false;
+    renderExportSummary(dom.linearProxySummary, linearProxyExportState.epicData, 'parent issue', 'sub-issue');
+};
+
+const populateLinearProxyExportSlices = () => {
+    const container = dom.linearProxyExportSlices;
+    container.innerHTML = '';
+    linearProxyExportState.selectedSlices.clear();
+
+    state.slices.forEach(slice => {
+        const sliceName = slice.name || 'Unnamed Release';
+        linearProxyExportState.selectedSlices.add(slice.id);
+
+        let storyCount = 0;
+        state.columns.forEach(column => {
+            const stories = slice.stories[column.id] || [];
+            storyCount += stories.filter(s => s.name.trim()).length;
+        });
+
+        const label = document.createElement('label');
+        label.className = 'export-slice-checkbox checked';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = true;
+        checkbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                linearProxyExportState.selectedSlices.add(slice.id);
+                label.classList.add('checked');
+            } else {
+                linearProxyExportState.selectedSlices.delete(slice.id);
+                label.classList.remove('checked');
+            }
+            populateLinearProxyExportEpics();
+        });
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'export-slice-name';
+        nameSpan.textContent = `${sliceName} (${storyCount})`;
+        label.append(checkbox, nameSpan);
+        container.append(label);
+    });
+};
+
+export const populateLinearProxyExportEpics = () => {
+    dom.linearProxyExportEpics.innerHTML = '';
+    linearProxyExportState.epicData = [];
+
+    state.columns.forEach((column, colIndex) => {
+        const tasks = [];
+        state.slices.forEach(slice => {
+            if (!linearProxyExportState.selectedSlices.has(slice.id)) return;
+            const sliceStories = slice.stories[column.id] || [];
+            sliceStories.forEach(story => {
+                if (story.name.trim()) {
+                    const storyStatus = story.status || 'none';
+                    if (!linearProxyExportState.selectedStatuses.has(storyStatus)) return;
+                    tasks.push({ name: story.name, body: story.body || '', status: story.status || null, points: story.points ?? null, included: true });
+                }
+            });
+        });
+
+        if (tasks.length === 0) return;
+
+        const epicData = { columnId: column.id, name: column.name || `Activity ${colIndex + 1}`, description: '', included: true, tasks };
+        linearProxyExportState.epicData.push(epicData);
+
+        const epicDiv = el('div', 'export-epic');
+        epicDiv.dataset.columnId = column.id;
+        const header = el('div', 'export-epic-header');
+        const checkbox = el('input', 'export-epic-checkbox', { type: 'checkbox', checked: true });
+        checkbox.addEventListener('change', (e) => { epicData.included = e.target.checked; epicDiv.classList.toggle('excluded', !e.target.checked); updateLinearProxyExportCount(); });
+        const nameInput = el('input', 'export-epic-name', { type: 'text', value: epicData.name, placeholder: 'Parent issue name' });
+        nameInput.addEventListener('input', (e) => { epicData.name = e.target.value; });
+        header.append(checkbox, nameInput);
+        const description = el('textarea', 'export-epic-description', { placeholder: 'Issue description (optional)', rows: 2 });
+        description.addEventListener('input', (e) => { epicData.description = e.target.value; });
+        const tasksList = el('div', 'export-tasks');
+        tasks.forEach((task) => {
+            const taskEl = el('label', 'export-task');
+            taskEl.dataset.status = task.status || 'none';
+            if (task.body) taskEl.dataset.body = task.body;
+            if (task.points != null) taskEl.dataset.points = task.points;
+            const taskCheckbox = el('input', 'export-task-checkbox', { type: 'checkbox', checked: true });
+            taskCheckbox.addEventListener('change', (e) => { task.included = e.target.checked; taskEl.classList.toggle('excluded', !e.target.checked); updateLinearProxyExportCount(); });
+            taskEl.append(taskCheckbox);
+            const nameSpan = el('span', 'export-task-name', { text: task.name });
+            taskEl.append(nameSpan);
+            const statusClass = task.status === 'done' ? 'done' : task.status === 'in-progress' ? 'in-progress' : task.status === 'planned' ? 'planned' : 'none';
+            const statusText = task.status === 'done' ? 'Done' : task.status === 'in-progress' ? 'In Progress' : task.status === 'planned' ? 'Planned' : 'No Status';
+            const statusBadge = el('span', `export-task-status ${statusClass}`, { text: statusText });
+            taskEl.append(statusBadge);
+            tasksList.append(taskEl);
+        });
+        epicDiv.append(header, description, tasksList);
+        dom.linearProxyExportEpics.append(epicDiv);
+    });
+
+    updateLinearProxyExportCount();
+};
+
+const updateLinearProxyExportCount = () => {
+    let parentCount = 0, subtaskCount = 0;
+    linearProxyExportState.epicData.forEach(e => { if (e.included) { parentCount++; subtaskCount += e.tasks.filter(t => t.included).length; } });
+    dom.linearProxyExportCount.textContent = `(${parentCount} issues, ${subtaskCount} sub-issues)`;
+};
+
+export const exportToLinearProxy = async () => {
+    const items = [];
+    const epicEls = dom.linearProxyExportEpics.querySelectorAll('.export-epic');
+
+    epicEls.forEach((epicEl) => {
+        const checkbox = epicEl.querySelector('.export-epic-checkbox');
+        if (!checkbox.checked) return;
+        const nameInput = epicEl.querySelector('.export-epic-name');
+        const descTextarea = epicEl.querySelector('.export-epic-description');
+        const subissues = [];
+        epicEl.querySelectorAll('.export-task').forEach((taskEl) => {
+            if (!taskEl.querySelector('.export-task-checkbox').checked) return;
+            const sub = {
+                name: taskEl.querySelector('.export-task-name')?.textContent || '',
+                description: taskEl.dataset.body || ''
+            };
+            const pts = taskEl.dataset.points;
+            if (pts != null && pts !== '') sub.estimate = Number(pts);
+            subissues.push(sub);
+        });
+        if (subissues.length > 0) {
+            items.push({
+                name: nameInput.value || 'Untitled Issue',
+                description: descTextarea.value || '',
+                subissues
+            });
+        }
+    });
+
+    const apiKey = dom.linearProxyApiKey.value.trim();
+    const teamKey = dom.linearProxyTeamKey.value.trim();
+
+    if (!apiKey || !teamKey) {
+        await showAlert('Please fill in your API key and team key.');
+        return;
+    }
+    if (items.length === 0) {
+        await showAlert('No issues selected to export.');
+        return;
+    }
+
+    dom.linearProxyExportRun.disabled = true;
+    dom.linearProxyExportBack.disabled = true;
+    dom.linearProxyProgress.classList.remove('hidden');
+    dom.linearProxyProgressSummary.textContent = '';
+    dom.linearProxyProgressBar.style.width = '0';
+
+    const progress = renderExportProgress(
+        dom.linearProxyProgressItems, dom.linearProxyProgressBar,
+        dom.linearProxyProgressSummary, linearProxyExportState.epicData,
+        null  // URLs provided directly by Linear API via SSE data.url
+    );
+
+    try {
+        const response = await fetch('/api/export/linear', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ apiKey, teamKey, items })
+        });
+
+        if (!response.ok) {
+            const err = await response.json();
+            dom.linearProxyProgressSummary.textContent = err.error || 'Request failed';
+            dom.linearProxyExportRun.disabled = false;
+            dom.linearProxyExportBack.disabled = false;
+            return;
+        }
+
+        await readSSE(response, progress.onProgress, progress.onDone);
+        dom.linearProxyExportBack.disabled = false;
+        return;
+    } catch (e) {
+        dom.linearProxyProgressSummary.textContent = `Network error: ${e.message}`;
+    }
+    dom.linearProxyExportRun.disabled = false;
+    dom.linearProxyExportBack.disabled = false;
+};
+
+export const verifyLinearProxy = () => {
+    const apiKey = dom.linearProxyApiKey.value.trim();
+    if (!apiKey) {
+        dom.linearProxyVerifyStatus.className = 'export-verify-status error';
+        dom.linearProxyVerifyStatus.textContent = 'Please enter your API key first';
+        return;
+    }
+    verifyConnection('/api/export/linear/verify', { apiKey }, dom.linearProxyVerifyStatus, dom.linearProxyVerifyBtn);
 };

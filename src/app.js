@@ -157,7 +157,6 @@ const dom = {
     phabCopyFunction: document.getElementById('phabCopyFunction'),
     phabCopyCall: document.getElementById('phabCopyCall'),
     // Jira API export
-    exportJiraApiBtn: document.getElementById('exportJiraApiBtn'),
     jiraApiExportModal: document.getElementById('jiraApiExportModal'),
     jiraApiExportModalClose: document.getElementById('jiraApiExportModalClose'),
     jiraApiExportTitle: document.getElementById('jiraApiExportTitle'),
@@ -182,7 +181,6 @@ const dom = {
     jiraApiCopyFunction: document.getElementById('jiraApiCopyFunction'),
     jiraApiCopyCall: document.getElementById('jiraApiCopyCall'),
     // Asana export
-    exportAsanaBtn: document.getElementById('exportAsanaBtn'),
     asanaExportModal: document.getElementById('asanaExportModal'),
     asanaExportModalClose: document.getElementById('asanaExportModalClose'),
     asanaExportTitle: document.getElementById('asanaExportTitle'),
@@ -306,6 +304,33 @@ const dom = {
     asanaProxySummary: document.getElementById('asanaProxySummary'),
     asanaProxyVerifyBtn: document.getElementById('asanaProxyVerifyBtn'),
     asanaProxyVerifyStatus: document.getElementById('asanaProxyVerifyStatus'),
+    // Linear Proxy export
+    exportLinearProxyBtn: document.getElementById('exportLinearProxyBtn'),
+    linearProxyExportModal: document.getElementById('linearProxyExportModal'),
+    linearProxyExportModalClose: document.getElementById('linearProxyExportModalClose'),
+    linearProxyExportTitle: document.getElementById('linearProxyExportTitle'),
+    linearProxyStage1: document.getElementById('linearProxyStage1'),
+    linearProxyStage2: document.getElementById('linearProxyStage2'),
+    linearProxyExportSlices: document.getElementById('linearProxyExportSlices'),
+    linearProxyExportEpics: document.getElementById('linearProxyExportEpics'),
+    linearProxyExportCount: document.getElementById('linearProxyExportCount'),
+    linearProxyFilterNone: document.getElementById('linearProxyFilterNone'),
+    linearProxyFilterPlanned: document.getElementById('linearProxyFilterPlanned'),
+    linearProxyFilterInProgress: document.getElementById('linearProxyFilterInProgress'),
+    linearProxyFilterDone: document.getElementById('linearProxyFilterDone'),
+    linearProxyExportCancel: document.getElementById('linearProxyExportCancel'),
+    linearProxyExportNext: document.getElementById('linearProxyExportNext'),
+    linearProxyExportBack: document.getElementById('linearProxyExportBack'),
+    linearProxyExportRun: document.getElementById('linearProxyExportRun'),
+    linearProxyApiKey: document.getElementById('linearProxyApiKey'),
+    linearProxyTeamKey: document.getElementById('linearProxyTeamKey'),
+    linearProxyProgress: document.getElementById('linearProxyProgress'),
+    linearProxyProgressBar: document.getElementById('linearProxyProgressBar'),
+    linearProxyProgressItems: document.getElementById('linearProxyProgressItems'),
+    linearProxyProgressSummary: document.getElementById('linearProxyProgressSummary'),
+    linearProxySummary: document.getElementById('linearProxySummary'),
+    linearProxyVerifyBtn: document.getElementById('linearProxyVerifyBtn'),
+    linearProxyVerifyStatus: document.getElementById('linearProxyVerifyStatus'),
     // Jira Import
     importJiraBtn: document.getElementById('importJiraBtn'),
     jiraImportModal: document.getElementById('jiraImportModal'),
@@ -929,6 +954,9 @@ const {
     showAsanaProxyExportModal, hideAsanaProxyExportModal, confirmCloseAsanaProxyModal,
     populateAsanaProxyExportEpics, showAsanaProxyStage2, showAsanaProxyStage1,
     exportToAsanaProxy, asanaProxyExportState, verifyAsanaProxy,
+    showLinearProxyExportModal, hideLinearProxyExportModal, confirmCloseLinearProxyModal,
+    populateLinearProxyExportEpics, showLinearProxyStage2, showLinearProxyStage1,
+    exportToLinearProxy, linearProxyExportState, verifyLinearProxy,
 } = exportsMod;
 
 // Import module
@@ -2481,101 +2509,6 @@ const initEventListeners = () => {
         });
     });
 
-    // Jira API Export Modal
-    dom.exportJiraApiBtn.addEventListener('click', () => {
-        if (dom.exportJiraApiBtn.disabled) return;
-        closeMainMenu();
-        showJiraApiExportModal();
-    });
-    dom.jiraApiExportModalClose.addEventListener('click', confirmCloseJiraApiModal);
-    dom.jiraApiExportModal.addEventListener('click', (e) => {
-        if (e.target === dom.jiraApiExportModal) confirmCloseJiraApiModal();
-    });
-    dom.jiraApiExportCancel.addEventListener('click', confirmCloseJiraApiModal);
-    dom.jiraApiExportNext.addEventListener('click', showJiraApiStage2);
-    dom.jiraApiExportBack.addEventListener('click', showJiraApiStage1);
-    dom.jiraApiExportDone.addEventListener('click', hideJiraApiExportModal);
-    dom.jiraApiCopyFunction.addEventListener('click', () => {
-        copyPhabCode(dom.jiraApiImportFunction, dom.jiraApiCopyFunction);
-    });
-    dom.jiraApiCopyCall.addEventListener('click', () => {
-        copyPhabCode(dom.jiraApiImportCall, dom.jiraApiCopyCall);
-    });
-    dom.jiraApiEmail.addEventListener('input', () => {
-        dom.jiraApiImportCall.textContent = generateJiraApiImportCall();
-    });
-    dom.jiraApiToken.addEventListener('input', () => {
-        dom.jiraApiImportCall.textContent = generateJiraApiImportCall();
-    });
-    dom.jiraApiProjectKey.addEventListener('input', () => {
-        dom.jiraApiImportCall.textContent = generateJiraApiImportCall();
-    });
-    const jiraApiStatusFilters = [
-        { el: dom.jiraApiFilterNone, status: 'none' },
-        { el: dom.jiraApiFilterPlanned, status: 'planned' },
-        { el: dom.jiraApiFilterInProgress, status: 'in-progress' },
-        { el: dom.jiraApiFilterDone, status: 'done' }
-    ];
-    jiraApiStatusFilters.forEach(({ el: checkbox, status }) => {
-        checkbox.addEventListener('change', (e) => {
-            const label = checkbox.closest('label');
-            if (e.target.checked) {
-                jiraApiExportState.selectedStatuses.add(status);
-                label.classList.add('checked');
-            } else {
-                jiraApiExportState.selectedStatuses.delete(status);
-                label.classList.remove('checked');
-            }
-            populateJiraApiExportEpics();
-        });
-    });
-
-    // Asana Export Modal
-    dom.exportAsanaBtn.addEventListener('click', () => {
-        if (dom.exportAsanaBtn.disabled) return;
-        closeMainMenu();
-        showAsanaExportModal();
-    });
-    dom.asanaExportModalClose.addEventListener('click', confirmCloseAsanaModal);
-    dom.asanaExportModal.addEventListener('click', (e) => {
-        if (e.target === dom.asanaExportModal) confirmCloseAsanaModal();
-    });
-    dom.asanaExportCancel.addEventListener('click', confirmCloseAsanaModal);
-    dom.asanaExportNext.addEventListener('click', showAsanaStage2);
-    dom.asanaExportBack.addEventListener('click', showAsanaStage1);
-    dom.asanaExportDone.addEventListener('click', hideAsanaExportModal);
-    dom.asanaCopyFunction.addEventListener('click', () => {
-        copyPhabCode(dom.asanaImportFunction, dom.asanaCopyFunction);
-    });
-    dom.asanaCopyCall.addEventListener('click', () => {
-        copyPhabCode(dom.asanaImportCall, dom.asanaCopyCall);
-    });
-    dom.asanaApiToken.addEventListener('input', () => {
-        dom.asanaImportCall.textContent = generateAsanaImportCall();
-    });
-    dom.asanaProjectUrl.addEventListener('input', () => {
-        dom.asanaImportCall.textContent = generateAsanaImportCall();
-    });
-    const asanaStatusFilters = [
-        { el: dom.asanaFilterNone, status: 'none' },
-        { el: dom.asanaFilterPlanned, status: 'planned' },
-        { el: dom.asanaFilterInProgress, status: 'in-progress' },
-        { el: dom.asanaFilterDone, status: 'done' }
-    ];
-    asanaStatusFilters.forEach(({ el: checkbox, status }) => {
-        checkbox.addEventListener('change', (e) => {
-            const label = checkbox.closest('label');
-            if (e.target.checked) {
-                asanaExportState.selectedStatuses.add(status);
-                label.classList.add('checked');
-            } else {
-                asanaExportState.selectedStatuses.delete(status);
-                label.classList.remove('checked');
-            }
-            populateAsanaExportEpics();
-        });
-    });
-
     // Asana CSV Export Modal
     dom.exportAsanaCsvBtn.addEventListener('click', () => {
         if (dom.exportAsanaCsvBtn.disabled) return;
@@ -2718,6 +2651,41 @@ const initEventListeners = () => {
                 label.classList.remove('checked');
             }
             populateAsanaProxyExportEpics();
+        });
+    });
+
+    // Linear Proxy Export Modal
+    dom.exportLinearProxyBtn.addEventListener('click', () => {
+        if (dom.exportLinearProxyBtn.disabled) return;
+        closeMainMenu();
+        showLinearProxyExportModal();
+    });
+    dom.linearProxyExportModalClose.addEventListener('click', confirmCloseLinearProxyModal);
+    dom.linearProxyExportModal.addEventListener('click', (e) => {
+        if (e.target === dom.linearProxyExportModal) confirmCloseLinearProxyModal();
+    });
+    dom.linearProxyExportCancel.addEventListener('click', confirmCloseLinearProxyModal);
+    dom.linearProxyExportNext.addEventListener('click', showLinearProxyStage2);
+    dom.linearProxyExportBack.addEventListener('click', showLinearProxyStage1);
+    dom.linearProxyExportRun.addEventListener('click', exportToLinearProxy);
+    dom.linearProxyVerifyBtn.addEventListener('click', verifyLinearProxy);
+    const linearProxyStatusFilters = [
+        { el: dom.linearProxyFilterNone, status: 'none' },
+        { el: dom.linearProxyFilterPlanned, status: 'planned' },
+        { el: dom.linearProxyFilterInProgress, status: 'in-progress' },
+        { el: dom.linearProxyFilterDone, status: 'done' }
+    ];
+    linearProxyStatusFilters.forEach(({ el: checkbox, status }) => {
+        checkbox.addEventListener('change', (e) => {
+            const label = checkbox.closest('label');
+            if (e.target.checked) {
+                linearProxyExportState.selectedStatuses.add(status);
+                label.classList.add('checked');
+            } else {
+                linearProxyExportState.selectedStatuses.delete(status);
+                label.classList.remove('checked');
+            }
+            populateLinearProxyExportEpics();
         });
     });
 
@@ -3035,6 +3003,8 @@ const initEventListeners = () => {
             if (except.includes(trigger)) return;
             trigger.classList.remove('expanded');
             menu.classList.remove('visible');
+            menu.querySelectorAll('.integration-icon').forEach(i => i.classList.remove('active'));
+            menu.querySelectorAll('.integration-options').forEach(o => o.classList.remove('visible'));
         });
     };
 
@@ -3060,6 +3030,22 @@ const initEventListeners = () => {
         collapseSubmenus(dom.exportSubmenuTrigger);
         dom.exportSubmenuTrigger.classList.toggle('expanded');
         dom.exportSubmenu.classList.toggle('visible');
+    });
+
+    // Integration icon toggle
+    document.querySelectorAll('.integration-icon[data-integration]').forEach(icon => {
+        icon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const integration = icon.dataset.integration;
+            const container = icon.closest('.dropdown-submenu-content');
+            const wasActive = icon.classList.contains('active');
+            container.querySelectorAll('.integration-icon').forEach(i => i.classList.remove('active'));
+            container.querySelectorAll('.integration-options').forEach(o => o.classList.remove('visible'));
+            if (!wasActive) {
+                icon.classList.add('active');
+                container.querySelector(`.integration-options[data-for="${integration}"]`)?.classList.add('visible');
+            }
+        });
     });
 
     // Handle clicks on sample items in main menu
@@ -3197,6 +3183,13 @@ const initEventListeners = () => {
 
     // Lock feature event listeners
     initLockListeners();
+
+    // Auto-fit map on window resize
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(navigation.resizeToFit, 200);
+    });
 };
 
 // =============================================================================

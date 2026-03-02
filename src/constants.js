@@ -52,6 +52,8 @@ export const STATUS_OPTIONS = {
     blocked: { label: 'Blocked', color: '#ef4444' }
 };
 
+export const TITLE_MAX_LENGTH = 38;
+
 export const ZOOM_LEVELS = [1, 0.75, 0.5, 0.25, 0.1];
 
 export const el = (tag, className, attrs = {}) => {

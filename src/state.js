@@ -4,7 +4,7 @@
 import { generateId, CARD_COLORS } from '/src/constants.js';
 import { showConfirm } from '/src/modals.js';
 
-export const DEFAULT_NOTES = 'Thanks for trying Storymaps.io! If you find it useful, please consider starring the open-source repo: https://github.com/jackgleeson/storymaps.io\nHave a great day!';
+export const DEFAULT_NOTES = 'Thanks for trying Storymaps.io! \n\nIf you find it useful, please consider starring the open-source repo: https://github.com/jackgleeson/storymaps.io\n\nHave a great day!';
 
 export const state = {
     mapId: null,

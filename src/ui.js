@@ -1,7 +1,7 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // UI component builders
 
-import { CARD_COLORS, DEFAULT_CARD_COLORS, STATUS_OPTIONS, el, isValidUrl } from '/src/constants.js';
+import { CARD_COLORS, DEFAULT_CARD_COLORS, STATUS_OPTIONS, TITLE_MAX_LENGTH, el, isValidUrl } from '/src/constants.js';
 import { partialMapEditState } from '/src/state.js';
 import { showAlert, showConfirm, showPrompt } from '/src/modals.js';
 import { quoted } from '/src/log.js';
@@ -453,6 +453,17 @@ export const createTextarea = (className, placeholder, value, onChange, onTextEd
     textarea.addEventListener('focus', () => _pushUndo());
 
     if (isCardText) {
+        textarea.maxLength = TITLE_MAX_LENGTH;
+
+        textarea.addEventListener('keydown', (e) => {
+            if (textarea.value.length >= TITLE_MAX_LENGTH
+                && !e.ctrlKey && !e.metaKey && !e.altKey
+                && e.key.length === 1) {
+                textarea.classList.add('limit-hit');
+                setTimeout(() => textarea.classList.remove('limit-hit'), 400);
+            }
+        });
+
         const autoResize = () => {
             textarea.rows = 1;
             const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 18;

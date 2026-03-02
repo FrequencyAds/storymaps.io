@@ -117,6 +117,31 @@ export const centerScroll = () => {
     wrapper.scrollTop = map.offsetTop - 20;
 };
 
+// Auto-fit zoom on window resize (preserves scroll position)
+let lastWrapperWidth = 0;
+export const resizeToFit = () => {
+    const wrapper = _dom.storyMapWrapper;
+    if (!wrapper || !_state.columns.length) return;
+    const currentWidth = wrapper.clientWidth;
+    if (currentWidth === lastWrapperWidth) return;
+    lastWrapperWidth = currentWidth;
+
+    const CARD_WIDTH = 180;
+    const LABEL_WIDTH = 80;
+    const GAP = 10;
+    const PHANTOM_COUNT = 3;
+    const BODY_PADDING = 48;
+
+    const columnCount = _state.columns.length + PHANTOM_COUNT;
+    const contentWidth = LABEL_WIDTH + (columnCount * CARD_WIDTH) + (columnCount * GAP);
+    const availableWidth = currentWidth - BODY_PADDING;
+    const fitZoom = Math.min(1, (availableWidth - 20) / contentWidth);
+    const effectiveMin = currentWidth < 600 ? 0.5 : ZOOM_MIN;
+    zoomLevel = Math.max(effectiveMin, Math.min(ZOOM_MAX, Math.floor(fitZoom * 20) / 20));
+    updateZoom();
+    centerScroll();
+};
+
 // Auto-fit content to viewport width
 export const zoomToFit = () => {
     const wrapper = _dom.storyMapWrapper;
@@ -141,6 +166,7 @@ export const zoomToFit = () => {
 
     updateZoom();
     centerScroll();
+    lastWrapperWidth = wrapper.clientWidth;
 };
 
 // Scroll element into view with padding
@@ -358,6 +384,8 @@ export const closeMainMenu = () => {
     _dom.importSubmenuTrigger.classList.remove('expanded');
     _dom.exportSubmenu.classList.remove('visible');
     _dom.exportSubmenuTrigger.classList.remove('expanded');
+    _dom.mainMenu.querySelectorAll('.integration-icon').forEach(i => i.classList.remove('active'));
+    _dom.mainMenu.querySelectorAll('.integration-options').forEach(o => o.classList.remove('visible'));
     document.body.classList.remove('main-menu-open');
 };
 
