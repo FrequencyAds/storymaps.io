@@ -583,6 +583,10 @@ body.welcome-visible #mainMenu > .dropdown-submenu:has(> .dropdown-submenu-trigg
     padding: 4px 8px;
 }
 
+.file-icons .integration-icon {
+    flex: 0;
+}
+
 .integration-icon {
     background: none;
     border: 1.5px solid transparent;
@@ -604,12 +608,6 @@ body.welcome-visible #mainMenu > .dropdown-submenu:has(> .dropdown-submenu-trigg
     letter-spacing: 0.02em;
     color: rgba(0, 0, 0, 0.5);
     line-height: 1;
-}
-
-.integration-icon .file-icon {
-    font-size: 16px;
-    color: var(--color-text-primary);
-    line-height: 18px;
 }
 
 .integration-icon:hover {
@@ -2941,6 +2939,9 @@ body.main-menu-open .step:hover {
 
 .btn-sample-purple { background: var(--color-bg-surface); border-color: #e5e7eb; }
 .btn-sample-purple::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #d8b4fe; margin-right: 8px; flex-shrink: 0; }
+
+.btn-sample-green { background: var(--color-bg-surface); border-color: #e5e7eb; }
+.btn-sample-green::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #86efac; margin-right: 8px; flex-shrink: 0; }
 
 
 /* Bottom section — learn more */

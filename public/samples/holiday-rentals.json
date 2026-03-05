@@ -1,0 +1,875 @@
+{
+  "app": "storymap",
+  "v": 1,
+  "name": "Holiday Rentals App",
+  "users": [
+    [
+      {
+        "name": "Guest",
+        "color": "#fda4af"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      {
+        "name": "Host",
+        "color": "#fda4af"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    []
+  ],
+  "activities": [
+    [
+      {
+        "name": "Find & Book a Stay",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    [],
+    [],
+    [
+      {
+        "name": "Manage Trip",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      {
+        "name": "List Property",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    [],
+    [
+      {
+        "name": "Manage Guests & Earnings",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    []
+  ],
+  "steps": [
+    {
+      "name": "Search Listings",
+      "color": "#86efac"
+    },
+    {
+      "name": "Browse Results",
+      "color": "#86efac"
+    },
+    {
+      "name": "View Listing",
+      "color": "#86efac"
+    },
+    {
+      "name": "Book & Pay",
+      "color": "#86efac"
+    },
+    {
+      "name": "Manage Booking",
+      "color": "#86efac"
+    },
+    {
+      "name": "Check In",
+      "color": "#86efac"
+    },
+    {
+      "name": "During Stay",
+      "color": "#86efac"
+    },
+    {
+      "name": "Review",
+      "color": "#86efac"
+    },
+    {
+      "name": "",
+      "color": "#e5e7eb",
+      "hidden": true
+    },
+    {
+      "name": "Create Listing",
+      "color": "#86efac"
+    },
+    {
+      "name": "Set Pricing",
+      "color": "#86efac"
+    },
+    {
+      "name": "Manage Calendar",
+      "color": "#86efac"
+    },
+    {
+      "name": "Handle Requests",
+      "color": "#86efac"
+    },
+    {
+      "name": "Host Guest",
+      "color": "#86efac"
+    },
+    {
+      "name": "Earnings & Analytics",
+      "color": "#86efac"
+    }
+  ],
+  "slices": [
+    {
+      "name": "MVP - Core Marketplace",
+      "stories": [
+        [
+          {
+            "name": "Location search with autocomplete",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Date picker for check-in/check-out",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Guest count selector",
+            "status": "done",
+            "points": 1,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Keep search bar sticky on scroll",
+            "color": "#d8b4fe"
+          }
+        ],
+        [
+          {
+            "name": "Listing cards with key details",
+            "body": "Photo, price, and rating",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Sort by price low/high",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Pagination or infinite scroll?",
+            "color": "#bef264"
+          }
+        ],
+        [
+          {
+            "name": "Photo gallery with swipe",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Description, amenities, house rules",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Location map with pin",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend", "api"]
+          },
+          {
+            "name": "Host profile card with response rate",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          }
+        ],
+        [
+          {
+            "name": "Select dates and guest count",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Price breakdown with all fees",
+            "body": "Nightly rate, cleaning, service fee, taxes",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Stripe payment integration",
+            "status": "done",
+            "points": 5,
+            "tags": ["backend", "api"]
+          },
+          {
+            "name": "What if payment fails mid-booking?",
+            "color": "#fecdd3"
+          }
+        ],
+        [
+          {
+            "name": "View upcoming reservations",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Cancel booking with refund rules",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Define cancellation policies",
+            "body": "Flexible, moderate, strict",
+            "color": "#a5f3fc"
+          }
+        ],
+        [
+          {
+            "name": "View check-in instructions",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Contact host button (email)",
+            "status": "done",
+            "points": 1,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Show check-in time countdown",
+            "color": "#d8b4fe"
+          }
+        ],
+        [
+          {
+            "name": "View house rules and WiFi info",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Report issue to host",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "Rate stay 1-5 stars",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Write text review",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Should reviews be mutual?",
+            "body": "Both guest and host review each other",
+            "color": "#bef264"
+          }
+        ],
+        [],
+        [
+          {
+            "name": "Add property details",
+            "body": "Title, type, beds, baths",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Upload photos with drag-and-drop",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Set amenities checklist",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Add house rules and check-in info",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          }
+        ],
+        [
+          {
+            "name": "Set nightly base rate",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Add cleaning fee",
+            "status": "done",
+            "points": 1,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Minimum and maximum stay length",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "Block and unblock dates",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Sync with external calendar (iCal)?",
+            "color": "#bef264"
+          }
+        ],
+        [
+          {
+            "name": "View incoming booking requests",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Accept or decline booking",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Enable instant book (auto-accept)",
+            "status": "done",
+            "points": 2,
+            "tags": ["backend"]
+          },
+          {
+            "name": "What if host doesn't respond?",
+            "body": "Auto-decline after 24h timeout",
+            "color": "#fecdd3"
+          }
+        ],
+        [
+          {
+            "name": "Send check-in details to guest",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "View guest info summary",
+            "status": "done",
+            "points": 1,
+            "tags": ["frontend"]
+          }
+        ],
+        [
+          {
+            "name": "View payout history",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Payout to bank via Stripe Connect",
+            "status": "done",
+            "points": 5,
+            "tags": ["backend", "api"]
+          },
+          {
+            "name": "Monthly earnings summary",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          }
+        ]
+      ]
+    },
+    {
+      "name": "V1 - Enhanced Experience",
+      "stories": [
+        [
+          {
+            "name": "Advanced filters",
+            "body": "Price, amenities, property type",
+            "status": "in-progress",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Map view with draggable pins",
+            "status": "in-progress",
+            "tags": ["frontend", "api"]
+          },
+          {
+            "name": "Recent searches history",
+            "status": "planned",
+            "tags": ["frontend"]
+          }
+        ],
+        [
+          {
+            "name": "Map + list split view",
+            "status": "in-progress",
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Save listing to wishlist",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Share listing link",
+            "status": "done",
+            "points": 1,
+            "tags": ["frontend"]
+          }
+        ],
+        [
+          {
+            "name": "Availability calendar on listing page",
+            "status": "in-progress",
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Reviews from past guests",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Neighborhood guide with nearby places",
+            "status": "planned",
+            "tags": ["frontend", "api"]
+          }
+        ],
+        [
+          {
+            "name": "Instant book vs request to book toggle",
+            "status": "in-progress",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Promo code / coupon support",
+            "status": "planned",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Split payment with co-travelers?",
+            "color": "#bef264"
+          }
+        ],
+        [
+          {
+            "name": "Modify booking dates",
+            "status": "in-progress",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "In-app messaging with host",
+            "status": "in-progress",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Push notifications for booking updates",
+            "status": "planned",
+            "tags": ["backend", "mobile"]
+          }
+        ],
+        [
+          {
+            "name": "Smart lock code delivery",
+            "status": "planned",
+            "tags": ["api", "backend"]
+          },
+          {
+            "name": "Step-by-step directions to property",
+            "status": "planned",
+            "tags": ["frontend", "api"]
+          }
+        ],
+        [
+          {
+            "name": "Local recommendations from host",
+            "status": "in-progress",
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Request early/late check-in/out",
+            "status": "planned",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "How to handle emergencies?",
+            "body": "Safety issues, urgent maintenance",
+            "color": "#bef264"
+          }
+        ],
+        [
+          {
+            "name": "Photo reviews from guests",
+            "status": "planned",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Host can respond to reviews",
+            "status": "in-progress",
+            "tags": ["frontend", "backend"]
+          }
+        ],
+        [],
+        [
+          {
+            "name": "Listing preview before publish",
+            "status": "in-progress",
+            "tags": ["frontend"]
+          },
+          {
+            "name": "AI-generated description from photos",
+            "status": "planned",
+            "tags": ["ai", "backend"]
+          },
+          {
+            "name": "Multi-language listing descriptions",
+            "status": "planned",
+            "tags": ["backend"]
+          }
+        ],
+        [
+          {
+            "name": "Weekend and seasonal pricing rules",
+            "status": "in-progress",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Weekly and monthly stay discounts",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Smart pricing suggestions",
+            "body": "Based on local demand signals",
+            "status": "planned",
+            "tags": ["ai", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "iCal sync with Airbnb, VRBO, Google",
+            "status": "in-progress",
+            "tags": ["backend", "api"]
+          },
+          {
+            "name": "Bulk date management",
+            "status": "planned",
+            "tags": ["frontend"]
+          }
+        ],
+        [
+          {
+            "name": "Saved quick replies",
+            "body": "For common guest questions",
+            "status": "in-progress",
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Guest verification status display",
+            "status": "planned",
+            "tags": ["backend"]
+          },
+          {
+            "name": "Host response rate and time tracking",
+            "status": "done",
+            "points": 2,
+            "tags": ["backend"]
+          }
+        ],
+        [
+          {
+            "name": "Automated check-in/checkout messages",
+            "status": "in-progress",
+            "tags": ["backend"]
+          },
+          {
+            "name": "Digital guidebook for guests",
+            "status": "planned",
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Mid-stay check-in message template",
+            "color": "#d8b4fe"
+          }
+        ],
+        [
+          {
+            "name": "Occupancy rate dashboard",
+            "status": "in-progress",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Revenue chart by month",
+            "status": "planned",
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Tax document generation (1099)",
+            "status": "planned",
+            "tags": ["backend"]
+          }
+        ]
+      ]
+    },
+    {
+      "name": "V2 - Scale & Intelligence",
+      "stories": [
+        [
+          {
+            "name": "AI personalized recommendations",
+            "status": "planned",
+            "tags": ["ai", "backend"]
+          },
+          {
+            "name": "Flexible dates (cheapest nearby dates)",
+            "status": "planned",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Group trip planning with shared search",
+            "status": "planned",
+            "tags": ["frontend", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "Virtual tour / 360 photos",
+            "status": "planned",
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Price prediction (best time to book)",
+            "status": "planned",
+            "tags": ["ai", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "3D room walkthrough",
+            "status": "planned",
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Instant price comparison with hotels",
+            "status": "planned",
+            "tags": ["api", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "Buy now pay later option",
+            "status": "planned",
+            "tags": ["backend", "api"]
+          },
+          {
+            "name": "Travel insurance add-on",
+            "status": "planned",
+            "tags": ["backend"]
+          },
+          {
+            "name": "Multi-currency support",
+            "status": "planned",
+            "tags": ["backend"]
+          }
+        ],
+        [
+          {
+            "name": "Trip itinerary builder",
+            "status": "planned",
+            "tags": ["frontend"]
+          },
+          {
+            "name": "AI concierge chat",
+            "status": "planned",
+            "tags": ["ai", "frontend"]
+          }
+        ],
+        [
+          {
+            "name": "Face recognition self-check-in",
+            "status": "planned",
+            "tags": ["ai", "mobile"]
+          },
+          {
+            "name": "AR navigation to front door",
+            "status": "planned",
+            "tags": ["mobile"]
+          }
+        ],
+        [
+          {
+            "name": "Experiences marketplace",
+            "body": "Tours, cooking classes, activities",
+            "status": "planned",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "In-app room service and local delivery",
+            "status": "planned",
+            "tags": ["frontend", "api"]
+          }
+        ],
+        [
+          {
+            "name": "AI review summary for each listing",
+            "status": "planned",
+            "tags": ["ai", "backend"]
+          },
+          {
+            "name": "Verified stay badges",
+            "status": "planned",
+            "tags": ["backend"]
+          }
+        ],
+        [],
+        [
+          {
+            "name": "Co-hosting (invite additional hosts)",
+            "status": "planned",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Professional photography booking",
+            "status": "planned",
+            "tags": ["backend"]
+          }
+        ],
+        [
+          {
+            "name": "Dynamic pricing algorithm",
+            "body": "Demand-based rate adjustments",
+            "status": "planned",
+            "tags": ["ai", "backend"]
+          },
+          {
+            "name": "Competitor rate monitoring",
+            "status": "planned",
+            "tags": ["backend", "api"]
+          }
+        ],
+        [
+          {
+            "name": "Multi-property unified dashboard",
+            "status": "planned",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Automated turnover scheduling",
+            "body": "Coordinate cleaning crews",
+            "status": "planned",
+            "tags": ["backend"]
+          }
+        ],
+        [
+          {
+            "name": "AI auto-responses for common questions",
+            "status": "planned",
+            "tags": ["ai", "backend"]
+          },
+          {
+            "name": "Guest loyalty program",
+            "body": "Repeat booking rewards",
+            "status": "planned",
+            "tags": ["backend"]
+          }
+        ],
+        [
+          {
+            "name": "IoT device management",
+            "body": "Thermostat, lights, smart locks",
+            "status": "planned",
+            "tags": ["api", "backend"]
+          },
+          {
+            "name": "Cleaning crew coordination",
+            "status": "planned",
+            "tags": ["backend"]
+          }
+        ],
+        [
+          {
+            "name": "Superhost program and badges",
+            "status": "planned",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Market insights and pricing trends",
+            "status": "planned",
+            "tags": ["ai", "backend"]
+          },
+          {
+            "name": "Portfolio performance tracker",
+            "body": "Multi-property overview",
+            "status": "planned",
+            "tags": ["frontend"]
+          }
+        ]
+      ]
+    }
+  ],
+  "legend": [
+    {
+      "color": "#fef08a",
+      "label": "Tasks"
+    },
+    {
+      "color": "#a5f3fc",
+      "label": "Notes"
+    },
+    {
+      "color": "#bef264",
+      "label": "Questions"
+    },
+    {
+      "color": "#fecdd3",
+      "label": "Edge Cases"
+    },
+    {
+      "color": "#d8b4fe",
+      "label": "Design"
+    }
+  ],
+  "notes": "JL: MVP must nail two-sided trust - reviews, verified profiles, and secure payments are non-negotiable\n\nAK: Stripe Connect for host payouts needs careful testing - money movement is high-risk\n\nSR: Map view is the #1 requested feature from beta testers, prioritize for V1\n\nJL: iCal sync is essential for hosts already on Airbnb/VRBO - without it we lose the multi-platform hosts\n\nAK: Dynamic pricing in V2 depends on having enough booking data from V1 - don't rush it\n\nSR: Cancellation policy engine is more complex than it looks - flexible/moderate/strict each has different refund timelines"
+}

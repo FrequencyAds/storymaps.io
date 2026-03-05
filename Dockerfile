@@ -11,6 +11,7 @@ WORKDIR /app
 COPY --from=build /app/node_modules ./node_modules
 COPY package*.json ./
 COPY server.js ./
+COPY server/ ./server/
 COPY public/ ./public/
 COPY src/ ./src/
 RUN mkdir -p data && chown -R node:node /app
