@@ -95,6 +95,17 @@ export const render = () => {
     const savedScrollLeft = _dom.storyMapWrapper.scrollLeft;
     const savedScrollTop = _dom.storyMapWrapper.scrollTop;
 
+    // Preserve hover state across DOM rebuild (prevents button flicker on remote edits)
+    const hoveredCard = _dom.storyMap.querySelector('.story-card:hover');
+    const hoveredStep = _dom.storyMap.querySelector('.step:hover');
+    let savedHover = null;
+    if (hoveredCard && hoveredCard.dataset.storyId) {
+        savedHover = { sel: `.story-card[data-story-id="${hoveredCard.dataset.storyId}"]` };
+    } else if (hoveredStep && hoveredStep.dataset.columnId) {
+        savedHover = { sel: `.step[data-column-id="${hoveredStep.dataset.columnId}"]` };
+    }
+
+    _dom.storyMap.classList.add('notransition');
     _dom.storyMap.innerHTML = '';
 
     // Apply partial editing class for dimming
@@ -196,6 +207,18 @@ export const render = () => {
             textarea.setSelectionRange(selStart, selEnd);
         }
     }
+
+    // Restore hover state to prevent button flicker on remote edits
+    if (savedHover) {
+        const el = _dom.storyMap.querySelector(savedHover.sel);
+        if (el) {
+            el.classList.add('card-hovered');
+            el.addEventListener('mouseleave', () => el.classList.remove('card-hovered'), { once: true });
+        }
+    }
+
+    _dom.storyMap.offsetHeight; // force reflow to flush no-transition state
+    _dom.storyMap.classList.remove('notransition');
 
     uiRenderLegend();
     uiRenderPartialsList();
@@ -569,6 +592,7 @@ const updateSelectionHighlights = () => {
 };
 
 let _preserveToolbar = false;
+export const setPreserveToolbar = (v) => { _preserveToolbar = v; };
 
 export const updateSelectionUI = () => {
     const validColumnIds = new Set(_state.columns.map(c => c.id));

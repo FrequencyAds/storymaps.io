@@ -2245,7 +2245,9 @@ body.main-menu-open .step:hover {
 
 .step:hover .btn-delete,
 .story-card:hover .btn-delete,
-.slice-label-container:hover .btn-delete {
+.slice-label-container:hover .btn-delete,
+.step.card-hovered .btn-delete,
+.story-card.card-hovered .btn-delete {
     opacity: 1;
 }
 
@@ -2471,7 +2473,11 @@ body.main-menu-open .step:hover {
 .step:hover .btn-expand,
 .story-card:hover .btn-expand,
 .step:hover .btn-options,
-.story-card:hover .btn-options {
+.story-card:hover .btn-options,
+.step.card-hovered .btn-expand,
+.story-card.card-hovered .btn-expand,
+.step.card-hovered .btn-options,
+.story-card.card-hovered .btn-options {
     opacity: 1;
 }
 
@@ -6865,7 +6871,9 @@ body.focus-mode .btn-expand {
 }
 
 body.focus-mode .story-card:hover .btn-expand,
-body.focus-mode .step:hover .btn-expand {
+body.focus-mode .step:hover .btn-expand,
+body.focus-mode .story-card.card-hovered .btn-expand,
+body.focus-mode .step.card-hovered .btn-expand {
     opacity: 1 !important;
 }
 
@@ -8663,4 +8671,9 @@ body.tour-active .controls-right {
     body.welcome-visible #mainMenu > .dropdown-submenu:has(> .dropdown-submenu-trigger:disabled) {
         display: none !important;
     }
+}
+
+.notransition,
+.notransition * {
+    transition: none !important;
 }

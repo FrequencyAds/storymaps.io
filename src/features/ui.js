@@ -482,7 +482,8 @@ export const createUrlIndicator = (url) => {
 export const createTextarea = (className, placeholder, value, onChange, onTextEdit) => {
     const isCardText = className === 'step-text' || className === 'story-text';
     const isSliceLabel = className === 'slice-label';
-    const textarea = el('textarea', className, { placeholder, value, rows: isCardText ? 1 : (isSliceLabel ? 3 : 2) });
+    const initialRows = isCardText ? (value && value.length > 20 ? 2 : 1) : (isSliceLabel ? 3 : 2);
+    const textarea = el('textarea', className, { placeholder, value, rows: initialRows });
 
     // Push undo when user starts editing
     textarea.addEventListener('focus', () => _pushUndo());

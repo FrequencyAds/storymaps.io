@@ -23,7 +23,7 @@ import * as welcome from '/src/features/welcome.js';
 import * as partials from '/src/features/partials.js';
 
 const { isMapEditable } = lock;
-const { render, initSortable, addColumn, addColumnAt, addStory, addSlice, deleteColumn, deleteStory, deleteSlice, handleColumnSelection, updateSelectionUI, duplicateColumns, duplicateCards, deleteSelectedColumns, deleteSelectedCards } = renderMod;
+const { render, initSortable, addColumn, addColumnAt, addStory, addSlice, deleteColumn, deleteStory, deleteSlice, handleColumnSelection, updateSelectionUI, duplicateColumns, duplicateCards, deleteSelectedColumns, deleteSelectedCards, setPreserveToolbar } = renderMod;
 const { closeMainMenu, closeAllOptionsMenus, zoomToFit, scrollElementIntoView } = navigation;
 const { loadYjs, createYjsDoc, destroyYjs, syncFromYjs, syncToYjs, getProvider, getYdoc, getYmap, ensureSortable } = yjs;
 const { trackPresence, trackCursor, toggleCursorsVisibility, updateCursorsVisibilityUI, getCursorColor, getSessionId, broadcastDragStart, broadcastDragEnd } = presence;
@@ -1453,6 +1453,7 @@ yjs.init({
     log,
     isMapEditable,
     render,
+    setPreserveToolbar,
 });
 
 // Wire tour module

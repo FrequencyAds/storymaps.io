@@ -9,6 +9,7 @@ let _log = null;
 let _dom = null;
 let _isMapEditable = null;
 let _render = null;
+let _setPreserveToolbar = null;
 
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
@@ -17,6 +18,7 @@ let ydoc = null;
 let ymap = null;
 export let isSyncingFromRemote = false;
 let _remoteRenderTimer = null;
+let _hasNewRemoteEvents = false;
 let lastSyncedHash = null;
 
 const stateHash = () => JSON.stringify([
@@ -66,13 +68,14 @@ export const ensureSortable = () => {
 
 export const getIsSafari = () => isSafari;
 
-export const init = ({ state, notepad, log, isMapEditable, render }) => {
+export const init = ({ state, notepad, log, isMapEditable, render, setPreserveToolbar }) => {
     _state = state;
     _notepad = notepad;
     _log = log;
     _dom = { boardName: document.getElementById('boardName') };
     _isMapEditable = isMapEditable;
     _render = render;
+    _setPreserveToolbar = setPreserveToolbar;
 };
 
 export const getProvider = () => provider;
@@ -341,7 +344,10 @@ export const syncFromYjs = () => {
 
     if (_dom.boardName) _dom.boardName.value = _state.name;
 
-    lastSyncedHash = stateHash();
+    const newHash = stateHash();
+    if (newHash === lastSyncedHash) return false;
+    lastSyncedHash = newHash;
+    return true;
 };
 
 const syncYArray = (yArray, items, getId, createFn, updateFn) => {
@@ -560,16 +566,25 @@ export const createYjsDoc = async (mapId) => {
             if (!_remoteRenderTimer) {
                 // First event: render immediately for responsiveness
                 isSyncingFromRemote = true;
-                try { syncFromYjs(); _render(); }
-                finally { isSyncingFromRemote = false; }
+                try {
+                    const changed = syncFromYjs();
+                    if (changed) { if (_setPreserveToolbar) _setPreserveToolbar(true); _render(); }
+                } finally { isSyncingFromRemote = false; }
+                _hasNewRemoteEvents = false;
+            } else {
+                _hasNewRemoteEvents = true;
             }
             // Schedule trailing render - resets on each event
             clearTimeout(_remoteRenderTimer);
             _remoteRenderTimer = setTimeout(() => {
                 _remoteRenderTimer = null;
+                if (!_hasNewRemoteEvents) return;
+                _hasNewRemoteEvents = false;
                 isSyncingFromRemote = true;
-                try { syncFromYjs(); _render(); }
-                finally { isSyncingFromRemote = false; }
+                try {
+                    const changed = syncFromYjs();
+                    if (changed) { if (_setPreserveToolbar) _setPreserveToolbar(true); _render(); }
+                } finally { isSyncingFromRemote = false; }
             }, 100);
         }
     });
@@ -607,6 +622,7 @@ export const destroyYjs = () => {
         clearTimeout(_remoteRenderTimer);
         _remoteRenderTimer = null;
     }
+    _hasNewRemoteEvents = false;
     if (provider) {
         provider.destroy();
         provider = null;
