@@ -1,10 +1,10 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Partial map CRUD operations
 
-import { dom } from '/src/core/dom.js';
+import { dom } from '/src/ui/dom.js';
 import { generateId, CARD_COLORS } from '/src/core/constants.js';
 import { state, pushUndo, createColumn, createRefColumn, clearSelection, partialMapEditState } from '/src/core/state.js';
-import { scrollElementIntoView } from '/src/core/navigation.js';
+import { scrollElementIntoView } from '/src/ui/navigation.js';
 
 let _deps = {};
 

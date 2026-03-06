@@ -1,7 +1,7 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Import/export orchestration for JSON, YAML, CSV formats
 
-import { dom } from '/src/core/dom.js';
+import { dom } from '/src/ui/dom.js';
 import { state, initState, pushUndo, confirmOverwrite } from '/src/core/state.js';
 import { el } from '/src/core/constants.js';
 import { serialize, deserialize } from '/src/core/serialization.js';
@@ -9,7 +9,7 @@ import { exportToYaml, importFromYaml } from '/src/transfer/yaml.js';
 import { exportToCsv, importFromCsv } from '/src/transfer/csv.js';
 import { showAlert } from '/src/core/modals.js';
 import { isMapEditable, lockState } from '/src/core/lock.js';
-import { closeMainMenu, zoomToFit } from '/src/core/navigation.js';
+import { closeMainMenu, zoomToFit } from '/src/ui/navigation.js';
 import * as yjs from '/src/core/yjs.js';
 import * as log from '/src/core/log.js';
 import * as exportsMod from '/src/transfer/exports.js';

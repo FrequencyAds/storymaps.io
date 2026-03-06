@@ -1,10 +1,10 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Search and filter panel
 
-import { dom } from '/src/core/dom.js';
+import { dom } from '/src/ui/dom.js';
 import { state } from '/src/core/state.js';
 import { el, CARD_COLORS, DEFAULT_CARD_COLORS, STATUS_OPTIONS } from '/src/core/constants.js';
-import { getAllTagsInMap } from '/src/features/ui.js';
+import { getAllTagsInMap } from '/src/ui/ui.js';
 
 let searchDebounceTimer = null;
 const filterState = { statuses: new Set(), colors: new Set(), tags: new Set() };

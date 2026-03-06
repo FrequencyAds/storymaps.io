@@ -1,11 +1,11 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Welcome screen, counter, tutorial toast, new/copy/sample map creation
 
-import { dom } from '/src/core/dom.js';
+import { dom } from '/src/ui/dom.js';
 import { state, initState, hasContent } from '/src/core/state.js';
 import { deserialize } from '/src/core/serialization.js';
-import { closeMainMenu, zoomToFit } from '/src/core/navigation.js';
-import { clearPresence, clearCursors } from '/src/core/presence.js';
+import { closeMainMenu, zoomToFit } from '/src/ui/navigation.js';
+import { clearPresence, clearCursors } from '/src/ui/presence.js';
 import { clearLockSubscription, updateLockUI } from '/src/core/lock.js';
 import { destroyYjs } from '/src/core/yjs.js';
 import { showAlert, showConfirm } from '/src/core/modals.js';

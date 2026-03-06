@@ -1,7 +1,7 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Log — real-time feed of map edits synced via Yjs Y.Array
 
-import { getSessionId, getCursorColor, getPresenceName } from '/src/core/presence.js';
+import { getSessionId, getCursorColor, getPresenceName } from '/src/ui/presence.js';
 
 const MAX_ENTRIES = 20;
 

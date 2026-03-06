@@ -1,7 +1,7 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Card detail expand modal
 
-import { dom } from '/src/core/dom.js';
+import { dom } from '/src/ui/dom.js';
 import { pushUndo } from '/src/core/state.js';
 import { isMapEditable } from '/src/core/lock.js';
 import * as log from '/src/core/log.js';
