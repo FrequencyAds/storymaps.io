@@ -328,7 +328,7 @@ export const updateEditability = () => {
     if (!editable) {
         const active = document.activeElement;
         if (active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT')) {
-            if (active !== _dom.lockPasswordInput) {
+            if (active !== _dom.lockPasswordInput && !active.closest('.modal-overlay')) {
                 active.blur();
             }
         }

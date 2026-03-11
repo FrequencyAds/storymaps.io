@@ -2,7 +2,7 @@
 // Welcome screen, counter, tutorial toast, new/copy/sample map creation
 
 import { dom } from '/src/ui/dom.js';
-import { state, initState, hasContent } from '/src/core/state.js';
+import { state, initState, hasContent, pushUndo, confirmOverwrite } from '/src/core/state.js';
 import { deserialize } from '/src/core/serialization.js';
 import { closeMainMenu, zoomToFit } from '/src/ui/navigation.js';
 import { clearPresence, clearCursors } from '/src/ui/presence.js';
@@ -85,6 +85,7 @@ const incrementMapCounter = async () => {
 };
 
 export const showWelcomeScreen = () => {
+    state.mapLoaded = false;
     document.body.classList.add('welcome-visible');
     dom.welcomeScreen.classList.add('visible');
     dom.storyMapWrapper.classList.remove('visible');
@@ -94,7 +95,6 @@ export const showWelcomeScreen = () => {
     dom.controlsRight?.classList.remove('panel-open');
     dom.panelBody?.querySelectorAll('.panel-section').forEach(s => s.classList.remove('open'));
     document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
-    dom.searchBtn.disabled = true;
     closeSearch();
     clearPresence();
     clearCursors();
@@ -104,13 +104,17 @@ export const showWelcomeScreen = () => {
 };
 
 export const hideWelcomeScreen = () => {
+    state.mapLoaded = true;
     document.body.classList.remove('welcome-visible');
     dom.welcomeScreen.classList.remove('visible');
     dom.storyMapWrapper.classList.add('visible');
     dom.boardName.classList.remove('hidden');
     dom.zoomControls.classList.remove('hidden');
     dom.controlsRight?.classList.remove('hidden');
-    dom.searchBtn.disabled = false;
+    dom.searchBtn.style.display = '';
+    dom.undoBtn.style.display = '';
+    dom.redoBtn.style.display = '';
+    dom.buildAiBtn.style.display = '';
     unsubscribeFromCounter();
     if (!legendAutoOpened && window.matchMedia('(pointer: fine)').matches) {
         _deps.switchPanelTab('legend');
@@ -142,22 +146,26 @@ export const showTutorialToast = () => {
 
 export const startNewMap = async () => {
     hideWelcomeScreen();
+    showLoading();
     initState();
     const mapId = await _deps.newMapId();
     state.mapId = mapId;
     history.replaceState({ mapId }, '', `/${mapId}`);
     dom.boardName.value = state.name;
     _deps.render();
-    requestAnimationFrame(zoomToFit);
-    setTimeout(showTutorialToast, 800);
     await _deps.createYjsDoc(mapId);
     _deps.subscribeToMap(mapId);
+    hideLoading();
+    requestAnimationFrame(zoomToFit);
+    setTimeout(showTutorialToast, 800);
     _deps.saveToStorage();
     incrementMapCounter();
 };
 
 export const startWithSample = async (sampleName, { showToast = true } = {}) => {
     hideWelcomeScreen();
+    showLoading();
+    destroyYjs();
     initState();
     const mapId = await _deps.newMapId();
     state.mapId = mapId;
@@ -172,11 +180,11 @@ export const startWithSample = async (sampleName, { showToast = true } = {}) => 
     }
     dom.boardName.value = state.name;
     _deps.render();
-    requestAnimationFrame(zoomToFit);
-    if (showToast) setTimeout(showTutorialToast, 800);
-
     await _deps.createYjsDoc(mapId);
     _deps.subscribeToMap(mapId);
+    hideLoading();
+    requestAnimationFrame(zoomToFit);
+    if (showToast) setTimeout(showTutorialToast, 800);
     _deps.saveToStorage();
     incrementMapCounter();
 };
@@ -226,6 +234,28 @@ export const copyMap = async () => {
     _deps.subscribeToMap(mapId);
     _deps.saveToStorage();
     incrementMapCounter();
+};
+
+export const loadSample = async (name) => {
+    if (!state.mapId) {
+        return startWithSample(name);
+    }
+
+    _deps.saveToStorage();
+    if (!await confirmOverwrite()) return;
+
+    showLoading();
+    try {
+        const response = await fetch(`/samples/${name}.json`, { cache: 'no-cache' });
+        if (!response.ok) throw new Error();
+        pushUndo();
+        deserialize(await response.json());
+        dom.boardName.value = state.name;
+        _deps.renderAndSave();
+    } catch {
+        await showAlert('Failed to load sample');
+    }
+    hideLoading();
 };
 
 export const initListeners = () => {

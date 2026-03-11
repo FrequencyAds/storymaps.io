@@ -15,7 +15,8 @@ export const state = {
     slices: [],
     legend: [],
     notes: '',
-    partialMaps: []
+    partialMaps: [],
+    mapLoaded: false
 };
 
 // Ephemeral state for partial map editing (not serialized, not synced)

@@ -1,6 +1,7 @@
 // Storymaps.io -- AGPL-3.0 -- see LICENCE for details
 // Import Modules -- Asana Import via server proxy + CSV file upload
 
+import { state } from '/src/core/state.js';
 import { showConfirm } from '/src/core/modals.js';
 import { extractAsanaProjectGid } from '/src/transfer/exports.js';
 import {
@@ -244,6 +245,7 @@ export const fetchFromAsana = async () => {
 
 export const showAsanaImportStage1 = () => {
     dom.asanaImportStage2.classList.add('hidden');
+    dom.asanaImportFetchBtn.disabled = false;
     if (asanaImportState.mode === 'csv') {
         dom.asanaImportStage1.classList.add('hidden');
         dom.asanaCsvImportStage1.classList.remove('hidden');
@@ -271,6 +273,14 @@ const showAsanaImportStage2 = () => {
     dom.asanaCsvImportStage1.classList.add('hidden');
     dom.asanaImportStage2.classList.remove('hidden');
     dom.asanaImportTitle.textContent = 'Review Import';
+
+    // Show import mode toggle only when importing into an existing map
+    if (state.mapLoaded) {
+        dom.asanaImportMode.classList.remove('hidden');
+        dom.asanaImportMode.querySelector('input[value="append"]').checked = true;
+    } else {
+        dom.asanaImportMode.classList.add('hidden');
+    }
 
     // Show/hide mapping mode toggle
     const toggle = dom.asanaImportMappingMode;
@@ -310,8 +320,9 @@ export const confirmAsanaImport = () => {
         { sliceLabel }
     );
     if (data.steps.length === 0) return;
+    const mode = dom.asanaImportMode?.querySelector('input:checked')?.value || 'replace';
     hideAsanaImportModal();
-    onImportComplete(data);
+    onImportComplete(data, { mode });
 };
 
 // ==================== Asana CSV Parsing ====================

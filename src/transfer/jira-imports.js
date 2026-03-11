@@ -1,6 +1,7 @@
 // Storymaps.io -- AGPL-3.0 -- see LICENCE for details
 // Import Modules -- Jira Import via server proxy + CSV file upload
 
+import { state } from '/src/core/state.js';
 import { showConfirm } from '/src/core/modals.js';
 import {
     readSSE, verifyConnection,
@@ -186,6 +187,7 @@ export const fetchFromJira = async () => {
 
 export const showJiraImportStage1 = () => {
     dom.jiraImportStage2.classList.add('hidden');
+    dom.jiraImportFetchBtn.disabled = false;
     if (jiraImportState.mode === 'csv') {
         dom.jiraImportStage1.classList.add('hidden');
         dom.jiraCsvImportStage1.classList.remove('hidden');
@@ -209,6 +211,13 @@ const showJiraImportStage2 = () => {
     dom.jiraCsvImportStage1.classList.add('hidden');
     dom.jiraImportStage2.classList.remove('hidden');
     dom.jiraImportTitle.textContent = 'Review Import';
+    // Show import mode toggle only when importing into an existing map
+    if (state.mapLoaded) {
+        dom.jiraImportMode.classList.remove('hidden');
+        dom.jiraImportMode.querySelector('input[value="append"]').checked = true;
+    } else {
+        dom.jiraImportMode.classList.add('hidden');
+    }
     renderImportPreview(jiraImportState.epics, jiraImportState.projectKey, jiraPreviewDomRefs(), jiraUpdateCount);
     jiraUpdateCount();
 };
@@ -218,8 +227,9 @@ const showJiraImportStage2 = () => {
 export const confirmJiraImport = () => {
     const data = jiraDataToStorymap();
     if (data.steps.length === 0) return;
+    const mode = dom.jiraImportMode?.querySelector('input:checked')?.value || 'replace';
     hideJiraImportModal();
-    onImportComplete(data);
+    onImportComplete(data, { mode });
 };
 
 const jiraDataToStorymap = () => {
@@ -374,11 +384,7 @@ export const handleJiraCsvFile = (file) => {
             jiraImportState.projectKey = projectKey;
             jiraImportState.csvInstanceUrl = dom.jiraCsvInstanceUrl.value.trim();
             // Advance to stage 2
-            dom.jiraCsvImportStage1.classList.add('hidden');
-            dom.jiraImportStage2.classList.remove('hidden');
-            dom.jiraImportTitle.textContent = 'Review Import';
-            renderImportPreview(jiraImportState.epics, jiraImportState.projectKey, jiraPreviewDomRefs(), jiraUpdateCount);
-            jiraUpdateCount();
+            showJiraImportStage2();
         } catch (err) {
             dom.jiraCsvValidationError.textContent = err.message;
             dom.jiraCsvValidationError.classList.remove('hidden');

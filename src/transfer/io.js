@@ -4,7 +4,7 @@
 import { dom } from '/src/ui/dom.js';
 import { state, initState, pushUndo, confirmOverwrite } from '/src/core/state.js';
 import { el } from '/src/core/constants.js';
-import { serialize, deserialize } from '/src/core/serialization.js';
+import { serialize, deserialize, appendImport } from '/src/core/serialization.js';
 import { exportToYaml, importFromYaml } from '/src/transfer/yaml.js';
 import { exportToCsv, importFromCsv } from '/src/transfer/csv.js';
 import { showAlert } from '/src/core/modals.js';
@@ -25,10 +25,11 @@ export const init = (deps) => {
 
     exportsMod.init({ sanitizeFilename });
 
-    const onImportComplete = async (data) => {
+    const onImportComplete = async (data, { mode = 'replace' } = {}) => {
         const isFromWelcome = !state.mapId;
+        const isAppend = mode === 'append' && !isFromWelcome;
 
-        if (!isFromWelcome) {
+        if (!isFromWelcome && !isAppend) {
             _deps.saveToStorage();
             if (!await confirmOverwrite()) return;
         }
@@ -42,13 +43,19 @@ export const init = (deps) => {
                 history.replaceState({ mapId }, '', `/${mapId}`);
                 await _deps.createYjsDoc(mapId);
             } else {
-                await createAutoBackup('Auto: before import');
+                await createAutoBackup(isAppend ? 'Auto: before append import' : 'Auto: before import');
                 pushUndo();
             }
-            deserialize(data);
-            dom.boardName.value = state.name;
+
+            if (isAppend) {
+                appendImport(data);
+            } else {
+                deserialize(data);
+            }
+
+            if (!isAppend) dom.boardName.value = state.name;
             _deps.renderAndSave();
-            log.logEvent('Imported map');
+            log.logEvent(isAppend ? 'Appended import' : 'Imported map');
             requestAnimationFrame(zoomToFit);
             if (isFromWelcome) {
                 _deps.subscribeToMap(state.mapId);

@@ -1,8 +1,8 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
-// Backup CRUD, modal UI, restore/delete, sample loading, utility functions
+// Backup CRUD, modal UI, restore/delete, utility functions
 
 import { dom } from '/src/ui/dom.js';
-import { state, pushUndo, confirmOverwrite } from '/src/core/state.js';
+import { state, pushUndo } from '/src/core/state.js';
 import { deserialize } from '/src/core/serialization.js';
 import { isMapEditable } from '/src/core/lock.js';
 import { escHtml } from '/src/core/constants.js';
@@ -173,26 +173,6 @@ const deleteBackup = async (backupId) => {
         await refreshBackupsList();
     } catch {
         await showAlert('Failed to delete backup');
-    }
-};
-
-export const loadSample = async (name) => {
-    if (!state.mapId) {
-        return _deps.startWithSample(name);
-    }
-
-    _deps.saveToStorage();
-    if (!await confirmOverwrite()) return;
-
-    try {
-        const response = await fetch(`/samples/${name}.json`, { cache: 'no-cache' });
-        if (!response.ok) throw new Error();
-        pushUndo();
-        deserialize(await response.json());
-        dom.boardName.value = state.name;
-        _deps.renderAndSave();
-    } catch {
-        await showAlert('Failed to load sample');
     }
 };
 

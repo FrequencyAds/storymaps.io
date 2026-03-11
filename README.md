@@ -4,7 +4,7 @@ A free, open-source user story mapping tool with real-time collaboration.
 
 ![Screenshot](public/resources/screenshot.png)
 
-## What is User Story Mapping?
+## What is Storymaps.io?
 
 User story mapping is a technique for visualising a product as a diagram focused around the journeys its users make. It helps teams build a shared understanding of what a product does, who it serves, how it delivers value, how it was built, and where it's going next. It's a comprehension tool which shows you the product vision and evolution in a single artefact.
 
@@ -67,7 +67,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **YAML** - import/export as human-readable YAML; author maps in a text editor, version-control them in git, or generate from scripts
 - **CSV** - import/export as spreadsheet-friendly CSV
 - **Jira** - import from CSV file or via server-proxied REST API; export as CSV or via server-proxied REST API; card body text is used as the issue description
-- **Asana** - export as CSV or via server-proxied REST API; card body text is used as the task notes
+- **Asana** - import from CSV file or via server-proxied REST API; export as CSV or via server-proxied REST API; card body text is used as the task notes
 - **Phabricator** - export via server-proxied Maniphest API; card body text is used as the task description
 - **Linear** - import from CSV file or via server-proxied REST API; export via server-proxied REST API
 - **URL endpoints** - append `.json`, `.yaml`, or `.csv` to any map URL to fetch its data programmatically (e.g. `curl storymaps.io/abc123.csv`); exports include the map ID for traceability
@@ -94,16 +94,18 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Focus Mode** - hide card metadata (status, points, tags, links) for a cleaner presentation view; toggle from the view controls; expand icons still appear on hover
 - **Copy map** - duplicate an existing map to a new URL
 - **Guided tour** - interactive walkthrough that teaches story mapping concepts using a Lego house example, with live demos of slices, legend cards, dark mode, the notepad, and the activity log
+- **Build with AI** - export your story map as a structured prompt to AI coding tools (Claude, ChatGPT, Gemini, Copilot) or app builders (Lovable, v0, Bolt, Replit); select a specific release slice, choose between Prototype (quick preview) and Full App (production-ready) build modes, add custom instructions, and copy the prompt or open it directly; CLI tool integration for Claude Code, Codex, and Gemini CLI via `npx storymaps`
 - **Sample maps** - load examples to learn the methodology
 - **Map counter** - community stat showing total maps created
 - **Auto-save** - continuous save to local storage and server
 
 ## Architecture
 
-The app is a single Node.js server (`server.js`) that handles:
+The server entry point is `server.js`, which delegates to modules in `server/`:
 - **WebSocket** - Real-time collaboration via y-websocket
 - **Static files** - Serves the client app from `public/` and `src/`
-- **REST API** - Lock state (`/api/lock/:mapId`), backups (`/api/backups/:mapId`), activity log (`/api/maps/:id/log`), stats (`/api/stats`), format endpoints (`/:mapId.json`, `/:mapId.yaml`), and server-proxied third-party imports/exports with SSE progress streaming
+- **REST API** - Route handlers in `server/routes/` for locks, backups, activity log, stats, format endpoints (`.json`, `.yaml`, `.csv`), and server-proxied third-party imports/exports with SSE progress streaming
+- **Middleware** - Origin checks, body parsing, and rate limiting in `server/middleware.js` and `server/rate-limit.js`
 
 ### Data Storage
 - **LevelDB** - Yjs document persistence in `data/`
@@ -111,7 +113,7 @@ The app is a single Node.js server (`server.js`) that handles:
 - **JSON files** - Lock state (`data/locks.json`), counters (`data/stats.json`), and backups (`data/backups/*.json`)
 
 ### Client
-The client has no build step - ES modules are loaded directly from `src/`. Third-party libraries (Yjs, CodeMirror) are vendored as pre-built bundles in `public/vendor/`.
+The client has no build step - ES modules are loaded directly from `src/`. Third-party libraries (Yjs, CodeMirror, html-to-image, js-yaml, html2canvas) are vendored as pre-built bundles in `public/vendor/`.
 
 ## Self-Hosting
 
@@ -237,6 +239,7 @@ The server starts on `http://localhost:8080`.
 21. Use **Menu → Import** to import from JSON, YAML, CSV, or from Jira, Asana, or Linear (CSV file or API)
 22. Use **Menu → Export** to save as JSON, YAML, or CSV, or export to Jira, Asana, Phabricator, or Linear
 23. Use **Print** to save as PDF
+24. Click **Build with AI** to generate a prompt from your story map for AI coding tools or app builders; select a slice and target, add optional instructions, then copy or open the prompt
 
 ## Support
 If you find this tool useful, consider [buying me a coffee](https://buymeacoffee.com/jackgleeson). It goes towards server costs and helps me keep the app running.
@@ -246,6 +249,10 @@ If you find this tool useful, consider [buying me a coffee](https://buymeacoffee
 - Real-time collaboration powered by [Yjs](https://yjs.dev/) CRDTs
 - Drag and drop powered by [SortableJS](https://sortablejs.github.io/Sortable/)
 - Collaborative notepad powered by [CodeMirror 6](https://codemirror.net/)
+
+## Documentation
+- [API Reference](API.md) - REST API endpoints, format endpoints, and server-proxied integrations
+- [Contributing](CONTRIBUTING.md) - development setup, code style, and contribution guidelines
 
 ## License
 AGPL-3.0 - see [LICENCE](LICENCE) for details.

@@ -9,6 +9,8 @@ let _createStory = null;
 let _zoomToFit = null;
 let _demoSliceId = null;
 let _demoLegendCards = null;
+let _ctxMenuCleanup = null;
+let _v1Snapshot = null;
 
 const ensureDemoSlice = () => {
     if (_demoSliceId || !_addSlice || !_getState || !_createStory) return;
@@ -196,8 +198,8 @@ const closeLegendPanel = () => {
 const STEPS = [
     {
         target: null,
-        title: 'What is User Story Mapping?',
-        body: 'This short interactive tour explains the concepts behind story mapping.<br><br>Story mapping is a planning technique. It helps you visualise your product as a sequence diagram focused around the journeys your users take to achieve their goals. It helps teams build a shared understanding of what a product does, who it serves, how it delivers value, how it should be built, and where it\'s going next. It\'s also a comprehension tool which shows you the product vision and evolution in a single artefact.<br><br>To see how it works, let\'s imagine you\'re the creator of Lego and you want to think about how your customers will actually build one of your sets, the steps they\'ll take, and what you need to do to make the experience great.',
+        title: 'What is Storymaps.io?',
+        body: 'This short interactive tour takes you through the basics of storymaps.io, a free tool for planning and building digital products.<br><br>It\'s based on User Story Mapping, a method that helps you visualise your product as a sequence of user interactions. By mapping out steps using simple cards, you focus on the journeys your users take. This helps you understand exactly what you\'re building and identify the sequence and priority of the user experience.<br><br>Having a visual map helps teams build a shared understanding of what the product does, who it serves, and how it delivers value. Your finished map then serves as a comprehension tool, showing the product vision and evolution in a single artefact. At a glance, you can see what has been built and what is coming next.<br><br>To see how it works, let\'s start with a basic example. Imagine you\'re the creator of Lego. You want to think about how your customers will build one of your sets, the steps they\'ll take, and what you need to do to make the experience great. Let\'s map that with a story map.',
         icon: '\u{1F4A1}',
     },
     {
@@ -253,7 +255,7 @@ const STEPS = [
     {
         target: '.slice-container .story-column:nth-child(4) .story-card:nth-child(2)',
         title: 'Task Cards',
-        body: '\u2026and then <strong>indicate the pieces required at each step</strong>, and so on. Task cards are arranged vertically in order of priority - you work on the most important work first. Next, you\u2019ll see how task cards are grouped into priority &amp; release slices to manage versions.',
+        body: '\u2026next, <strong>indicate the pieces required at each step</strong>. Task cards are arranged vertically in order of priority - you work on the most important work first. Next, you\u2019ll see how task cards are grouped into priority &amp; release slices to manage versions.',
         icon: '\u{1F4CB}',
     },
     {
@@ -261,6 +263,32 @@ const STEPS = [
         title: 'Release Slices',
         body: 'Horizontal rows group tasks into releases. This map has one slice, <strong>Version 1: Basic House</strong>. It represents version 1 of the product, the essentials you ship first.',
         icon: '\u{1F4E6}',
+    },
+    {
+        target: '.slice-container',
+        title: 'Version 1: Done',
+        body: 'Once all the tasks in this slice are delivered, version 1 is done. You have your basic Lego house. Every task across every step has been completed, and your first release is shipped.<br><br><strong>Bonus:</strong> try moving some of the cards around, to get a sense of how cards are managed on the map.',
+        icon: '\u{2705}',
+        onEnter: () => {
+            document.body.classList.add('tour-v1-done');
+            const state = _getState?.();
+            if (state?.slices?.[0]) {
+                _v1Snapshot = JSON.parse(JSON.stringify(state.slices[0].stories));
+            }
+            const block = e => { if (e.button === 2) e.stopPropagation(); };
+            document.addEventListener('mouseup', block, true);
+            _ctxMenuCleanup = () => { document.removeEventListener('mouseup', block, true); _ctxMenuCleanup = null; };
+        },
+        onLeave: () => {
+            document.body.classList.remove('tour-v1-done');
+            _ctxMenuCleanup?.();
+            const state = _getState?.();
+            if (_v1Snapshot && state?.slices?.[0]) {
+                state.slices[0].stories = _v1Snapshot;
+                _v1Snapshot = null;
+                _renderAndSave?.();
+            }
+        },
     },
     {
         target: '.slice-label-container .btn-add-slice',
@@ -278,7 +306,7 @@ const STEPS = [
     },
     {
         target: null,
-        title: 'You\'re a story mapper!',
+        title: 'Congratulations, you\'re a story mapper!',
         body: 'We just covered the basics of user story mapping. <strong>Users</strong>, <strong>Activities</strong>, <strong>Steps</strong>, <strong>Tasks</strong> and <strong>Releases</strong>. It really is that simple. You know enough now to start testing out the technique in your own work.<br><br>Now, let\u2019s look at a few bonus features that Storymaps.io provides on top of the core story mapping technique.',
         icon: '\u{1F389}',
     },

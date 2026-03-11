@@ -21,6 +21,7 @@ import * as cardExpand from '/src/features/card-expand.js';
 import * as io from '/src/transfer/io.js';
 import * as welcome from '/src/features/welcome.js';
 import * as partials from '/src/features/partials.js';
+import * as build from '/src/features/build.js';
 
 const { isMapEditable } = lock;
 const { render, initSortable, addColumn, addColumnAt, addStory, addSlice, deleteColumn, deleteStory, deleteSlice, handleColumnSelection, updateSelectionUI, duplicateColumns, duplicateCards, deleteSelectedColumns, deleteSelectedCards, setPreserveToolbar } = renderMod;
@@ -190,9 +191,9 @@ const {
     showLinearCsvImportModal, handleLinearCsvFile, handleLinearMappingModeChange,
 } = linearImportsMod;
 
-const { updateBackupBadge, loadSample } = backups;
+const { updateBackupBadge } = backups;
 
-const { showWelcomeScreen, hideWelcomeScreen, showLoading, hideLoading, startNewMap, startWithSample, showTutorialToast, newMap, copyMap } = welcome;
+const { showWelcomeScreen, hideWelcomeScreen, showLoading, hideLoading, startNewMap, startWithSample, showTutorialToast, newMap, copyMap, loadSample } = welcome;
 
 // =============================================================================
 // Event Listeners
@@ -916,8 +917,8 @@ const initEventListeners = () => {
         const url = window.location.href;
         try {
             await navigator.clipboard.writeText(url);
-            dom.shareBtn.textContent = 'Copied!';
-            setTimeout(() => dom.shareBtn.textContent = 'Share', 2000);
+            dom.shareBtn.querySelector('.btn-label').textContent = ' Copied!';
+            setTimeout(() => dom.shareBtn.querySelector('.btn-label').textContent = ' Share', 2000);
         } catch {
             await showPrompt('Copy this link to share:', url);
         }
@@ -1108,7 +1109,7 @@ const initEventListeners = () => {
     dom.shareScreenshot.addEventListener('click', async (e) => {
         e.stopPropagation();
         dom.shareMenu.classList.remove('visible');
-        dom.shareBtn.textContent = 'Capturing...';
+        dom.shareBtn.querySelector('.btn-label').textContent = ' Capturing...';
         try {
             // Safari requires ClipboardItem to receive a Promise<Blob>, and clipboard.write()
             // must be called synchronously within the user gesture (click handler)
@@ -1117,17 +1118,17 @@ const initEventListeners = () => {
                     'image/png': captureMap().then(c => new Promise(r => c.toBlob(r, 'image/png')))
                 })
             ]);
-            dom.shareBtn.textContent = 'Copied!';
-            setTimeout(() => dom.shareBtn.textContent = 'Share', 2000);
+            dom.shareBtn.querySelector('.btn-label').textContent = ' Copied!';
+            setTimeout(() => dom.shareBtn.querySelector('.btn-label').textContent = ' Share', 2000);
         } catch (err) {
             await showAlert('Screenshot failed: ' + (err?.message || 'could not render the map as an image'));
-            dom.shareBtn.textContent = 'Share';
+            dom.shareBtn.querySelector('.btn-label').textContent = ' Share';
         }
     });
     dom.shareDownload.addEventListener('click', async (e) => {
         e.stopPropagation();
         dom.shareMenu.classList.remove('visible');
-        dom.shareBtn.textContent = 'Capturing...';
+        dom.shareBtn.querySelector('.btn-label').textContent = ' Capturing...';
         try {
             const canvas = await captureMap();
             const dataUrl = canvas.toDataURL('image/png');
@@ -1136,10 +1137,10 @@ const initEventListeners = () => {
                 download: sanitizeFilename(state.name || 'story-map') + '-' + formatTimestamp() + '.png'
             });
             link.click();
-            dom.shareBtn.textContent = 'Share';
+            dom.shareBtn.querySelector('.btn-label').textContent = ' Share';
         } catch (err) {
             await showAlert('Screenshot failed: ' + (err?.message || 'could not render the map as an image'));
-            dom.shareBtn.textContent = 'Share';
+            dom.shareBtn.querySelector('.btn-label').textContent = ' Share';
         }
     });
 
@@ -1311,7 +1312,12 @@ const initEventListeners = () => {
                 dom.shareMenu.classList.contains('visible') ||
                 dom.importModal.classList.contains('visible') ||
                 dom.exportModal.classList.contains('visible') ||
-                dom.backupsModal?.classList.contains('visible');
+                dom.backupsModal?.classList.contains('visible') ||
+                dom.buildAiModal.classList.contains('visible');
+            if (dom.buildAiModal.classList.contains('visible')) {
+                build.confirmClose();
+                return;
+            }
             if (dom.cardExpandModal.classList.contains('visible')) {
                 closeExpandModal();
                 return;
@@ -1469,6 +1475,9 @@ tour.init({
 // Wire card-expand module
 cardExpand.init({ renderAndSave, saveToStorage });
 
+// Wire build-with-AI module
+build.init({ state, showPrompt });
+
 // Wire backups module
 backups.init({
     renderAndSave,
@@ -1489,6 +1498,7 @@ io.init({
 // Wire welcome module
 welcome.init({
     render,
+    renderAndSave,
     saveToStorage,
     subscribeToMap,
     newMapId,

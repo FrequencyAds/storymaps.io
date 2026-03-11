@@ -208,6 +208,72 @@ const deserializeLegacy = (data) => {
     state.partialMaps = [];
 };
 
+export const appendImport = (data) => {
+    const newCols = (data.steps || []).map(deserializeColumn);
+
+    // Insert a hidden spacer column before the appended content
+    const spacer = state.columns.length > 0 ? createColumn() : null;
+    if (spacer) spacer.hidden = true;
+    if (spacer) state.columns.push(spacer);
+
+    // Append columns
+    state.columns.push(...newCols);
+
+    // Initialize spacer column with empty arrays
+    if (spacer) {
+        state.users[spacer.id] = [];
+        state.activities[spacer.id] = [];
+        state.slices.forEach(s => { s.stories[spacer.id] = []; });
+    }
+
+    // Append users/activities for new columns (existing ones untouched)
+    const usersArr = Array.isArray(data.users) ? data.users : [];
+    const activitiesArr = Array.isArray(data.activities) ? data.activities : [];
+    newCols.forEach((col, i) => {
+        state.users[col.id] = (usersArr[i] || []).map(deserializeCard);
+        state.activities[col.id] = (activitiesArr[i] || []).map(deserializeCard);
+    });
+
+    // Append new slices, merging into existing slices with matching names
+    (data.slices || []).forEach(slice => {
+        const sliceName = slice.name || '';
+        const existing = state.slices.find(s => s.name === sliceName);
+
+        if (existing) {
+            // Merge: add stories for new columns into existing slice
+            newCols.forEach((col, i) => {
+                const stories = Array.isArray(slice.stories) ? slice.stories : [];
+                existing.stories[col.id] = (stories[i] || []).map(deserializeCard);
+            });
+        } else {
+            // Create new slice with empty cells for pre-existing columns
+            const newSlice = {
+                id: generateId(),
+                name: sliceName,
+                collapsed: false,
+                stories: {}
+            };
+            state.columns.forEach(col => {
+                const newColIndex = newCols.indexOf(col);
+                if (newColIndex === -1) {
+                    newSlice.stories[col.id] = [];
+                } else {
+                    const stories = Array.isArray(slice.stories) ? slice.stories : [];
+                    newSlice.stories[col.id] = (stories[newColIndex] || []).map(deserializeCard);
+                }
+            });
+            state.slices.push(newSlice);
+        }
+    });
+
+    // Existing slices need empty arrays for new columns
+    state.slices.forEach(slice => {
+        newCols.forEach(col => {
+            if (!slice.stories[col.id]) slice.stories[col.id] = [];
+        });
+    });
+};
+
 export const deserialize = (data) => {
     if (data?.app !== 'storymap') {
         throw new Error('Invalid format');

@@ -273,6 +273,7 @@ export function validateYaml(obj) {
         const label = slice.name || `#${si}`;
         if (slice.stories) {
             for (const [stepName, cards] of Object.entries(slice.stories)) {
+                if (!stepName) continue;
                 if (!stepNameSet.has(stepName)) {
                     errors.push(`Slice "${label}" references unknown step "${stepName}"`);
                 }

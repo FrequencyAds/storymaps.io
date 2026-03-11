@@ -1,6 +1,7 @@
 // Storymaps.io -- AGPL-3.0 -- see LICENCE for details
 // Import Modules -- Linear Import via server proxy + CSV file upload
 
+import { state } from '/src/core/state.js';
 import { showConfirm } from '/src/core/modals.js';
 import {
     readSSE, verifyConnection,
@@ -288,6 +289,7 @@ export const fetchFromLinear = async () => {
 
 export const showLinearImportStage1 = () => {
     dom.linearImportStage2.classList.add('hidden');
+    dom.linearImportFetchBtn.disabled = false;
     if (linearImportState.mode === 'csv') {
         dom.linearImportStage1.classList.add('hidden');
         dom.linearCsvImportStage1.classList.remove('hidden');
@@ -315,6 +317,14 @@ const showLinearImportStage2 = () => {
     dom.linearCsvImportStage1.classList.add('hidden');
     dom.linearImportStage2.classList.remove('hidden');
     dom.linearImportTitle.textContent = 'Review Import';
+
+    // Show import mode toggle only when importing into an existing map
+    if (state.mapLoaded) {
+        dom.linearImportMode.classList.remove('hidden');
+        dom.linearImportMode.querySelector('input[value="append"]').checked = true;
+    } else {
+        dom.linearImportMode.classList.add('hidden');
+    }
 
     // Show mapping mode toggle (always visible for Linear)
     const toggle = dom.linearImportMappingMode;
@@ -360,8 +370,9 @@ export const confirmLinearImport = () => {
         { sliceLabel }
     );
     if (data.steps.length === 0) return;
+    const mode = dom.linearImportMode?.querySelector('input:checked')?.value || 'replace';
     hideLinearImportModal();
-    onImportComplete(data);
+    onImportComplete(data, { mode });
 };
 
 // ==================== Linear CSV Parsing ====================

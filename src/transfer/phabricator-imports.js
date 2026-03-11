@@ -1,6 +1,7 @@
 // Storymaps.io -- AGPL-3.0 -- see LICENCE for details
 // Import Modules -- Phabricator Maniphest CSV file upload
 
+import { state } from '/src/core/state.js';
 import { showConfirm } from '/src/core/modals.js';
 import {
     renderImportPreview, updateImportCount, buildStorymapFromImport
@@ -77,6 +78,13 @@ const showPhabImportStage2 = () => {
     dom.phabCsvImportStage1.classList.add('hidden');
     dom.phabImportStage2.classList.remove('hidden');
     dom.phabImportTitle.textContent = 'Review Import';
+    // Show import mode toggle only when importing into an existing map
+    if (state.mapLoaded) {
+        dom.phabImportMode.classList.remove('hidden');
+        dom.phabImportMode.querySelector('input[value="append"]').checked = true;
+    } else {
+        dom.phabImportMode.classList.add('hidden');
+    }
     renderImportPreview(phabImportState.epics, phabImportState.projectKey, phabPreviewDomRefs(), phabUpdateCount, phabLabels());
     phabUpdateCount();
 };
@@ -213,6 +221,7 @@ export const confirmPhabImport = () => {
         { sliceLabel: 'IMPORTED: Phabricator tasks' }
     );
     if (data.steps.length === 0) return;
+    const mode = dom.phabImportMode?.querySelector('input:checked')?.value || 'replace';
     hidePhabImportModal();
-    onImportComplete(data);
+    onImportComplete(data, { mode });
 };

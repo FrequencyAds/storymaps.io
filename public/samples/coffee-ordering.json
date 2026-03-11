@@ -1,0 +1,423 @@
+{
+  "app": "storymap",
+  "v": 1,
+  "name": "Coffee Ordering App",
+  "users": [
+    [
+      {
+        "name": "Customer",
+        "color": "#fda4af"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      {
+        "name": "Coffee Shop",
+        "color": "#fda4af"
+      }
+    ]
+  ],
+  "activities": [
+    [
+      {
+        "name": "Order Coffee",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      {
+        "name": "Fulfil Orders",
+        "color": "#93c5fd"
+      }
+    ]
+  ],
+  "steps": [
+    {
+      "name": "Browse Menu",
+      "color": "#86efac"
+    },
+    {
+      "name": "Customize Drink",
+      "color": "#86efac"
+    },
+    {
+      "name": "Cart",
+      "color": "#86efac"
+    },
+    {
+      "name": "Pay",
+      "color": "#86efac"
+    },
+    {
+      "name": "Track Order",
+      "color": "#86efac"
+    },
+    {
+      "name": "Delivery",
+      "color": "#86efac"
+    },
+    {
+      "name": "Manage Orders",
+      "color": "#86efac"
+    }
+  ],
+  "slices": [
+    {
+      "name": "MVP",
+      "stories": [
+        [
+          {
+            "name": "Drinks by category",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Photo and price on cards",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend", "design"]
+          },
+          {
+            "name": "Search by name",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Seasonal specials banner",
+            "color": "#d8b4fe"
+          }
+        ],
+        [
+          {
+            "name": "Choose size",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Select milk type",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Extra shots and syrups",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Show price updating live",
+            "color": "#a5f3fc"
+          }
+        ],
+        [
+          {
+            "name": "Add multiple drinks",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Edit or remove items",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Order summary with total",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          }
+        ],
+        [
+          {
+            "name": "Apple Pay / Google Pay",
+            "status": "done",
+            "points": 5,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Credit card",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Order confirmation screen",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Handle payment failures?",
+            "color": "#fecdd3"
+          }
+        ],
+        [
+          {
+            "name": "Real-time status updates",
+            "status": "done",
+            "points": 5,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Push notification when ready",
+            "status": "done",
+            "points": 3,
+            "tags": ["mobile", "backend"]
+          },
+          {
+            "name": "Estimated wait time",
+            "status": "in-progress",
+            "tags": ["frontend", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "Enter delivery address",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Live driver tracking",
+            "status": "in-progress",
+            "tags": ["frontend", "api"]
+          },
+          {
+            "name": "Delivery instructions field",
+            "status": "done",
+            "points": 1,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Contactless delivery option?",
+            "color": "#bef264"
+          }
+        ],
+        [
+          {
+            "name": "View incoming orders",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Mark order as started",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Mark order as ready",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Alert sound for new orders?",
+            "color": "#bef264"
+          }
+        ]
+      ]
+    },
+    {
+      "name": "V1",
+      "stories": [
+        [
+          {
+            "name": "Filter by dietary needs",
+            "status": "in-progress",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Nutritional info",
+            "status": "planned",
+            "tags": ["backend", "api"]
+          },
+          {
+            "name": "How granular should dietary filters be?",
+            "color": "#bef264"
+          }
+        ],
+        [
+          {
+            "name": "Save custom drinks",
+            "status": "in-progress",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Recommend popular combos",
+            "status": "planned",
+            "tags": ["backend", "ai"]
+          }
+        ],
+        [
+          {
+            "name": "Group ordering",
+            "status": "planned",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Schedule order for later",
+            "status": "in-progress",
+            "tags": ["frontend", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "Gift cards",
+            "status": "planned",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Split payment",
+            "status": "planned",
+            "tags": ["frontend", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "Live barista queue position",
+            "status": "planned",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Delay alert notification",
+            "status": "planned",
+            "tags": ["mobile", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "Schedule delivery time",
+            "status": "in-progress",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Rate your driver",
+            "status": "planned",
+            "tags": ["frontend", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "Daily sales dashboard",
+            "status": "planned",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "86 an item from menu",
+            "status": "planned",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Peak hour alerts",
+            "status": "planned",
+            "tags": ["backend"]
+          }
+        ]
+      ]
+    },
+    {
+      "name": "V2",
+      "stories": [
+        [
+          {
+            "name": "AI drink suggestions",
+            "status": "planned",
+            "tags": ["ai", "backend"]
+          },
+          {
+            "name": "Mood-based recommendations",
+            "status": "planned",
+            "tags": ["ai", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "AR drink preview",
+            "status": "planned",
+            "tags": ["mobile", "frontend"]
+          }
+        ],
+        [
+          {
+            "name": "Subscription plan: daily coffee",
+            "status": "planned",
+            "tags": ["frontend", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "Crypto payment",
+            "status": "planned",
+            "tags": ["backend"]
+          }
+        ],
+        [
+          {
+            "name": "Predictive order timing",
+            "status": "planned",
+            "tags": ["ai", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "Drone delivery",
+            "status": "planned",
+            "tags": ["hardware", "api"]
+          }
+        ],
+        [
+          {
+            "name": "Staff scheduling",
+            "status": "planned",
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Inventory low warnings",
+            "status": "planned",
+            "tags": ["backend"]
+          }
+        ]
+      ]
+    }
+  ],
+  "legend": [
+    {
+      "color": "#fef08a",
+      "label": "Tasks"
+    },
+    {
+      "color": "#a5f3fc",
+      "label": "Notes"
+    },
+    {
+      "color": "#bef264",
+      "label": "Questions"
+    },
+    {
+      "color": "#fecdd3",
+      "label": "Edge Cases"
+    },
+    {
+      "color": "#d8b4fe",
+      "label": "Design"
+    }
+  ],
+  "notes": "Team standup: Dietary filters are top-voted feature request for V1\n\nPayment: Lock down gift card provider before V1 dev starts\n\nDelivery: Driver tracking API partnership in progress"
+}

@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <title>Storymaps.io - Free User Story Mapping Tool with Jira Export</title>
-    <meta name="description" content="Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, collaborate in real-time, and export to Jira or Asana. No signup required.">
+    <title>Storymaps.io - Free User Story Mapping Tool with Jira, Linear, Asana & Phabricator Import/Export</title>
+    <meta name="description" content="Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, collaborate in real-time, and export to Jira, Linear, Asana & Phabricator. No signup required.">
     <link rel="canonical" href="https://storymaps.io/">
 
     <!-- Open Graph (Facebook, LinkedIn) -->
     <meta property="og:title" content="Storymaps.io - Free User Story Mapping Tool">
-    <meta property="og:description" content="Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, collaborate in real-time, and export to Jira or Asana. No signup required.">
+    <meta property="og:description" content="Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, collaborate in real-time, and export to Jira, Linear, Asana & Phabricator. No signup required.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://storymaps.io/">
     <meta property="og:image" content="https://storymaps.io/resources/screenshot.png">
@@ -21,40 +21,44 @@
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Storymaps.io - Free User Story Mapping Tool">
-    <meta name="twitter:description" content="Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, collaborate in real-time, and export to Jira or Asana. No signup required.">
+    <meta name="twitter:description" content="Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, collaborate in real-time, and export to Jira, Linear, Asana & Phabricator. No signup required.">
     <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
 
-    <!-- Structured Data -->
     <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "@id": "https://storymaps.io/#app",
-        "name": "Storymaps.io",
-        "description": "Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, collaborate in real-time, and export to Jira or Asana. No signup required.",
-        "url": "https://storymaps.io/",
-        "image": "https://storymaps.io/resources/screenshot.png",
-        "inLanguage": "en",
-        "applicationCategory": "BusinessApplication",
-        "operatingSystem": "Any",
-        "browserRequirements": "Requires JavaScript",
-        "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "USD"
-        },
-        "featureList": [
-            "Real-time collaboration",
-            "Export to Jira",
-            "Export to Phabricator",
-            "Export to Asana",
-            "Drag and drop interface",
-            "Release planning",
-            "No signup required"
-        ],
-        "keywords": "user story mapping, story map, agile, product backlog, release planning, jira export, scrum, product management, user stories, collaborative planning"
-    }
+        {
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "@id": "https://storymaps.io/#app",
+            "name": "Storymaps.io",
+            "description": "Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, collaborate in real-time, and export to Jira, Linear, Asana & Phabricator. No signup required.",
+            "url": "https://storymaps.io/",
+            "image": "https://storymaps.io/resources/screenshot.png",
+            "inLanguage": "en",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Any",
+            "browserRequirements": "Requires JavaScript",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+            },
+            "featureList": [
+                "Real-time collaboration",
+                "Drag and drop",
+                "No signup required",
+                "Import from Jira",
+                "Export to Jira",
+                "Import from Phabricator",
+                "Export to Phabricator",
+                "Import from Asana",
+                "Export to Asana",
+                "Import from Linear",
+                "Export to Linear"
+            ],
+            "keywords": "user story mapping, story map, agile, product backlog, release planning, open source story maps, scrum, product management, user stories, collaborative planning"
+        }
     </script>
+    <!-- Structured Data -->
 
     <script>
     (function() {
@@ -70,9 +74,12 @@
     { "imports": { "yjs": "/vendor/yjs.bundle.js", "#js-yaml": "/vendor/js-yaml.bundle.js" } }
     </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="/fonts.css">
     <link rel="stylesheet" href="/styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="image" href="/resources/screenshot.png">
+    <link rel="preload" as="fetch" href="/api/stats" crossorigin>
     <link rel="modulepreload" href="/src/core/constants.js">
     <link rel="modulepreload" href="/src/core/state.js">
     <link rel="modulepreload" href="/src/core/serialization.js">
@@ -92,11 +99,10 @@
     <link rel="modulepreload" href="/src/transfer/yaml.js">
     <link rel="modulepreload" href="/src/transfer/csv.js">
     <link rel="modulepreload" href="/src/features/tour.js">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" crossorigin="anonymous">
     <noscript>
         <div style="padding: 40px; text-align: center; font-family: sans-serif;">
             <h1>Storymaps.io - Free User Story Mapping Tool</h1>
-            <p>Create, share, and collaborate on user story maps in real-time. Export as epics and stories to Jira, Phabricator, or Asana.</p>
+            <p>Create, share, and collaborate on user story maps in real-time. Export to Jira, Linear, Phabricator or Asana.</p>
             <p>This application requires JavaScript to run. Please enable JavaScript in your browser settings.</p>
         </div>
     </noscript>
@@ -148,17 +154,18 @@
         <div class="header-actions">
             <span class="active-mappers" id="activeMappers"></span>
             <span class="viewer-count" id="viewerCount"><span class="viewer-name" id="viewerName"></span><span class="viewer-live" id="viewerLive"></span></span>
-            <button class="btn btn-secondary btn-icon" id="searchBtn" title="Search (Ctrl+F)" aria-label="Search" disabled><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg></button>
-            <button class="btn btn-secondary btn-icon" id="undoBtn" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>↩</button>
-            <button class="btn btn-secondary btn-icon" id="redoBtn" title="Redo (Ctrl+Y)" aria-label="Redo" disabled>↪</button>
+            <button class="btn btn-secondary btn-icon" id="searchBtn" title="Search (Ctrl+F)" aria-label="Search" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg></button>
+            <button class="btn btn-secondary btn-icon" id="undoBtn" title="Undo (Ctrl+Z)" aria-label="Undo" disabled style="display:none">↩</button>
+            <button class="btn btn-secondary btn-icon" id="redoBtn" title="Redo (Ctrl+Y)" aria-label="Redo" disabled style="display:none">↪</button>
             <div class="share-dropdown">
-                <button class="btn" id="shareBtn">Share</button>
+                <button class="btn" id="shareBtn" title="Share"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="btn-label">Share</span></button>
                 <div class="share-menu" id="shareMenu">
                     <button class="share-menu-item" id="shareCopyLink">Share URL</button>
                     <button class="share-menu-item" id="shareScreenshot">Share as image</button>
                     <button class="share-menu-item" id="shareDownload">Download image</button>
                 </div>
             </div>
+            <button class="btn" id="buildAiBtn" title="Build with AI" style="display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="#f59e0b"/></svg><span class="btn-label">Build</span></button>
             <div class="dropdown">
                 <button class="btn btn-secondary btn-icon" id="menuBtn" title="Menu" aria-label="Menu">&#9776;</button>
                 <div class="dropdown-menu" id="mainMenu">
@@ -167,13 +174,12 @@
                     <div class="dropdown-submenu">
                         <button class="dropdown-item dropdown-submenu-trigger" id="samplesSubmenuTrigger"><span><span class="menu-icon">📚</span> Samples</span></button>
                         <div class="dropdown-submenu-content" id="samplesSubmenu">
-                            <button class="dropdown-item" data-sample="story-mapping-101">Story Mapping Tour</button>
-                            <button class="dropdown-item" data-sample="recipe-app">Recipe App</button>
+                            <button class="dropdown-item" data-sample="coffee-ordering">Coffee Ordering App</button>
                             <button class="dropdown-item" data-sample="holiday-rentals">Holiday Rentals App</button>
-                            <button class="dropdown-item" data-sample="brochure-site">Brochure Site</button>
+                            <button class="dropdown-item" data-sample="recipe-app">Recipe Sharing App</button>
                             <button class="dropdown-item" data-sample="subscription-tracker">Subscription Tracker</button>
                             <button class="dropdown-item" data-sample="mobile-banking">Mobile Banking</button>
-                            <button class="dropdown-item" data-sample="donation-form">Add Donation Form</button>
+                            <button class="dropdown-item" data-sample="brochure-site">Brochure Site</button>
                         </div>
                     </div>
                     <button class="dropdown-item" id="tourMenuBtn"><span class="menu-icon">🎓</span> Take a Tour</button>
@@ -285,18 +291,18 @@
                     <div class="welcome-samples">
                         <p class="welcome-samples-label">Try a sample:</p>
                         <div class="welcome-samples-list">
-                            <button class="btn-sample btn-sample-purple" data-sample="recipe-app">Recipe App</button>
+                            <button class="btn-sample btn-sample-purple" data-sample="coffee-ordering">Coffee Ordering App</button>
                             <button class="btn-sample btn-sample-green" data-sample="holiday-rentals">Holiday Rentals App</button>
-                            <button class="btn-sample btn-sample-yellow" data-sample="brochure-site">Brochure Site</button>
+                            <button class="btn-sample btn-sample-yellow" data-sample="recipe-app">Recipe Sharing App</button>
                             <button class="btn-sample btn-sample-teal" data-sample="subscription-tracker">Subscription Tracker</button>
                             <button class="btn-sample btn-sample-cyan" data-sample="mobile-banking">Mobile Banking</button>
-                            <button class="btn-sample btn-sample-pink" data-sample="donation-form">Add Donation Form</button>
+                            <button class="btn-sample btn-sample-pink" data-sample="brochure-site">Brochure Site</button>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="welcome-visual">
-                <img src="/resources/screenshot.png" alt="Storymaps.io user story mapping interface" class="welcome-hero-img" loading="lazy">
+                <img src="/resources/screenshot.png" alt="Storymaps.io user story mapping interface" class="welcome-hero-img" fetchpriority="high" width="1532" height="886">
             </div>
         </div>
         <div class="welcome-bottom">
@@ -1622,6 +1628,17 @@
                 </div>
                 <!-- Stage 2: Preview + Confirm -->
                 <div class="export-stage hidden" id="jiraImportStage2">
+                    <div class="import-mapping-mode hidden" id="jiraImportMode">
+                        <span class="import-mapping-label">Import mode:</span>
+                        <label class="import-mapping-option">
+                            <input type="radio" name="jiraImportMode" value="append" checked>
+                            Add to existing map
+                        </label>
+                        <label class="import-mapping-option">
+                            <input type="radio" name="jiraImportMode" value="replace">
+                            Replace map
+                        </label>
+                    </div>
                     <div class="import-preview-header" id="jiraImportPreviewHeader"></div>
                     <div class="import-preview" id="jiraImportPreview"></div>
                     <div class="export-actions">
@@ -1715,6 +1732,17 @@
                 </div>
                 <!-- Stage 2: Preview + Confirm -->
                 <div class="export-stage hidden" id="asanaImportStage2">
+                    <div class="import-mapping-mode hidden" id="asanaImportMode">
+                        <span class="import-mapping-label">Import mode:</span>
+                        <label class="import-mapping-option">
+                            <input type="radio" name="asanaImportMode" value="append" checked>
+                            Add to existing map
+                        </label>
+                        <label class="import-mapping-option">
+                            <input type="radio" name="asanaImportMode" value="replace">
+                            Replace map
+                        </label>
+                    </div>
                     <div class="import-mapping-mode hidden" id="asanaImportMappingMode">
                         <span class="import-mapping-label">Map as:</span>
                         <label class="import-mapping-option">
@@ -1778,6 +1806,17 @@
                 </div>
                 <!-- Stage 2: Preview + Confirm -->
                 <div class="export-stage hidden" id="phabImportStage2">
+                    <div class="import-mapping-mode hidden" id="phabImportMode">
+                        <span class="import-mapping-label">Import mode:</span>
+                        <label class="import-mapping-option">
+                            <input type="radio" name="phabImportMode" value="append" checked>
+                            Add to existing map
+                        </label>
+                        <label class="import-mapping-option">
+                            <input type="radio" name="phabImportMode" value="replace">
+                            Replace map
+                        </label>
+                    </div>
                     <div class="import-preview-header" id="phabImportPreviewHeader"></div>
                     <div class="import-preview" id="phabImportPreview"></div>
                     <div class="export-actions">
@@ -1871,6 +1910,17 @@
                 </div>
                 <!-- Stage 2: Preview + Confirm -->
                 <div class="export-stage hidden" id="linearImportStage2">
+                    <div class="import-mapping-mode hidden" id="linearImportMode">
+                        <span class="import-mapping-label">Import mode:</span>
+                        <label class="import-mapping-option">
+                            <input type="radio" name="linearImportMode" value="append" checked>
+                            Add to existing map
+                        </label>
+                        <label class="import-mapping-option">
+                            <input type="radio" name="linearImportMode" value="replace">
+                            Replace map
+                        </label>
+                    </div>
                     <div class="import-mapping-mode" id="linearImportMappingMode">
                         <span class="import-mapping-label">Map as:</span>
                         <label class="import-mapping-option">
@@ -1952,6 +2002,122 @@
             <div class="modal-body">
                 <textarea class="card-expand-name" id="cardExpandName" placeholder="Card title..."></textarea>
                 <textarea class="card-expand-body" id="cardExpandBody" placeholder="Add details or description..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="buildAiModal">
+        <div class="build-ai-modal">
+            <div class="build-ai-glow"></div>
+            <div class="build-ai-header">
+                <div class="build-ai-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="#f59e0b"/></svg>Build with AI</div>
+                <button class="build-ai-close" id="buildAiModalClose">&times;</button>
+            </div>
+            <div class="build-ai-body">
+                <label class="build-ai-label">App Builders <span style="text-transform:none;font-weight:400;color:var(--color-text-faint)">- managed stack</span></label>
+                <div class="build-ai-targets" id="buildAiTargets">
+                    <button class="build-ai-target" data-target="lovable" data-kind="builder">
+                        <svg class="build-ai-logo" viewBox="0 0 121 122" fill="none"><defs><linearGradient id="lovGrad" x1="33%" y1="18%" x2="63%" y2="100%"><stop offset="0%" stop-color="#FF8E63"/><stop offset="56%" stop-color="#FF7EB0"/><stop offset="95%" stop-color="#4B73FF"/></linearGradient></defs><path fill-rule="evenodd" clip-rule="evenodd" d="M36.07 0C55.99 0 72.14 16.16 72.14 36.08V49.8H84.14c19.92 0 36.07 16.15 36.07 36.08 0 19.93-16.15 36.08-36.07 36.08H0V36.08C0 16.16 16.15 0 36.07 0Z" fill="url(#lovGrad)"/></svg>
+                        <span>Lovable</span>
+                    </button>
+                    <button class="build-ai-target" data-target="v0" data-kind="builder">
+                        <svg class="build-ai-logo" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="4" fill="currentColor"/><text x="12" y="16" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" font-family="system-ui">v0</text></svg>
+                        <span>v0</span>
+                    </button>
+                    <button class="build-ai-target" data-target="replit" data-kind="builder">
+                        <svg class="build-ai-logo" viewBox="0 0 24 24" fill="none"><path d="M2 1.5A1.5 1.5 0 0 1 3.5 0h7A1.5 1.5 0 0 1 12 1.5V8H3.5A1.5 1.5 0 0 1 2 6.5ZM12 8h8.5A1.5 1.5 0 0 1 22 9.5v5a1.5 1.5 0 0 1-1.5 1.5H12ZM2 17.5A1.5 1.5 0 0 1 3.5 16H12v6.5a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 2 22.5Z" fill="#F26207"/></svg>
+                        <span>Replit</span>
+                    </button>
+                    <button class="build-ai-target" data-target="base44" data-kind="builder">
+                        <svg class="build-ai-logo" viewBox="0 0 24 24" fill="none"><defs><mask id="b44m"><circle cx="12" cy="12" r="10" fill="white"/><rect x="0" y="13" width="24" height="1" fill="black"/><rect x="0" y="15.5" width="24" height="1.2" fill="black"/><rect x="0" y="18" width="24" height="1.4" fill="black"/><rect x="0" y="20.5" width="24" height="2" fill="black"/></mask></defs><circle cx="12" cy="12" r="10" fill="#f26522" mask="url(#b44m)"/></svg>
+                        <span>Base44</span>
+                    </button>
+                    <button class="build-ai-target" data-target="bolt" data-kind="builder">
+                        <svg class="build-ai-logo" viewBox="0 0 24 24" fill="none"><path d="M10.797 14.182H3.635L16.728 0l-3.525 9.818h7.162L7.272 24l3.524-9.818Z" fill="#f59e0b"/></svg>
+                        <span>Bolt</span>
+                    </button>
+                </div>
+                <label class="build-ai-label">AI Chat <span style="text-transform:none;font-weight:400;color:var(--color-text-faint)">- you choose the stack</span></label>
+                <div class="build-ai-targets" id="buildAiTargets2">
+                    <button class="build-ai-target" data-target="chatgpt" data-kind="assistant">
+                        <svg class="build-ai-logo" viewBox="0 0 24 24" fill="none"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z" fill="#10a37f"/></svg>
+                        <span>ChatGPT</span>
+                    </button>
+                    <button class="build-ai-target" data-target="claude" data-kind="assistant">
+                        <svg class="build-ai-logo" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#d4a27f"/><circle cx="12" cy="12" r="4.5" fill="#fff" opacity="0.5"/><circle cx="12" cy="12" r="2" fill="#fff"/></svg>
+                        <span>Claude</span>
+                    </button>
+                    <button class="build-ai-target" data-target="gemini" data-kind="assistant">
+                        <svg class="build-ai-logo" viewBox="0 0 24 24" fill="none"><path d="M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81" fill="#4285f4"/></svg>
+                        <span>Gemini</span>
+                    </button>
+                </div>
+                <label class="build-ai-label" id="buildAiAgentsLabel">AI Coding Agents <span style="text-transform:none;font-weight:400;color:var(--color-text-faint)">- CLI and IDE</span></label>
+                <div class="build-ai-targets" id="buildAiTargets3">
+                    <button class="build-ai-target" data-target="claude-code" data-kind="assistant">
+                        <svg class="build-ai-logo" viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="16" rx="3" fill="#d4a27f"/><text x="12" y="15" text-anchor="middle" font-size="10" font-weight="700" fill="#fff" font-family="monospace">&gt;_</text></svg>
+                        <span>Claude Code</span>
+                    </button>
+                    <button class="build-ai-target" data-target="codex" data-kind="assistant">
+                        <svg class="build-ai-logo" viewBox="0 0 24 28" fill="none"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z" fill="#10a37f"/><rect x="4" y="25" width="16" height="3" rx="1" fill="#10a37f" opacity="0.5"/><text x="12" y="27.7" text-anchor="middle" font-size="3" font-weight="700" fill="#fff" font-family="monospace">&gt;_</text></svg>
+                        <span>Codex</span>
+                    </button>
+                    <button class="build-ai-target" data-target="gemini-cli" data-kind="assistant">
+                        <svg class="build-ai-logo" viewBox="0 0 24 28" fill="none"><path d="M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81" fill="#4285f4"/><rect x="4" y="25" width="16" height="3" rx="1" fill="#4285f4" opacity="0.5"/><text x="12" y="27.7" text-anchor="middle" font-size="3" font-weight="700" fill="#fff" font-family="monospace">&gt;_</text></svg>
+                        <span>Gemini CLI</span>
+                    </button>
+                    <button class="build-ai-target" data-target="cursor" data-kind="assistant">
+                        <svg class="build-ai-logo" viewBox="0 0 24 24" fill="none"><path d="M11.503.131 1.891 5.678a.84.84 0 0 0-.42.726v11.188c0 .3.162.575.42.724l9.609 5.55a1 1 0 0 0 .998 0l9.61-5.55a.84.84 0 0 0 .42-.724V6.404a.84.84 0 0 0-.42-.726L12.497.131a1.01 1.01 0 0 0-.996 0M2.657 6.338h18.55c.263 0 .43.287.297.515L12.23 22.918c-.062.107-.229.064-.229-.06V12.335a.59.59 0 0 0-.295-.51l-9.11-5.257c-.109-.063-.064-.23.061-.23" fill="#7c3aed"/></svg>
+                        <span>Cursor</span>
+                    </button>
+                    <button class="build-ai-target" data-target="windsurf" data-kind="assistant">
+                        <svg class="build-ai-logo" viewBox="0 0 24 24" fill="none"><path d="M23.55 5.067c-1.2038-.002-2.1806.973-2.1806 2.1765v4.8676c0 .972-.8035 1.7594-1.7597 1.7594-.568 0-1.1352-.286-1.4718-.7659l-4.9713-7.1003c-.4125-.5896-1.0837-.941-1.8103-.941-1.1334 0-2.1533.9635-2.1533 2.153v4.8957c0 .972-.7969 1.7594-1.7596 1.7594-.57 0-1.1363-.286-1.4728-.7658L.4076 5.1598C.2822 4.9798 0 5.0688 0 5.2882v4.2452c0 .2147.0656.4228.1884.599l5.4748 7.8183c.3234.462.8006.8052 1.3509.9298 1.3771.313 2.6446-.747 2.6446-2.0977v-4.893c0-.972.7875-1.7593 1.7596-1.7593h.003a1.798 1.798 0 0 1 1.4718.7658l4.9723 7.0994c.4135.5905 1.05.941 1.8093.941 1.1587 0 2.1515-.9645 2.1515-2.153v-4.8948c0-.972.7875-1.7594 1.7596-1.7594h.194a.22.22 0 0 0 .2204-.2202v-4.622a.22.22 0 0 0-.2203-.2203Z" fill="#0d9488"/></svg>
+                        <span>Windsurf</span>
+                    </button>
+                    <button class="build-ai-target" data-target="github-copilot" data-kind="assistant">
+                        <svg class="build-ai-logo" viewBox="0 0 24 24" fill="none"><path d="M23.922 16.997C23.061 18.492 18.063 22.02 12 22.02 5.937 22.02.939 18.492.078 16.997A.641.641 0 0 1 0 16.741v-2.869a.883.883 0 0 1 .053-.22c.372-.935 1.347-2.292 2.605-2.656.167-.429.414-1.055.644-1.517a10.098 10.098 0 0 1-.052-1.086c0-1.331.282-2.499 1.132-3.368.397-.406.89-.717 1.474-.952C7.255 2.937 9.248 1.98 11.978 1.98c2.731 0 4.767.957 6.166 2.093.584.235 1.077.546 1.474.952.85.869 1.132 2.037 1.132 3.368 0 .368-.014.733-.052 1.086.23.462.477 1.088.644 1.517 1.258.364 2.233 1.721 2.605 2.656a.841.841 0 0 1 .053.22v2.869a.641.641 0 0 1-.078.256Zm-11.75-5.992h-.344a4.359 4.359 0 0 1-.355.508c-.77.947-1.918 1.492-3.508 1.492-1.725 0-2.989-.359-3.782-1.259a2.137 2.137 0 0 1-.085-.104L4 11.746v6.585c1.435.779 4.514 2.179 8 2.179 3.486 0 6.565-1.4 8-2.179v-6.585l-.098-.104s-.033.045-.085.104c-.793.9-2.057 1.259-3.782 1.259-1.59 0-2.738-.545-3.508-1.492a4.359 4.359 0 0 1-.355-.508Zm2.328 3.25c.549 0 1 .451 1 1v2c0 .549-.451 1-1 1-.549 0-1-.451-1-1v-2c0-.549.451-1 1-1Zm-5 0c.549 0 1 .451 1 1v2c0 .549-.451 1-1 1-.549 0-1-.451-1-1v-2c0-.549.451-1 1-1Zm3.313-6.185c.136 1.057.403 1.913.878 2.497.442.544 1.134.938 2.344.938 1.573 0 2.292-.337 2.657-.751.384-.435.558-1.15.558-2.361 0-1.14-.243-1.847-.705-2.319-.477-.488-1.319-.862-2.824-1.025-1.487-.161-2.192.138-2.533.529-.269.307-.437.808-.438 1.578v.021c0 .265.021.562.063.893Zm-1.626 0c.042-.331.063-.628.063-.894v-.02c-.001-.77-.169-1.271-.438-1.578-.341-.391-1.046-.69-2.533-.529-1.505.163-2.347.537-2.824 1.025-.462.472-.705 1.179-.705 2.319 0 1.211.175 1.926.558 2.361.365.414 1.084.751 2.657.751 1.21 0 1.902-.394 2.344-.938.475-.584.742-1.44.878-2.497Z" fill="currentColor"/></svg>
+                        <span>GitHub Copilot</span>
+                    </button>
+                </div>
+                <div class="build-ai-selects-grid">
+                    <div>
+                        <label class="build-ai-label">Storymap Slice</label>
+                        <select class="build-ai-slice" id="buildAiSlice"></select>
+                    </div>
+                    <div>
+                        <label class="build-ai-label">Build Mode</label>
+                        <select class="build-ai-slice" id="buildAiModeSelect">
+                            <option value="prototype">Prototype</option>
+                            <option value="full">Full App</option>
+                        </select>
+                    </div>
+                </div>
+                <label class="build-ai-label">Additional Instructions <span style="text-transform:none;font-weight:400;color:var(--color-text-faint)">(optional)</span></label>
+                <textarea class="build-ai-instructions-input" id="buildAiInstructionsInput" rows="2" placeholder="e.g. Use Next.js + Tailwind. Dark theme with purple accents. Mobile-first layout."></textarea>
+                <div class="build-ai-toggle-row" id="buildAiCliToggleRow" style="display:none">
+                    <label style="display:contents">
+                        <input type="checkbox" id="buildAiCliToggle" checked>
+                        <span class="build-ai-toggle-switch"></span>
+                        <span class="build-ai-toggle-text">Use<code style="font-size:12px;background:#1e1e2e;color:#a6e3a1;padding:1px 5px;border-radius:3px;margin:0 3px;vertical-align:1px">npx storymaps</code></span>
+                    </label>
+                    <a href="https://www.npmjs.com/package/storymaps" target="_blank" rel="noopener" style="display:inline-block;font-size:10px;font-weight:700;background:#cb3837;color:#fff;padding:1px 6px;border-radius:3px;text-decoration:none;vertical-align:1px;letter-spacing:0.03em">npm</a>
+                </div>
+                <label class="build-ai-toggle-row" id="buildAiFetchToggleRow">
+                    <input type="checkbox" id="buildAiFetchToggle" checked>
+                    <span class="build-ai-toggle-switch"></span>
+                    <span class="build-ai-toggle-text">Include fetch URL <span style="font-weight:400;color:var(--color-text-faint)">(uncheck to inline JSON)</span></span>
+                </label>
+                <label class="build-ai-label">Prompt</label>
+                <div class="build-ai-prompt-wrap">
+                    <textarea class="build-ai-prompt" id="buildAiPrompt" readonly rows="3"></textarea>
+                </div>
+                <p class="build-ai-instructions" id="buildAiInstructions"></p>
+                <div class="build-ai-actions">
+                    <button class="build-ai-copy" id="buildAiCopy">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                        <span>Copy Prompt</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
