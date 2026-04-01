@@ -29,6 +29,7 @@ const buildAiInstructions = {
 const shellEscape = (s) => s.replace(/["\\`$]/g, '\\$&');
 
 const chatTargets = new Set(['chatgpt', 'gemini']);
+const promptSuffixTargets = new Set(['chatgpt', 'gemini', 'claude']);
 
 const cliCommands = {
     'claude-code': 'claude',
@@ -61,6 +62,7 @@ function updateBuildPrompt() {
     const sliceName = sel.options[sel.selectedIndex]?.text || 'Slice 1';
     const extra = dom.buildAiInstructionsInput.value.trim();
     const isChat = chatTargets.has(targetId);
+    const hasPromptSuffix = promptSuffixTargets.has(targetId);
     dom.buildAiCliToggleRow.style.display = isCli ? '' : 'none';
     if (!isCli) dom.buildAiCliToggle.checked = false;
     // Reset toggles when switching targets
@@ -76,49 +78,40 @@ function updateBuildPrompt() {
     dom.buildAiFetchToggleRow.classList.toggle('disabled', useCli);
     if (useCli) dom.buildAiFetchToggle.checked = true;
     const useFetch = dom.buildAiFetchToggle.checked;
-    const isPrototype = dom.buildAiModeSelect.value === 'prototype';
-    const verb = isPrototype ? 'Build a prototype of' : 'Build';
+    const isPrototype = (dom.buildAiModeSelect?.value || 'prototype') === 'prototype';
+    const qualifier = isPrototype ? 'functional prototype' : 'full app';
+    const scope = sliceVal === 'all' ? 'the full map' : `the "${sliceName}" slice`;
     let prompt;
     if (isCli) {
         const cmd = cliCommands[targetId];
-        const cliVerb = isPrototype ? 'build a prototype of' : 'build';
+        const cliScope = sliceVal === 'all' ? 'the full map' : `the '${sliceName.replace(/'/g, "\\'")}' slice`;
         if (useCli) {
-            const pullTarget = `storymaps.io/${state.mapId}`;
             const fileRef = targetId === 'codex' ? 'storymap.yml' : '@storymap.yml';
-            const buildArg = sliceVal === 'all'
-                ? `${cliVerb} ${fileRef}`
-                : `${cliVerb} the '${sliceName.replace(/'/g, "\\'")}' slice of ${fileRef}`;
-            prompt = extra
-                ? `npx storymaps pull --force ${pullTarget} && ${cmd} "${buildArg}. ${shellEscape(extra)}"`
-                : `npx storymaps pull --force ${pullTarget} && ${cmd} "${buildArg}"`;
+            let inner = `The storymap file ${fileRef} describes a product plan in user story map format. Use it as a structured specification. Your task: build a ${qualifier} of the features listed in ${cliScope}.`;
+            if (extra) inner += ` ${shellEscape(extra)}`;
+            prompt = `npx storymaps pull --force storymaps.io/${state.mapId} && ${cmd} "${inner}"`;
         } else if (useFetch) {
-            const url = `https://storymaps.io/${state.mapId}.json`;
-            let inner = sliceVal === 'all'
-                ? `${cliVerb} ${url}`
-                : `${cliVerb} the '${sliceName.replace(/'/g, "\\'")}' slice of ${url}`;
+            let inner = `The JSON at https://storymaps.io/${state.mapId}.json describes a product plan in user story map format. Use it as a structured specification. Your task: build a ${qualifier} of the features listed in ${cliScope}.`;
             if (extra) inner += ` ${shellEscape(extra)}`;
             prompt = `${cmd} "${inner}"`;
         } else {
             const json = shellEscape(JSON.stringify(serialize()));
-            let inner = sliceVal === 'all'
-                ? `${cliVerb} this storymap:\\n\\n${json}`
-                : `${cliVerb} the '${sliceName.replace(/'/g, "\\'")}' slice of this storymap:\\n\\n${json}`;
+            let inner = `The JSON below describes a product plan in user story map format. Use it as a structured specification. Your task: build a ${qualifier} of the features listed in ${cliScope}.\\n\\n${json}`;
             if (extra) inner += ` ${shellEscape(extra)}`;
             prompt = `${cmd} "${inner}"`;
         }
     } else if (useFetch) {
-        prompt = sliceVal === 'all'
-            ? `${verb} this storymap https://storymaps.io/${state.mapId}.json`
-            : `${verb} the "${sliceName}" slice of this storymap https://storymaps.io/${state.mapId}.json`;
-        if (extra) prompt += ` (Additional instructions: ${extra})`;
+        let instructions = `The JSON at the URL below describes a product plan in user story map format.\nUse it as a structured specification. Your task: build a ${qualifier} of the features listed in ${scope}.`;
+        if (hasPromptSuffix && isPrototype) instructions += ' Output a single self-contained HTML file with inline CSS and JavaScript. Do not use frameworks that require a build step.';
+        if (hasPromptSuffix && !isPrototype) instructions += ' Pick the tech stack yourself and provide the code.';
+        if (extra) instructions += ` ${extra}`;
+        prompt = `${instructions}\n\nhttps://storymaps.io/${state.mapId}.json`;
     } else {
-        const json = JSON.stringify(serialize());
-        prompt = sliceVal === 'all'
-            ? `${verb} this storymap:\n\n${json}`
-            : `${verb} the "${sliceName}" slice of this storymap:\n\n${json}`;
-        if (isChat && isPrototype) prompt += ' Output a single self-contained HTML file with inline CSS and JavaScript. Do not use frameworks that require a build step';
-        if (isChat && !isPrototype) prompt += ' If not supplied, pick the tech stack yourself and provide the code';
-        if (extra) prompt += ` (Additional instructions: ${extra})`;
+        let instructions = `The JSON below describes a product plan in user story map format.\nUse it as a structured specification. Your task: build a ${qualifier} of the features listed in ${scope}.`;
+        if (hasPromptSuffix && isPrototype) instructions += ' Output a single self-contained HTML file with inline CSS and JavaScript. Do not use frameworks that require a build step.';
+        if (hasPromptSuffix && !isPrototype) instructions += ' Pick the tech stack yourself and provide the code.';
+        if (extra) instructions += ` ${extra}`;
+        prompt = `${instructions}\n\n${JSON.stringify(serialize())}`;
     }
     dom.buildAiPrompt.value = prompt;
     dom.buildAiPrompt.rows = (useFetch || useCli) ? 3 : Math.min(12, prompt.split('\n').length + 1);
@@ -126,8 +119,10 @@ function updateBuildPrompt() {
         ? 'Run this command in your terminal'
         : buildAiInstructions[targetId];
     dom.buildAiInstructionsInput.placeholder = kind === 'builder'
-        ? 'e.g. Dark theme with purple accents. Mobile-first layout.'
-        : 'e.g. Use Next.js + Tailwind. Dark theme with purple accents. Containerize with Docker. Add a README with getting started and build instructions.';
+        ? 'Look and feel, key features, target audience...'
+        : isCli || ['cursor', 'windsurf', 'github-copilot'].includes(targetId)
+            ? 'Framework preferences, coding guidelines, testing strategy...'
+            : 'Tech stack, look and feel, target audience...';
     dom.buildAiCopy.querySelector('span').textContent = isCli ? 'Copy Command' : 'Copy Prompt';
 }
 
@@ -177,7 +172,7 @@ export const init = (deps) => {
     dom.buildAiSlice.addEventListener('change', updateBuildPrompt);
     dom.buildAiFetchToggle.addEventListener('change', updateBuildPrompt);
     dom.buildAiCliToggle.addEventListener('change', updateBuildPrompt);
-    dom.buildAiModeSelect.addEventListener('change', updateBuildPrompt);
+    dom.buildAiModeSelect?.addEventListener('change', updateBuildPrompt);
     dom.buildAiInstructionsInput.addEventListener('input', updateBuildPrompt);
     dom.buildAiCopy.addEventListener('click', async () => {
         const label = dom.buildAiCopy.querySelector('span');

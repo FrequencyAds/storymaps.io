@@ -7,7 +7,8 @@ const proxyRateLimitMap = new Map();
 
 const getClientIp = (req) => {
   const forwarded = req.headers['x-forwarded-for'];
-  if (forwarded) return forwarded.split(',')[0].trim();
+  // Use last entry - set by Caddy (the closest trusted proxy)
+  if (forwarded) return forwarded.split(',').pop().trim();
   return req.socket.remoteAddress;
 };
 

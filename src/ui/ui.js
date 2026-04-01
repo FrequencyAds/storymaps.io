@@ -829,8 +829,10 @@ export const createStoryCard = (story, columnId, sliceId, isBackboneRow = false,
     let placeholderText = 'Task or Detail...';
     if (rowType === 'Users') {
         placeholderText = 'e.g. admin, customer, client';
+    } else if (rowType === 'Activities') {
+        placeholderText = 'Activity...';
     } else if (isBackboneRow) {
-        placeholderText = 'Card...';
+        placeholderText = 'Step...';
     }
     const textarea = createTextarea('story-text', placeholderText, story.name,
         (val) => story.name = val,
@@ -1092,7 +1094,7 @@ const getSlicePoints = (slice) => {
     Object.values(slice.stories || {}).forEach(stories => {
         stories.forEach(story => {
             if (story.points != null && story.points > 0) {
-                total += story.points;
+                total += Number(story.points);
                 hasAny = true;
             }
         });

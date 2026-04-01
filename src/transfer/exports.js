@@ -562,7 +562,7 @@ export const generatePhabImportCall = () => {
 
     const token = dom.phabApiToken.value.trim() || '<enter token above>';
     const tagsInput = dom.phabTags.value.trim();
-    const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : [];
+    const tags = tagsInput ? tagsInput.split(',').map(t => t.trim().toLowerCase().replace(/\s+/g, '-')).filter(t => t) : [];
     return `importTasks('${token}', ${JSON.stringify(epics, null, 2)}, ${JSON.stringify(tags)});`;
 };
 
@@ -2110,7 +2110,7 @@ export const exportToPhabProxy = async () => {
     const instanceUrl = dom.phabProxyInstanceUrl.value.trim();
     const token = dom.phabProxyApiToken.value.trim();
     const tagsInput = dom.phabProxyTags.value.trim();
-    const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : [];
+    const tags = tagsInput ? tagsInput.split(',').map(t => t.trim().toLowerCase().replace(/\s+/g, '-')).filter(t => t) : [];
 
     if (!instanceUrl || !token) {
         await showAlert('Please fill in Instance URL and API Token.');

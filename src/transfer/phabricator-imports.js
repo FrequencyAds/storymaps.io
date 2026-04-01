@@ -1,9 +1,10 @@
 // Storymaps.io -- AGPL-3.0 -- see LICENCE for details
-// Import Modules -- Phabricator Maniphest CSV file upload
+// Import Modules -- Phabricator Maniphest API + CSV file upload
 
 import { state } from '/src/core/state.js';
 import { showConfirm } from '/src/core/modals.js';
 import {
+    readSSE, verifyConnection,
     renderImportPreview, updateImportCount, buildStorymapFromImport
 } from '/src/transfer/import-helpers.js';
 import { parseCsv } from '/src/transfer/csv.js';
@@ -20,14 +21,45 @@ export const init = (deps) => {
 
 // ==================== Phabricator Import State ====================
 
-const phabImportState = { epics: [], projectKey: '', baseUrl: '' };
+const phabImportState = {
+    epics: [],
+    projectKey: '',
+    baseUrl: '',
+    fetching: false,
+    mode: 'api' // 'api' | 'csv'
+};
 
 // ==================== Modal Lifecycle ====================
+
+export const showPhabImportModal = () => {
+    phabImportState.epics = [];
+    phabImportState.projectKey = '';
+    phabImportState.baseUrl = '';
+    phabImportState.fetching = false;
+    phabImportState.mode = 'api';
+    dom.phabImportStage1.classList.remove('hidden');
+    dom.phabCsvImportStage1.classList.add('hidden');
+    dom.phabImportStage2.classList.add('hidden');
+    dom.phabImportTitle.textContent = 'Import from Phabricator';
+    dom.phabImportProgress.classList.add('hidden');
+    dom.phabImportProgressItems.innerHTML = '';
+    dom.phabImportProgressBar.style.width = '0';
+    dom.phabImportFetchBtn.disabled = false;
+    dom.phabImportVerifyStatus.textContent = 'Optional - test before fetching';
+    dom.phabImportVerifyStatus.className = 'export-verify-status';
+    dom.phabImportVerifyBtn.disabled = false;
+    // Update token help link based on instance URL
+    updateTokenHelpLink();
+    dom.phabImportModal.classList.add('visible');
+};
 
 export const showPhabCsvImportModal = () => {
     phabImportState.epics = [];
     phabImportState.projectKey = '';
     phabImportState.baseUrl = '';
+    phabImportState.fetching = false;
+    phabImportState.mode = 'csv';
+    dom.phabImportStage1.classList.add('hidden');
     dom.phabCsvImportStage1.classList.remove('hidden');
     dom.phabImportStage2.classList.add('hidden');
     dom.phabImportTitle.textContent = 'Import from Phabricator CSV';
@@ -41,6 +73,11 @@ export const showPhabCsvImportModal = () => {
 
 export const hidePhabImportModal = () => {
     dom.phabImportModal.classList.remove('visible');
+    // Clear API credentials
+    if (dom.phabImportInstanceUrl) dom.phabImportInstanceUrl.value = '';
+    if (dom.phabImportToken) dom.phabImportToken.value = '';
+    if (dom.phabImportProjectTags) dom.phabImportProjectTags.value = '';
+    // Clear CSV state
     dom.phabCsvFileInput.value = '';
     dom.phabCsvFileInput._droppedFile = null;
     dom.phabCsvValidationError.classList.add('hidden');
@@ -49,8 +86,141 @@ export const hidePhabImportModal = () => {
 };
 
 export const confirmClosePhabImportModal = async () => {
-    if (await showConfirm('Close import dialog?')) {
+    if (phabImportState.fetching) {
+        if (await showConfirm('A fetch is in progress. Close anyway?')) {
+            hidePhabImportModal();
+        }
+    } else if (await showConfirm('Close import dialog?')) {
         hidePhabImportModal();
+    }
+};
+
+// ==================== Token Help Link ====================
+
+const updateTokenHelpLink = () => {
+    const url = (dom.phabImportInstanceUrl?.value || '').trim();
+    const link = dom.phabImportTokenHelp;
+    if (!link) return;
+    if (url) {
+        const base = url.startsWith('http') ? url : 'https://' + url;
+        try {
+            const parsed = new URL(base);
+            link.href = `${parsed.origin}/conduit/token/`;
+        } catch {
+            link.href = '#';
+        }
+    } else {
+        link.href = '#';
+    }
+};
+
+// ==================== Verify ====================
+
+export const verifyPhabImport = () => {
+    const instanceUrl = dom.phabImportInstanceUrl.value.trim();
+    const token = dom.phabImportToken.value.trim();
+    if (!instanceUrl || !token) {
+        dom.phabImportVerifyStatus.className = 'export-verify-status error';
+        dom.phabImportVerifyStatus.textContent = 'Please fill in all fields';
+        return;
+    }
+    const url = instanceUrl.startsWith('http') ? instanceUrl : 'https://' + instanceUrl;
+    verifyConnection('/api/export/phabricator/verify', { instanceUrl: url, token }, dom.phabImportVerifyStatus, dom.phabImportVerifyBtn);
+};
+
+// ==================== Fetch from Phabricator ====================
+
+export const fetchFromPhab = async () => {
+    const instanceUrl = dom.phabImportInstanceUrl.value.trim();
+    const token = dom.phabImportToken.value.trim();
+    const tagsInput = (dom.phabImportProjectTags?.value || '').trim();
+    const tags = tagsInput ? tagsInput.split(',').map(t => t.trim().toLowerCase().replace(/\s+/g, '-')).filter(t => t) : [];
+
+    if (!instanceUrl || !token || tags.length === 0) {
+        dom.phabImportVerifyStatus.className = 'export-verify-status error';
+        dom.phabImportVerifyStatus.textContent = !instanceUrl || !token ? 'Please fill in all fields' : 'Please enter at least one project tag';
+        return;
+    }
+
+    const url = instanceUrl.startsWith('http') ? instanceUrl : 'https://' + instanceUrl;
+
+    phabImportState.fetching = true;
+    dom.phabImportFetchBtn.disabled = true;
+    dom.phabImportProgress.classList.remove('hidden');
+    dom.phabImportProgressItems.innerHTML = '';
+    dom.phabImportProgressBar.style.width = '0';
+    dom.phabImportProgressBar.classList.add('indeterminate');
+
+    const addLine = (text, cls) => {
+        const line = document.createElement('div');
+        line.className = 'import-progress-line' + (cls ? ' ' + cls : '');
+        line.textContent = text;
+        dom.phabImportProgressItems.append(line);
+        dom.phabImportProgressItems.scrollTop = dom.phabImportProgressItems.scrollHeight;
+    };
+
+    addLine('Connecting to Phabricator...');
+
+    let response;
+    try {
+        response = await fetch('/api/import/phabricator', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ instanceUrl: url, token, tags })
+        });
+    } catch (e) {
+        addLine(`Connection failed: ${e.message}`, 'error');
+        dom.phabImportProgressBar.classList.remove('indeterminate');
+        phabImportState.fetching = false;
+        dom.phabImportFetchBtn.disabled = false;
+        return;
+    }
+
+    if (!response.ok) {
+        try {
+            const err = await response.json();
+            addLine(err.error || `HTTP ${response.status}`, 'error');
+        } catch {
+            addLine(`HTTP ${response.status}`, 'error');
+        }
+        dom.phabImportProgressBar.classList.remove('indeterminate');
+        phabImportState.fetching = false;
+        dom.phabImportFetchBtn.disabled = false;
+        return;
+    }
+
+    await readSSE(response,
+        (eventType, data) => {
+            if (data.phase === 'project') {
+                addLine('Resolving project tags...');
+            } else if (data.phase === 'tasks') {
+                addLine(`Fetching tasks... ${data.fetched}`);
+            } else if (data.phase === 'parents') {
+                addLine(`Resolving parent tasks... ${data.fetched}`);
+            }
+        },
+        (data) => {
+            dom.phabImportProgressBar.classList.remove('indeterminate');
+            dom.phabImportProgressBar.style.width = '100%';
+            addLine(`Found ${data.taskCount} tasks`, 'success');
+            phabImportState.epics = data.epics || [];
+            phabImportState.projectKey = 'Phabricator';
+            phabImportState.baseUrl = data.instanceUrl || '';
+            phabImportState.fetching = false;
+            showPhabImportStage2();
+        },
+        (data) => {
+            dom.phabImportProgressBar.classList.remove('indeterminate');
+            addLine(data.error || 'Unknown error from Phabricator', 'error');
+            phabImportState.fetching = false;
+            dom.phabImportFetchBtn.disabled = false;
+        }
+    );
+
+    // If stream ended without done event
+    if (phabImportState.fetching) {
+        phabImportState.fetching = false;
+        dom.phabImportFetchBtn.disabled = false;
     }
 };
 
@@ -58,13 +228,22 @@ export const confirmClosePhabImportModal = async () => {
 
 export const showPhabImportStage1 = () => {
     dom.phabImportStage2.classList.add('hidden');
-    dom.phabCsvImportStage1.classList.remove('hidden');
-    dom.phabImportTitle.textContent = 'Import from Phabricator CSV';
+    if (phabImportState.mode === 'csv') {
+        dom.phabImportStage1.classList.add('hidden');
+        dom.phabCsvImportStage1.classList.remove('hidden');
+        dom.phabImportTitle.textContent = 'Import from Phabricator CSV';
+    } else {
+        dom.phabImportStage1.classList.remove('hidden');
+        dom.phabCsvImportStage1.classList.add('hidden');
+        dom.phabImportTitle.textContent = 'Import from Phabricator';
+        dom.phabImportFetchBtn.disabled = false;
+    }
 };
 
 const phabPreviewDomRefs = () => ({
     previewHeader: dom.phabImportPreviewHeader,
-    preview: dom.phabImportPreview
+    preview: dom.phabImportPreview,
+    statusFilter: dom.phabImportStatusFilters
 });
 
 const phabLabels = () => {
@@ -75,6 +254,7 @@ const phabLabels = () => {
 const phabUpdateCount = () => updateImportCount(phabImportState.epics, dom.phabImportCount, phabLabels());
 
 const showPhabImportStage2 = () => {
+    dom.phabImportStage1.classList.add('hidden');
     dom.phabCsvImportStage1.classList.add('hidden');
     dom.phabImportStage2.classList.remove('hidden');
     dom.phabImportTitle.textContent = 'Review Import';
@@ -85,7 +265,7 @@ const showPhabImportStage2 = () => {
     } else {
         dom.phabImportMode.classList.add('hidden');
     }
-    renderImportPreview(phabImportState.epics, phabImportState.projectKey, phabPreviewDomRefs(), phabUpdateCount, phabLabels());
+    renderImportPreview(phabImportState.epics, phabImportState.projectKey, phabPreviewDomRefs(), phabUpdateCount, { ...phabLabels(), statusFilter: true });
     phabUpdateCount();
 };
 
@@ -95,6 +275,7 @@ const mapPhabStatus = (status) => {
     if (!status) return 'planned';
     const s = status.toLowerCase().trim();
     if (s === 'open' || s === 'stalled') return 'planned';
+    if (s === 'in progress') return 'in-progress';
     return 'done';
 };
 

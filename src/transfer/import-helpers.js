@@ -84,16 +84,96 @@ export const renderImportPreview = (epics, projectKey, domRefs, updateCountFn, o
         updateCountFn();
     });
 
+    // Status filter pills (opt-in)
+    const statusDisplayNames = { planned: 'Planned', 'in-progress': 'In Progress', done: 'Done' };
+    const allStatuses = ['planned', 'in-progress', 'done'];
+    const defaultExcluded = opts.defaultExcludedStatuses || ['done'];
+    let activeStatuses = null; // null means no filter
+
+    if (opts.statusFilter && domRefs.statusFilter) {
+        // Discover which statuses exist in the data
+        const found = new Set();
+        epics.forEach(ep => ep.stories.forEach(s => {
+            const st = allStatuses.includes(s.status) ? s.status : 'planned';
+            found.add(st);
+        }));
+        activeStatuses = new Set([...found].filter(s => !defaultExcluded.includes(s)));
+
+        domRefs.statusFilter.innerHTML = '';
+        if (found.size > 0) {
+            const label = document.createElement('h3');
+            label.textContent = 'Status';
+            domRefs.statusFilter.append(label);
+
+            const pillsRow = document.createElement('div');
+            pillsRow.className = 'import-status-pills';
+
+            for (const status of allStatuses) {
+                const pill = document.createElement('label');
+                pill.className = 'export-slice-checkbox' + (activeStatuses.has(status) ? ' checked' : '');
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.checked = activeStatuses.has(status);
+                cb.dataset.status = status;
+                const span = document.createElement('span');
+                span.className = 'export-slice-name';
+                span.textContent = statusDisplayNames[status] || status;
+                pill.append(cb, span);
+
+                cb.addEventListener('change', () => {
+                    if (cb.checked) activeStatuses.add(status);
+                    else activeStatuses.delete(status);
+                    pill.classList.toggle('checked', cb.checked);
+
+                    // Toggle all stories with this status
+                    domRefs.preview.querySelectorAll(`.import-story[data-status="${status}"]`).forEach(el => {
+                        const storyIdx = parseInt(el.querySelector('input').dataset.storyIdx);
+                        const epicIdx = parseInt(el.closest('.import-epic').dataset.epicIdx);
+                        const story = epics[epicIdx].stories[storyIdx];
+                        story._included = cb.checked;
+                        el.querySelector('input').checked = cb.checked;
+                        el.classList.toggle('excluded', !cb.checked);
+                    });
+
+                    // Recalculate epic checkboxes
+                    domRefs.preview.querySelectorAll('.import-epic').forEach(epicEl => {
+                        const idx = parseInt(epicEl.dataset.epicIdx);
+                        const epic = epics[idx];
+                        const anyIncluded = epic.stories.some(s => s._included);
+                        epic._included = anyIncluded;
+                        epicEl.querySelector('.import-epic-header input').checked = anyIncluded;
+                        epicEl.classList.toggle('excluded', !anyIncluded);
+                    });
+
+                    updateCountFn();
+                });
+
+                pillsRow.append(pill);
+            }
+            domRefs.statusFilter.append(pillsRow);
+        }
+    } else if (domRefs.statusFilter) {
+        domRefs.statusFilter.innerHTML = '';
+    }
+
     // Preview list
     const container = domRefs.preview;
     container.innerHTML = '';
 
     epics.forEach((epic, epicIdx) => {
-        epic._included = true;
-        epic.stories.forEach(s => { s._included = true; });
+        epic.stories.forEach(s => {
+            if (activeStatuses) {
+                const st = allStatuses.includes(s.status) ? s.status : 'planned';
+                s._included = activeStatuses.has(st);
+            } else {
+                s._included = true;
+            }
+        });
+        epic._included = activeStatuses ? epic.stories.some(s => s._included) : true;
 
         const epicDiv = document.createElement('div');
-        epicDiv.className = 'import-epic expanded';
+        epicDiv.className = 'import-epic expanded' + (!epic._included ? ' excluded' : '');
+        epicDiv.dataset.epicIdx = epicIdx;
 
         // Header row
         const header = document.createElement('div');
@@ -101,7 +181,7 @@ export const renderImportPreview = (epics, projectKey, domRefs, updateCountFn, o
 
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.checked = true;
+        checkbox.checked = epic._included;
         checkbox.addEventListener('change', (e) => {
             e.stopPropagation();
             epic._included = e.target.checked;
@@ -145,12 +225,15 @@ export const renderImportPreview = (epics, projectKey, domRefs, updateCountFn, o
         storiesDiv.className = 'import-stories';
 
         epic.stories.forEach((story, storyIdx) => {
+            const safeStatus = allStatuses.includes(story.status) ? story.status : 'planned';
+
             const storyDiv = document.createElement('div');
-            storyDiv.className = 'import-story';
+            storyDiv.className = 'import-story' + (!story._included ? ' excluded' : '');
+            storyDiv.dataset.status = safeStatus;
 
             const sCb = document.createElement('input');
             sCb.type = 'checkbox';
-            sCb.checked = true;
+            sCb.checked = story._included;
             sCb.dataset.storyIdx = storyIdx;
             sCb.addEventListener('change', (e) => {
                 story._included = e.target.checked;
@@ -167,9 +250,8 @@ export const renderImportPreview = (epics, projectKey, domRefs, updateCountFn, o
             sName.textContent = story.summary;
 
             const sBadge = document.createElement('span');
-            const safeStatus = ['planned', 'in-progress', 'done'].includes(story.status) ? story.status : 'planned';
             sBadge.className = 'import-status-badge ' + safeStatus;
-            sBadge.textContent = safeStatus;
+            sBadge.textContent = statusDisplayNames[safeStatus] || safeStatus;
 
             storyDiv.append(sCb, sKey, sName, sBadge);
 

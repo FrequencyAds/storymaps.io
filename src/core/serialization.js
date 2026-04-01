@@ -27,7 +27,7 @@ const deserializeCard = (obj) => {
         sanitizeUrl(obj.url || obj.u),
         !!(obj.hidden || obj.h),
         obj.status || obj.st || null,
-        obj.points ?? obj.sp ?? null,
+        ((v) => v != null ? Number(v) : null)(obj.points ?? obj.sp ?? null),
         Array.isArray(obj.tags || obj.tg) ? (obj.tags || obj.tg) : [],
         obj.body || obj.b || ''
     );
@@ -40,7 +40,7 @@ const deserializeColumn = (obj) => {
         sanitizeUrl(obj.url || obj.u),
         !!(obj.hidden || obj.h),
         obj.status || obj.st || null,
-        obj.points ?? obj.sp ?? null,
+        ((v) => v != null ? Number(v) : null)(obj.points ?? obj.sp ?? null),
         Array.isArray(obj.tags || obj.tg) ? (obj.tags || obj.tg) : [],
         obj.body || obj.b || ''
     );

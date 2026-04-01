@@ -101,6 +101,7 @@ import registerExportLinear from './server/routes/export-linear.js';
 import registerImportJira from './server/routes/import-jira.js';
 import registerImportAsana from './server/routes/import-asana.js';
 import registerImportLinear from './server/routes/import-linear.js';
+import registerImportPhabricator from './server/routes/import-phabricator.js';
 
 // Static routes before parameterized ones
 registerStats(ctx);
@@ -114,6 +115,7 @@ registerExportLinear(ctx);
 registerImportJira(ctx);
 registerImportAsana(ctx);
 registerImportLinear(ctx);
+registerImportPhabricator(ctx);
 
 // =============================================================================
 // Static File Config

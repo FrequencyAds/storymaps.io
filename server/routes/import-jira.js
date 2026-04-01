@@ -125,7 +125,7 @@ export default function register(ctx) {
         description: adfToPlainText(story.fields.description).trim(),
         status: jiraStatusToStorymaps(story.fields.status?.statusCategory?.key),
         labels: story.fields.labels || [],
-        points: story.fields.story_points ?? story.fields.customfield_10016 ?? null
+        points: ((v) => v != null ? Number(v) : null)(story.fields.story_points ?? story.fields.customfield_10016 ?? null)
       };
       if (parentKey && epicMap.has(parentKey)) {
         epicMap.get(parentKey).stories.push(storyObj);

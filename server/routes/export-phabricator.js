@@ -1,4 +1,4 @@
-import { validateExternalUrl, sendSSE, fetchWithTimeout, safeJson } from '../http-helpers.js';
+import { validateExternalUrl, sendSSE, curlPost } from '../http-helpers.js';
 
 export default function register(ctx) {
   const { route } = ctx;
@@ -23,12 +23,7 @@ export default function register(ctx) {
     try {
       const params = new URLSearchParams();
       params.set('api.token', token);
-      const r = await fetchWithTimeout(`${origin}/api/user.whoami`, {
-        method: 'POST',
-        headers: { 'User-Agent': 'Storymaps.io/1.0' },
-        body: params
-      }, 10_000);
-      const data = await safeJson(r);
+      const data = await curlPost(`${origin}/api/user.whoami`, params, 10_000);
       if (data.error_code) {
         res.writeHead(401, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: false, error: data.error_info || 'Authentication failed' }));
@@ -92,8 +87,7 @@ export default function register(ctx) {
       }
       let parentData;
       try {
-        const parentRes = await fetchWithTimeout(apiUrl, { method: 'POST', body: txnParams, headers: { 'User-Agent': 'Storymaps.io/1.0' } });
-        parentData = await safeJson(parentRes);
+        parentData = await curlPost(apiUrl, txnParams);
       } catch (e) {
         sendSSE(res, 'progress', { type: 'task', title: item.title, status: 'error', error: e.message });
         failed++;
@@ -128,8 +122,7 @@ export default function register(ctx) {
             subParams.set(`transactions[${si}][type]`, 'projects.add');
             userTags.forEach((tag, j) => subParams.set(`transactions[${si}][value][${j}]`, tag));
           }
-          const subRes = await fetchWithTimeout(apiUrl, { method: 'POST', body: subParams, headers: { 'User-Agent': 'Storymaps.io/1.0' } });
-          const subData = await safeJson(subRes);
+          const subData = await curlPost(apiUrl, subParams);
           if (subData.error_code) {
             sendSSE(res, 'progress', { type: 'subtask', title: sub.title, status: 'error', error: subData.error_info });
             failed++;

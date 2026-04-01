@@ -2738,7 +2738,7 @@ body.main-menu-open .step:hover {
     flex: 1;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 40px 48px;
+    padding: 20px 48px 40px;
     gap: 80px;
     width: 100%;
 }
@@ -2747,6 +2747,34 @@ body.main-menu-open .step:hover {
     text-align: center;
     flex: 1;
     min-width: 0;
+}
+
+
+mark.highlight {
+    color: #333;
+    background: linear-gradient(
+        120deg,
+        rgba(254,240,138,0.5) 0%,
+        rgba(254,205,211,0.5) 30%,
+        rgba(165,243,252,0.5) 65%,
+        rgba(20,184,166,0.35) 100%
+    );
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin: 0 1px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+
+html.dark-mode mark.highlight {
+    color: #e2e8f0;
+    background: linear-gradient(
+        120deg,
+        rgba(254,240,138,0.25) 0%,
+        rgba(254,205,211,0.2) 30%,
+        rgba(165,243,252,0.2) 65%,
+        rgba(20,184,166,0.2) 100%
+    );
 }
 
 .welcome-content h1 {
@@ -3117,6 +3145,10 @@ body.main-menu-open .step:hover {
     display: none;
 }
 
+.desktop-only {
+    display: inline;
+}
+
 /* Responsive - Tablet welcome layout (stack instead of side-by-side) */
 @media (max-width: 1100px) {
     .welcome-split {
@@ -3336,6 +3368,10 @@ body.main-menu-open .step:hover {
 @media (max-width: 600px) {
     .mobile-only {
         display: inline;
+    }
+
+    .desktop-only {
+        display: none;
     }
 
     body {
@@ -5825,7 +5861,6 @@ body.read-only-mode .story-card:hover {
 }
 
 body.read-only-mode .card-options,
-body.read-only-mode .btn-expand,
 body.read-only-mode .btn-delete,
 body.read-only-mode .btn-add-story,
 body.read-only-mode .btn-add-slice,
@@ -6965,6 +7000,13 @@ body.focus-mode .step.card-hovered .btn-expand {
     border-bottom: 1px solid var(--color-border-subtle);
 }
 
+.build-ai-subtitle {
+    font-size: 12.5px;
+    font-weight: 400;
+    color: var(--color-text-faint);
+    margin-left: 6px;
+}
+
 .build-ai-title {
     display: flex;
     align-items: center;
@@ -7313,21 +7355,31 @@ body.focus-mode .step.card-hovered .btn-expand {
         gap: 6px;
     }
 
+    .build-ai-targets {
+        grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+        gap: 5px;
+    }
+
     .build-ai-target {
-        padding: 6px 4px 4px;
+        padding: 6px 2px 4px;
+        gap: 3px;
     }
 
     .build-ai-logo {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
     }
 
     .build-ai-target span {
-        font-size: 10px;
+        font-size: 9px;
     }
 
     #buildAiAgentsLabel,
     #buildAiTargets3 {
+        display: none;
+    }
+
+    .build-ai-subtitle {
         display: none;
     }
 
@@ -8659,6 +8711,24 @@ html.dark-mode .export-done-summary.has-failures .done-detail { color: #f59e0b; 
 }
 .import-mapping-mode:has([name$="ImportMode"]) .import-mapping-option input[type="radio"] {
     display: none;
+}
+
+.import-status-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.import-status-filters h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0;
+}
+.import-status-filters .import-status-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .import-preview-header {

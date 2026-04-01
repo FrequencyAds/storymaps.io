@@ -7,6 +7,7 @@ RUN npm ci --omit=dev
 
 # Runtime stage: slim image with pre-built node_modules
 FROM node:24-slim
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /app/node_modules ./node_modules
 COPY package*.json ./

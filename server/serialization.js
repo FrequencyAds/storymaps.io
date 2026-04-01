@@ -43,6 +43,7 @@ export const serializeDoc = (doc) => {
       const stories = s.stories || {};
       const obj = { name: s.name || '', stories: columns.map(col => (stories[col.id] || []).map(sCard)) };
       if (s.collapsed) obj.collapsed = true;
+      if (s.closedReason) obj.closedReason = s.closedReason;
       return obj;
     }),
   };
@@ -308,11 +309,14 @@ export const writeDocFromJson = (doc, data, Y) => {
     });
     ymap.set('activities', yActivities);
 
-    // Slices
+    // Slices (collect generated IDs for partial map story keying)
+    const sliceIds = [];
     const ySlices = new Y.Array();
     (data.slices || []).forEach(slice => {
       const ySlice = new Y.Map();
-      ySlice.set('id', generateCardId());
+      const sliceId = generateCardId();
+      sliceIds.push(sliceId);
+      ySlice.set('id', sliceId);
       ySlice.set('name', slice.name || '');
       if (slice.collapsed) ySlice.set('collapsed', true);
       if (slice.closedReason) ySlice.set('closedReason', slice.closedReason);
@@ -347,9 +351,38 @@ export const writeDocFromJson = (doc, data, Y) => {
       ytext.insert(0, data.notes);
     }
 
-    // Partial maps (stored as JSON string, same as client)
+    // Partial maps: convert from serialized format (positional arrays, `steps` key)
+    // to state format (keyed by IDs, `columns` key) so the client can use them directly
     if (data.partialMaps?.length) {
-      ymap.set('partialMaps', JSON.stringify(data.partialMaps));
+      const mkCard = (c) => ({
+        id: generateCardId(),
+        name: c.name || '', body: c.body || '', color: c.color || null,
+        url: c.url || null, hidden: c.hidden || false, status: c.status || null,
+        points: c.points ?? null, tags: c.tags || [],
+      });
+      const statePMs = data.partialMaps.map(pm => {
+        if (pm.columns) return pm; // already in state format
+        const pmColumns = (pm.steps || []).map(mkCard);
+        const users = {};
+        (pm.users || []).forEach((cards, i) => {
+          if (i < pmColumns.length) users[pmColumns[i].id] = (cards || []).map(mkCard);
+        });
+        const activities = {};
+        (pm.activities || []).forEach((cards, i) => {
+          if (i < pmColumns.length) activities[pmColumns[i].id] = (cards || []).map(mkCard);
+        });
+        const stories = {};
+        (pm.stories || []).forEach((sliceCards, si) => {
+          if (si < sliceIds.length) {
+            stories[sliceIds[si]] = {};
+            (sliceCards || []).forEach((cards, ci) => {
+              if (ci < pmColumns.length) stories[sliceIds[si]][pmColumns[ci].id] = (cards || []).map(mkCard);
+            });
+          }
+        });
+        return { id: pm.id, name: pm.name || '', columns: pmColumns, users, activities, stories };
+      });
+      ymap.set('partialMaps', JSON.stringify(statePMs));
     }
 
     // Activity log - skip on import to prevent injecting fake history

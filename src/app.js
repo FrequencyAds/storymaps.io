@@ -181,8 +181,8 @@ const {
 } = asanaImportsMod;
 
 const {
-    showPhabCsvImportModal, hidePhabImportModal, confirmClosePhabImportModal,
-    handlePhabCsvFile, showPhabImportStage1, confirmPhabImport,
+    showPhabImportModal, showPhabCsvImportModal, hidePhabImportModal, confirmClosePhabImportModal,
+    verifyPhabImport, fetchFromPhab, handlePhabCsvFile, showPhabImportStage1, confirmPhabImport,
 } = phabImportsMod;
 
 const {
@@ -220,7 +220,7 @@ const initEventListeners = () => {
         const importMap = {
             jira: showJiraImportModal,
             asana: showAsanaImportModal,
-            phabricator: showPhabCsvImportModal,
+            phabricator: showPhabImportModal,
             linear: showLinearImportModal,
         };
         importMap[btn.dataset.import]?.();
@@ -521,6 +521,15 @@ const initEventListeners = () => {
     });
     dom.asanaCsvImportCancel.addEventListener('click', confirmCloseAsanaImportModal);
 
+    // Phabricator API Import
+    dom.importPhabBtn.addEventListener('click', async () => {
+        closeMainMenu();
+        if (lockState.isLocked && !lockState.sessionUnlocked) {
+            await showAlert('This map is read-only. Unlock it first to import.');
+            return;
+        }
+        showPhabImportModal();
+    });
     // Phabricator CSV Import
     dom.importPhabCsvBtn.addEventListener('click', async () => {
         closeMainMenu();
@@ -533,6 +542,24 @@ const initEventListeners = () => {
     dom.phabImportModalClose.addEventListener('click', confirmClosePhabImportModal);
     dom.phabImportModal.addEventListener('click', (e) => {
         if (e.target === dom.phabImportModal) confirmClosePhabImportModal();
+    });
+    dom.phabImportCancel.addEventListener('click', confirmClosePhabImportModal);
+    dom.phabImportVerifyBtn.addEventListener('click', verifyPhabImport);
+    dom.phabImportFetchBtn.addEventListener('click', fetchFromPhab);
+    dom.phabImportInstanceUrl.addEventListener('input', () => {
+        // Update token help link when instance URL changes
+        const url = dom.phabImportInstanceUrl.value.trim();
+        const link = dom.phabImportTokenHelp;
+        if (url) {
+            const base = url.startsWith('http') ? url : 'https://' + url;
+            try { link.href = new URL(base).origin + '/conduit/token/'; } catch { link.href = '#'; }
+        } else {
+            link.href = '#';
+        }
+    });
+    dom.phabImportTokenHelp?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await showAlert('To get your API token:\n\n1. Click your profile picture in Phabricator\n2. Go to Settings\n3. Click "Conduit API Tokens"\n4. Click "Generate Token"');
     });
     dom.phabCsvImportCancel.addEventListener('click', confirmClosePhabImportModal);
     dom.phabCsvDropzone.addEventListener('click', () => dom.phabCsvFileInput.click());
@@ -804,10 +831,6 @@ const initEventListeners = () => {
     dom.phabProxyExportBack.addEventListener('click', showPhabProxyStage1);
     dom.phabProxyExportRun.addEventListener('click', exportToPhabProxy);
     dom.phabProxyVerifyBtn.addEventListener('click', verifyPhabProxy);
-    dom.phabProxyInstanceUrl.addEventListener('input', () => {
-        const url = dom.phabProxyInstanceUrl.value.trim().toLowerCase();
-        dom.phabProxyWikimediaWarning.classList.toggle('hidden', !url.includes('phabricator.wikimedia.org'));
-    });
     document.getElementById('phabProxyTokenHelpLink')?.addEventListener('click', async (e) => {
         e.preventDefault();
         await showAlert('To get your API token:\n\n1. Click your profile picture in Phabricator\n2. Go to Settings\n3. Click "Conduit API Tokens"\n4. Click "Generate Token"');
@@ -966,12 +989,37 @@ const initEventListeners = () => {
                         minWidth: '0',
                         padding: '24px',
                     });
+                    clonedMap.style.setProperty('--card-width', '180px');
+
+                    // Ensure story columns have explicit width
+                    for (const col of clonedDoc.querySelectorAll('.story-column')) {
+                        col.style.width = '180px';
+                    }
+
+                    // Ensure story cards don't clip text
+                    for (const card of clonedDoc.querySelectorAll('.story-card')) {
+                        card.style.overflow = 'visible';
+                    }
+
+                    // Convert textareas to divs and ensure they can display full text
                     for (const ta of clonedDoc.querySelectorAll('.story-text')) {
                         const div = clonedDoc.createElement('div');
-                        div.className = ta.className;
                         div.textContent = ta.value;
-                        div.style.whiteSpace = 'pre-wrap';
-                        div.style.wordBreak = 'break-word';
+                        div.style.cssText = `
+                            width: 100%;
+                            font-family: inherit;
+                            font-size: 13px;
+                            font-weight: 500;
+                            color: #1a1a1a;
+                            text-align: center;
+                            line-height: 1.4;
+                            white-space: pre-wrap !important;
+                            word-break: break-word !important;
+                            border: none;
+                            padding: 0;
+                            margin: 0;
+                            background: transparent;
+                        `;
                         ta.replaceWith(div);
                     }
                 },
