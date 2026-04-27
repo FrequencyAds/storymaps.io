@@ -1,4 +1,19 @@
 storymaps.io {
+    header {
+        # HTTPS only, including subdomains, for one year.
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        # Stop browsers from sniffing MIME types away from the declared one.
+        X-Content-Type-Options "nosniff"
+        # Disallow framing to mitigate clickjacking.
+        X-Frame-Options "DENY"
+        # Send origin only on cross-origin navigations.
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # Drop powerful APIs we do not use.
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        # Don't advertise the server software.
+        -Server
+    }
+
     reverse_proxy app:8080
 }
 
