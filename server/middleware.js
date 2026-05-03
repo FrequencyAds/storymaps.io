@@ -2,13 +2,24 @@
 // See note in server.js for rationale on sharing client transfer code.
 import { importFromYaml } from '../src/transfer/yaml.js';
 
-// Allowed origins for API writes and WebSocket connections
-// localhost is always allowed for development
-const ALLOWED_ORIGINS = new Set([
+export const parseOrigins = (s) =>
+  new Set((s || '').split(',').map(x => x.trim()).filter(Boolean));
+
+// Allowed origins for API writes and WebSocket connections.
+// STORYMAPS_ALLOWED_ORIGINS (comma-separated) overrides these defaults.
+// localhost / 127.0.0.1 are always allowed for development (see isOriginAllowed).
+const DEFAULT_ORIGINS = [
   'https://storymaps.io',
   'https://www.storymaps.io',
   'https://new.storymaps.io',
-]);
+];
+
+export const buildAllowedOrigins = (envValue) => {
+  const env = parseOrigins(envValue);
+  return env.size > 0 ? env : new Set(DEFAULT_ORIGINS);
+};
+
+const ALLOWED_ORIGINS = buildAllowedOrigins(process.env.STORYMAPS_ALLOWED_ORIGINS);
 
 export const isOriginAllowed = (origin) => {
   if (!origin) return false;
