@@ -24,6 +24,11 @@ export default function register(ctx) {
   });
 
   route('POST', '/api/lock/:mapId/unlock', async (req, res, { mapId }, body) => {
+    if (ctx.isProxyRateLimited(req)) {
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Too many attempts' }));
+      return;
+    }
     const locks = await ctx.readJson(ctx.LOCK_FILE, {});
     const lock = locks[mapId];
     if (!lock?.isLocked) {
@@ -37,6 +42,11 @@ export default function register(ctx) {
   });
 
   route('POST', '/api/lock/:mapId/remove', async (req, res, { mapId }, body) => {
+    if (ctx.isProxyRateLimited(req)) {
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Too many attempts' }));
+      return;
+    }
     const locks = await ctx.readJson(ctx.LOCK_FILE, {});
     const lock = locks[mapId];
     if (!lock?.isLocked) {
