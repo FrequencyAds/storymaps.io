@@ -1,0 +1,73 @@
+name: Deploy
+
+# Redeploys storymap.frequency.media after the `test` workflow passes on main.
+# Auth is via GitHub OIDC -> AWS role (no long-lived keys, no inbound SSH);
+# the deploy itself is an SSM RunCommand against the EC2 instance.
+
+on:
+  workflow_run:
+    workflows: ["test"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  id-token: write   # required to request the OIDC token
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  deploy:
+    # Only deploy when invoked manually, or when the test run actually succeeded.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Trigger redeploy via SSM
+        run: |
+          set -euo pipefail
+          CMD_ID=$(aws ssm send-command \
+            --instance-ids "${{ vars.STORYMAP_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy ${{ github.sha }}" \
+            --parameters 'commands=[
+              "set -euxo pipefail",
+              "cd /opt/storymap",
+              "git fetch origin main",
+              "git reset --hard origin/main",
+              "docker compose up -d --build",
+              "docker image prune -f"
+            ]' \
+            --query "Command.CommandId" --output text)
+          echo "SSM CommandId: $CMD_ID"
+
+          aws ssm wait command-executed \
+            --command-id "$CMD_ID" \
+            --instance-id "${{ vars.STORYMAP_INSTANCE_ID }}" || true
+
+          STATUS=$(aws ssm get-command-invocation \
+            --command-id "$CMD_ID" \
+            --instance-id "${{ vars.STORYMAP_INSTANCE_ID }}" \
+            --query "Status" --output text)
+          echo "----- stdout -----"
+          aws ssm get-command-invocation --command-id "$CMD_ID" \
+            --instance-id "${{ vars.STORYMAP_INSTANCE_ID }}" \
+            --query "StandardOutputContent" --output text
+          echo "----- stderr -----"
+          aws ssm get-command-invocation --command-id "$CMD_ID" \
+            --instance-id "${{ vars.STORYMAP_INSTANCE_ID }}" \
+            --query "StandardErrorContent" --output text
+
+          echo "Final status: $STATUS"
+          [ "$STATUS" = "Success" ]
