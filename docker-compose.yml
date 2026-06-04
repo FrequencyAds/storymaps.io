@@ -4,7 +4,7 @@ services:
     build: .
     restart: unless-stopped
     environment:
-      STORYMAPS_ALLOWED_ORIGINS: https://storymap.frequency.media,https://storymaps.frequency.media
+      STORYMAPS_ALLOWED_ORIGINS: https://storymaps.frequency.media
     volumes:
       - ./data:/app/data
     expose:

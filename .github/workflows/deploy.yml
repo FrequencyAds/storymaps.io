@@ -1,6 +1,6 @@
 name: Deploy
 
-# Redeploys storymap.frequency.media after the `test` workflow passes on main.
+# Redeploys storymaps.frequency.media after the `test` workflow passes on main.
 # Auth is via GitHub OIDC -> AWS role (no long-lived keys, no inbound SSH);
 # the deploy itself is an SSM RunCommand against the EC2 instance.
 
@@ -47,6 +47,7 @@ jobs:
               "git fetch origin main",
               "git reset --hard origin/main",
               "docker compose up -d --build",
+              "docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile",
               "docker image prune -f"
             ]' \
             --query "Command.CommandId" --output text)
