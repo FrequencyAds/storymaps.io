@@ -572,7 +572,8 @@ export const createPhantomStoryColumn = (phantomIndex, slice, insertIndex, rowTy
 
 // Update a card's visual properties in-place (color, status, points, tags, url)
 export const patchCard = (card, item) => {
-    card.style.backgroundColor = item.color || '';
+    if (item.color) card.style.setProperty('--card-bg', item.color);
+    else card.style.removeProperty('--card-bg');
 
     card.querySelector('.card-indicators')?.remove();
     card.appendChild(buildIndicators(item, card));
@@ -719,7 +720,7 @@ export const createPreviewStoryColumn = (pmCol, stories, sliceId, rowTypeKey = n
             cardAttrs.dataSliceId = sliceId;
         }
         const card = el('div', 'story-card', cardAttrs);
-        if (story.color) card.style.backgroundColor = story.color;
+        if (story.color) card.style.setProperty('--card-bg', story.color);
         if (story.body) card.classList.add('has-body');
 
         const nameSpan = el('span', 'story-text-preview', { text: story.name || '' });
@@ -759,7 +760,7 @@ export const createColumnCard = (column) => {
     }
 
     const card = el('div', 'step', { dataColumnId: column.id });
-    if (column.color) card.style.backgroundColor = column.color;
+    if (column.color) card.style.setProperty('--card-bg', column.color);
 
     const dragHandle = el('div', 'step-drag-handle', { html: '↔', title: 'Drag to move entire column' });
     card.appendChild(dragHandle);
@@ -823,7 +824,7 @@ export const createStoryCard = (story, columnId, sliceId, isBackboneRow = false,
         attrs.dataSliceId = sliceId;
     }
     const card = el('div', 'story-card', attrs);
-    if (story.color) card.style.backgroundColor = story.color;
+    if (story.color) card.style.setProperty('--card-bg', story.color);
     if (story.body) card.classList.add('has-body');
 
     let placeholderText = 'Task or Detail...';

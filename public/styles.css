@@ -1258,7 +1258,7 @@ body.welcome-visible #mainMenu > .dropdown-submenu:has(> .dropdown-submenu-trigg
 
 /* Step Card (Backbone) */
 .step {
-    background-color: #77bf81;
+    background-color: var(--card-bg, #77bf81);
     padding: 12px 14px;
     border-radius: 2px;
     min-height: 100px;
@@ -2012,7 +2012,7 @@ input.partials-entry-name-input:focus {
 
 /* Story Card (Tasks) */
 .story-card {
-    background-color: #fad875;
+    background-color: var(--card-bg, #fad875);
     padding: 10px 12px;
     border-radius: 2px;
     min-height: 90px;
@@ -7531,16 +7531,23 @@ html.dark-mode .build-ai-prompt {
     color: #6fc4e8;
 }
 
-/* Card text readability on darkened pastels */
-html.dark-mode .step-text {
-    color: #1a2e24;
-    caret-color: #1a2e24;
+/* Dark mode: darken card colours to ~shade 600/700 and switch to white text */
+html.dark-mode .story-card {
+    background-color: color-mix(in srgb, var(--card-bg, #fad875), #000 50%);
 }
-html.dark-mode .step-text::placeholder {
-    color: rgba(0, 0, 0, 0.4);
+html.dark-mode .step {
+    background-color: color-mix(in srgb, var(--card-bg, #77bf81), #000 50%);
 }
+html.dark-mode .story-text,
+html.dark-mode .step-text,
+html.dark-mode .story-text-preview,
 html.dark-mode .story-card .card-title {
-    color: #1a1a1a;
+    color: #fff;
+    caret-color: #fff;
+}
+html.dark-mode .story-text::placeholder,
+html.dark-mode .step-text::placeholder {
+    color: rgba(255, 255, 255, 0.55);
 }
 
 /* Card action buttons: crisp white bg with high contrast */
