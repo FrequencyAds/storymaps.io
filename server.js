@@ -61,6 +61,10 @@ const stmtUpdate = sqlite.prepare(
   'UPDATE maps SET name = ?, updated_at = ? WHERE id = ?'
 );
 const stmtExists = sqlite.prepare('SELECT 1 FROM maps WHERE id = ?');
+const stmtListMaps = sqlite.prepare(
+  'SELECT id, name, created_at, updated_at FROM maps ORDER BY updated_at DESC LIMIT ? OFFSET ?'
+);
+const stmtCountMaps = sqlite.prepare('SELECT COUNT(*) AS n FROM maps');
 
 const generateUniqueMapId = () => {
   for (let i = 0; i < 10; i++) {
@@ -81,7 +85,7 @@ const { route, matchRoute } = createRouter();
 const ctx = {
   route,
   Y, docs, getPersistence,
-  stmtInsert, stmtUpdate, stmtExists,
+  stmtInsert, stmtUpdate, stmtExists, stmtListMaps, stmtCountMaps,
   readJson, writeJson, DATA_DIR, LOCK_FILE, STATS_FILE, getBackupFile,
   serializeDoc, contentEtag, appendLogEntry, diffPush, writeDocFromJson, countCards,
   isRateLimited, isProxyRateLimited,
@@ -213,7 +217,8 @@ const server = createServer(async (req, res) => {
   }
 
   // Static files - try cache first, then disk
-  let relPath = reqPath === '/' ? '/index.html' : reqPath;
+  // Homepage is the catalog (home.html); the editor lives at /:mapId (index.html via SPA fallback).
+  let relPath = reqPath === '/' ? '/home.html' : reqPath;
   const ext = extname(relPath);
 
   // Resolve cache key: SPA fallback uses '/index.html'

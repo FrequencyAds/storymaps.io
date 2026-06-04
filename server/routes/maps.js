@@ -21,6 +21,23 @@ export default function register(ctx) {
     }
   });
 
+  // GET /api/maps - list all hosted maps (newest first, paginated)
+  route('GET', '/api/maps', async (req, res) => {
+    try {
+      const url = new URL(req.url, `http://${req.headers.host}`);
+      const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit'), 10) || 60, 1), 200);
+      const offset = Math.max(parseInt(url.searchParams.get('offset'), 10) || 0, 0);
+      const rows = ctx.stmtListMaps.all(limit, offset);
+      const total = ctx.stmtCountMaps.get().n;
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
+      res.end(JSON.stringify({ total, limit, offset, maps: rows }));
+    } catch (err) {
+      console.error('GET /api/maps error:', err);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Failed to list maps' }));
+    }
+  });
+
   // POST /api/maps - create a new map
   route('POST', '/api/maps', async (req, res, params, body) => {
     if (ctx.isRateLimited(req)) {
