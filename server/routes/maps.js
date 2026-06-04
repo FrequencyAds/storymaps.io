@@ -27,10 +27,16 @@ export default function register(ctx) {
       const url = new URL(req.url, `http://${req.headers.host}`);
       const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit'), 10) || 60, 1), 200);
       const offset = Math.max(parseInt(url.searchParams.get('offset'), 10) || 0, 0);
-      const rows = ctx.stmtListMaps.all(limit, offset);
+      const tagFilter = (url.searchParams.get('tag') || '').trim().toLowerCase();
+      const rows = ctx.stmtListMaps.all(limit, offset).map((row) => {
+        let tags = [];
+        try { tags = row.tags ? JSON.parse(row.tags) : []; } catch { tags = []; }
+        return { id: row.id, name: row.name, tags: Array.isArray(tags) ? tags : [], created_at: row.created_at, updated_at: row.updated_at };
+      });
+      const maps = tagFilter ? rows.filter(m => m.tags.some(t => String(t).toLowerCase() === tagFilter)) : rows;
       const total = ctx.stmtCountMaps.get().n;
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
-      res.end(JSON.stringify({ total, limit, offset, maps: rows }));
+      res.end(JSON.stringify({ total, limit, offset, maps }));
     } catch (err) {
       console.error('GET /api/maps error:', err);
       res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -62,6 +68,7 @@ export default function register(ctx) {
       }
 
       ctx.stmtInsert.run(id, body.name || 'untitled', now, now);
+      ctx.stmtSetTags.run(JSON.stringify(Array.isArray(body.tags) ? body.tags.filter(t => typeof t === 'string') : []), id);
       const stats = await ctx.readJson(ctx.STATS_FILE, { mapCount: 0 });
       stats.mapCount = (stats.mapCount || 0) + 1;
       await ctx.writeJson(ctx.STATS_FILE, stats);
@@ -202,6 +209,9 @@ export default function register(ctx) {
         ctx.stmtUpdate.run(body.name || 'untitled', now, mapId);
       } else {
         ctx.stmtInsert.run(mapId, body.name || 'untitled', now, now);
+      }
+      if (Array.isArray(body.tags)) {
+        ctx.stmtSetTags.run(JSON.stringify(body.tags.filter(t => typeof t === 'string')), mapId);
       }
 
       res.writeHead(200, { 'Content-Type': 'application/json' });

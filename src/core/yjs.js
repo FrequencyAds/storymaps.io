@@ -10,6 +10,7 @@ let _dom = null;
 let _isMapEditable = null;
 let _render = null;
 let _setPreserveToolbar = null;
+let _renderMapTags = null;
 
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
@@ -23,6 +24,7 @@ let lastSyncedHash = null;
 
 const stateHash = () => JSON.stringify([
     _state.name,
+    _state.tags,
     _state.columns,
     _state.users,
     _state.activities,
@@ -68,7 +70,7 @@ export const ensureSortable = () => {
 
 export const getIsSafari = () => isSafari;
 
-export const init = ({ state, notepad, log, isMapEditable, render, setPreserveToolbar }) => {
+export const init = ({ state, notepad, log, isMapEditable, render, setPreserveToolbar, renderMapTags }) => {
     _state = state;
     _notepad = notepad;
     _log = log;
@@ -76,6 +78,7 @@ export const init = ({ state, notepad, log, isMapEditable, render, setPreserveTo
     _isMapEditable = isMapEditable;
     _render = render;
     _setPreserveToolbar = setPreserveToolbar;
+    _renderMapTags = renderMapTags;
 };
 
 export const getProvider = () => provider;
@@ -229,6 +232,9 @@ export const syncFromYjs = () => {
     const name = ymap.get('name');
     if (name !== undefined) _state.name = name;
 
+    const tags = ymap.get('tags');
+    if (Array.isArray(tags)) _state.tags = tags.filter(t => typeof t === 'string');
+
     const yColumns = ymap.get('columns');
     if (yColumns) {
         const columnsData = typeof yColumns.toJSON === 'function' ? yColumns.toJSON() : yColumns;
@@ -343,6 +349,7 @@ export const syncFromYjs = () => {
     _notepad.migrateLegacyNotes(ymap, ydoc.getText('notes'), _state);
 
     if (_dom.boardName) _dom.boardName.value = _state.name;
+    _renderMapTags?.();
 
     const newHash = stateHash();
     if (newHash === lastSyncedHash) return false;
@@ -460,6 +467,7 @@ export const syncToYjs = () => {
 
     ydoc.transact(() => {
         ymap.set('name', _state.name);
+        ymap.set('tags', _state.tags);
 
         let yColumns = ymap.get('columns');
         if (!yColumns || typeof yColumns.toArray !== 'function') {

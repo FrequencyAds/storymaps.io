@@ -9,6 +9,7 @@ export const DEFAULT_NOTES = 'Thanks for trying Storymaps.io! \n\nIf you find it
 export const state = {
     mapId: null,
     name: '',
+    tags: [],
     columns: [],
     users: {},
     activities: {},
@@ -58,6 +59,7 @@ const cloneCardMap = (cardMap) => Object.fromEntries(
 // Deep-clone state with IDs preserved (for undo/redo)
 const snapshotState = () => JSON.stringify({
     name: state.name,
+    tags: state.tags,
     columns: state.columns.map(c => { const { _editingHidden, _partialBlank, ...rest } = c; return rest; }),
     users: cloneCardMap(state.users),
     activities: cloneCardMap(state.activities),
@@ -86,6 +88,7 @@ const snapshotState = () => JSON.stringify({
 const restoreSnapshot = (json) => {
     const snap = JSON.parse(json);
     state.name = snap.name;
+    state.tags = snap.tags || [];
     state.columns = snap.columns;
     state.users = snap.users;
     state.activities = snap.activities;
@@ -264,6 +267,7 @@ const highlightChangedElements = (changes) => {
 export const initState = () => {
     const column = createColumn('New Step', CARD_COLORS.green, null, false);
     state.name = '';
+    state.tags = [];
     state.columns = [column];
     state.partialMaps = [];
     partialMapEditState.activeId = null;

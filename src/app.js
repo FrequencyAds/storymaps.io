@@ -126,6 +126,81 @@ const renderAndSave = () => {
     }
 };
 
+// ── Map-level tags (whole-map tags, shown in the header and the homepage catalog) ──
+const MAX_MAP_TAGS = 20;
+
+const addMapTag = (raw) => {
+    const tag = String(raw || '').trim().replace(/^#+/, '').slice(0, 32).trim();
+    if (!tag) return;
+    if ((state.tags || []).some(t => t.toLowerCase() === tag.toLowerCase())) return;
+    if ((state.tags || []).length >= MAX_MAP_TAGS) return;
+    state.tags = [...(state.tags || []), tag];
+    log.logTextEdit('map tags', 'map');
+    saveToStorage();
+    renderMapTags();
+};
+
+const removeMapTag = (tag) => {
+    state.tags = (state.tags || []).filter(t => t !== tag);
+    log.logTextEdit('map tags', 'map');
+    saveToStorage();
+    renderMapTags();
+};
+
+// Rebuild the header tag chips + add-input from state.tags.
+const renderMapTags = () => {
+    const container = dom.mapTags;
+    if (!container) return;
+    const editable = !state.mapId || isMapEditable();
+    // Preserve in-progress typing/focus across rebuilds (e.g. on remote sync).
+    const active = document.activeElement;
+    const inputHadFocus = active && active.classList?.contains('map-tag-input');
+    const pending = inputHadFocus ? active.value : '';
+
+    container.replaceChildren();
+    (state.tags || []).forEach(tag => {
+        const chip = document.createElement('span');
+        chip.className = 'map-tag';
+        const label = document.createElement('span');
+        label.className = 'map-tag-label';
+        label.textContent = tag;
+        chip.appendChild(label);
+        if (editable) {
+            const rm = document.createElement('button');
+            rm.type = 'button';
+            rm.className = 'map-tag-remove';
+            rm.setAttribute('aria-label', `Remove tag "${tag}"`);
+            rm.textContent = '×';
+            rm.addEventListener('click', () => removeMapTag(tag));
+            chip.appendChild(rm);
+        }
+        container.appendChild(chip);
+    });
+
+    if (editable) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'map-tag-input';
+        input.placeholder = (state.tags || []).length ? '+ tag' : '+ add tag';
+        input.maxLength = 32;
+        input.value = pending;
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                addMapTag(input.value);
+                input.value = '';
+            } else if (e.key === 'Backspace' && !input.value && (state.tags || []).length) {
+                removeMapTag(state.tags[state.tags.length - 1]);
+            }
+        });
+        input.addEventListener('blur', () => {
+            if (input.value.trim()) { addMapTag(input.value); input.value = ''; }
+        });
+        container.appendChild(input);
+        if (inputHadFocus) input.focus();
+    }
+};
+
 const { openExpandModal, closeExpandModal } = cardExpand;
 
 const loadFromStorage = () => {
@@ -1508,6 +1583,7 @@ yjs.init({
     isMapEditable,
     render,
     setPreserveToolbar,
+    renderMapTags,
 });
 
 // Wire tour module
@@ -1547,6 +1623,7 @@ io.init({
 welcome.init({
     render,
     renderAndSave,
+    renderMapTags,
     saveToStorage,
     subscribeToMap,
     newMapId,

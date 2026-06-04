@@ -160,7 +160,22 @@
         }
         .card-name.untitled { color: var(--brand-text-muted); font-style: italic; font-weight: 500; }
         .card-id { font-family: 'SF Mono', 'Consolas', monospace; font-size: 12px; color: var(--brand-text-muted); }
+        .card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+        .card-tag {
+            font-size: 11.5px; font-weight: 600; line-height: 1;
+            padding: 4px 9px; border-radius: 999px;
+            color: var(--brand-blue);
+            background: color-mix(in srgb, var(--brand-blue) 12%, transparent);
+            border: 1px solid color-mix(in srgb, var(--brand-blue) 28%, transparent);
+            cursor: pointer; white-space: nowrap;
+            transition: background 0.12s, color 0.12s;
+        }
+        .card-tag:hover { background: var(--brand-blue); color: #fff; }
         .card-meta { margin-top: auto; padding-top: 14px; font-size: 12.5px; color: var(--brand-text-secondary); }
+        .active-tag-bar { display: none; align-items: center; gap: 10px; margin-bottom: 18px; font-size: 14px; color: var(--brand-text-secondary); }
+        .active-tag-bar.visible { display: flex; }
+        .active-tag-bar .clear-tag { background: none; border: none; color: var(--brand-blue); cursor: pointer; font: inherit; font-weight: 600; padding: 0; }
+        .active-tag-bar .clear-tag:hover { text-decoration: underline; }
 
         /* ── States ── */
         .state { text-align: center; padding: 80px 20px; color: var(--brand-text-secondary); }
@@ -211,8 +226,9 @@
                 <h1 class="page-title">Story Maps</h1>
                 <p class="page-sub" id="pageSub">Loading hosted maps…</p>
             </div>
-            <input type="search" class="search" id="search" placeholder="Search maps…" autocomplete="off" aria-label="Search maps">
+            <input type="search" class="search" id="search" placeholder="Search maps or tags…" autocomplete="off" aria-label="Search maps">
         </div>
+        <div class="active-tag-bar" id="activeTagBar"></div>
         <div class="grid" id="grid" aria-busy="true"></div>
         <div class="footer">
             <a href="https://github.com/jackgleeson/storymaps.io" target="_blank" rel="noopener">Open source (AGPL-3.0)</a>
@@ -255,9 +271,16 @@
         function cardHTML(m) {
             var named = m.name && m.name.trim() && m.name.trim().toLowerCase() !== 'untitled';
             var name = named ? esc(m.name.trim()) : 'Untitled map';
+            var tags = Array.isArray(m.tags) ? m.tags : [];
+            var tagsHTML = tags.length
+                ? '<div class="card-tags">' + tags.map(function (t) {
+                    return '<span class="card-tag" role="button" tabindex="0" data-tag="' + esc(t) + '">' + esc(t) + '</span>';
+                }).join('') + '</div>'
+                : '';
             return '<a class="card" href="/' + encodeURIComponent(m.id) + '">' +
                 '<div class="card-name' + (named ? '' : ' untitled') + '">' + name + '</div>' +
                 '<div class="card-id">/' + esc(m.id) + '</div>' +
+                tagsHTML +
                 '<div class="card-meta">Updated ' + esc(relTime(m.updated_at)) + '</div>' +
                 '</a>';
         }
@@ -274,14 +297,62 @@
             grid.innerHTML = list.map(cardHTML).join('');
         }
 
+        var activeTag = '';
+        var activeTagBar = document.getElementById('activeTagBar');
+
+        function updateTagBar() {
+            if (activeTag) {
+                activeTagBar.innerHTML = 'Filtered by tag <span class="card-tag" style="cursor:default">' + esc(activeTag) +
+                    '</span> <button class="clear-tag" type="button">clear</button>';
+                activeTagBar.classList.add('visible');
+                activeTagBar.querySelector('.clear-tag').addEventListener('click', function () { setActiveTag(''); });
+            } else {
+                activeTagBar.classList.remove('visible');
+                activeTagBar.innerHTML = '';
+            }
+        }
+
+        function setActiveTag(tag) {
+            activeTag = tag || '';
+            updateTagBar();
+            applyFilter();
+        }
+
         function applyFilter() {
             var q = search.value.trim().toLowerCase();
-            if (!q) return renderList(allMaps);
-            renderList(allMaps.filter(function (m) {
-                return (m.name || '').toLowerCase().indexOf(q) !== -1 || (m.id || '').toLowerCase().indexOf(q) !== -1;
-            }));
+            var list = allMaps;
+            if (activeTag) {
+                var at = activeTag.toLowerCase();
+                list = list.filter(function (m) {
+                    return (m.tags || []).some(function (t) { return String(t).toLowerCase() === at; });
+                });
+            }
+            if (q) {
+                list = list.filter(function (m) {
+                    return (m.name || '').toLowerCase().indexOf(q) !== -1 ||
+                        (m.id || '').toLowerCase().indexOf(q) !== -1 ||
+                        (m.tags || []).some(function (t) { return String(t).toLowerCase().indexOf(q) !== -1; });
+                });
+            }
+            renderList(list);
         }
         search.addEventListener('input', applyFilter);
+
+        // Clicking a tag chip on a card filters by that tag (without following the card link).
+        grid.addEventListener('click', function (e) {
+            var chip = e.target.closest('.card-tag');
+            if (chip && grid.contains(chip)) {
+                e.preventDefault();
+                e.stopPropagation();
+                setActiveTag(chip.getAttribute('data-tag'));
+            }
+        });
+        grid.addEventListener('keydown', function (e) {
+            if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('card-tag')) {
+                e.preventDefault();
+                setActiveTag(e.target.getAttribute('data-tag'));
+            }
+        });
 
         // Skeleton while loading
         grid.innerHTML = Array.from({ length: 8 }).map(function () { return '<div class="skeleton"></div>'; }).join('');

@@ -49,10 +49,13 @@ sqlite.exec(`
   CREATE TABLE IF NOT EXISTS maps (
     id TEXT PRIMARY KEY,
     name TEXT,
+    tags TEXT,
     created_at TEXT,
     updated_at TEXT
   )
 `);
+// Migrate older databases that predate the tags column.
+try { sqlite.exec('ALTER TABLE maps ADD COLUMN tags TEXT'); } catch { /* column already exists */ }
 
 const stmtInsert = sqlite.prepare(
   'INSERT OR IGNORE INTO maps (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)'
@@ -60,9 +63,10 @@ const stmtInsert = sqlite.prepare(
 const stmtUpdate = sqlite.prepare(
   'UPDATE maps SET name = ?, updated_at = ? WHERE id = ?'
 );
+const stmtSetTags = sqlite.prepare('UPDATE maps SET tags = ? WHERE id = ?');
 const stmtExists = sqlite.prepare('SELECT 1 FROM maps WHERE id = ?');
 const stmtListMaps = sqlite.prepare(
-  'SELECT id, name, created_at, updated_at FROM maps ORDER BY updated_at DESC LIMIT ? OFFSET ?'
+  'SELECT id, name, tags, created_at, updated_at FROM maps ORDER BY updated_at DESC LIMIT ? OFFSET ?'
 );
 const stmtCountMaps = sqlite.prepare('SELECT COUNT(*) AS n FROM maps');
 
@@ -85,7 +89,7 @@ const { route, matchRoute } = createRouter();
 const ctx = {
   route,
   Y, docs, getPersistence,
-  stmtInsert, stmtUpdate, stmtExists, stmtListMaps, stmtCountMaps,
+  stmtInsert, stmtUpdate, stmtSetTags, stmtExists, stmtListMaps, stmtCountMaps,
   readJson, writeJson, DATA_DIR, LOCK_FILE, STATS_FILE, getBackupFile,
   serializeDoc, contentEtag, appendLogEntry, diffPush, writeDocFromJson, countCards,
   isRateLimited, isProxyRateLimited,
@@ -346,6 +350,8 @@ const flushMapUpdate = (mapId) => {
       const ymap = doc.getMap('storymap');
       const name = ymap.get('name') || 'untitled';
       stmtUpdate.run(name, new Date().toISOString(), mapId);
+      const tags = ymap.get('tags');
+      stmtSetTags.run(JSON.stringify(Array.isArray(tags) ? tags : []), mapId);
     }
   } catch (err) {
     console.error(`SQLite flush error for ${mapId}:`, err.message);

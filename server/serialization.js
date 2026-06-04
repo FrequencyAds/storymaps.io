@@ -29,6 +29,7 @@ export const serializeDoc = (doc) => {
     app: 'storymap', v: 1,
     exported: new Date().toISOString(),
     name: ymap.get('name') || '',
+    tags: Array.isArray(ymap.get('tags')) ? ymap.get('tags') : [],
     users: toPositional(usersMap),
     activities: toPositional(activitiesMap),
     steps: columns.map(col => {
@@ -237,6 +238,7 @@ export const writeDocFromJson = (doc, data, Y) => {
   doc.transact(() => {
     const ymap = doc.getMap('storymap');
     ymap.set('name', data.name || '');
+    ymap.set('tags', Array.isArray(data.tags) ? data.tags.filter(t => typeof t === 'string') : []);
 
     // Columns
     const columns = (data.steps || []).map(step => {

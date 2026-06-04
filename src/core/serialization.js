@@ -51,6 +51,7 @@ export const serialize = () => ({
     v: 1,
     exported: new Date().toISOString(),
     name: state.name,
+    ...(state.tags?.length > 0 && { tags: state.tags }),
     ...(state.mapId && { id: state.mapId }),
     site: window.location.hostname,
     users: state.columns.map(col => (state.users[col.id] || []).map(serializeCard)),
@@ -92,6 +93,7 @@ export const serialize = () => ({
 
 const deserializeV1 = (data) => {
     state.name = data.name || '';
+    state.tags = Array.isArray(data.tags) ? data.tags.filter(t => typeof t === 'string') : [];
     state.columns = (data.steps || []).map(step => {
         if (step.partialMapId) return createRefColumn(step.partialMapId, !!step.partialMapOrigin);
         return deserializeColumn(step);
@@ -162,6 +164,7 @@ const deserializeV1 = (data) => {
 
 const deserializeLegacy = (data) => {
     state.name = data.name || '';
+    state.tags = [];
     state.columns = data.a.map(a => deserializeColumn(a));
 
     // Extract Users/Activities from legacy slices, put remaining into release slices

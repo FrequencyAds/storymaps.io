@@ -90,6 +90,7 @@ export const showWelcomeScreen = () => {
     dom.welcomeScreen.classList.add('visible');
     dom.storyMapWrapper.classList.remove('visible');
     dom.boardName.classList.add('hidden');
+    dom.mapTags?.classList.add('hidden');
     dom.zoomControls.classList.add('hidden');
     dom.controlsRight?.classList.add('hidden');
     dom.controlsRight?.classList.remove('panel-open');
@@ -109,6 +110,7 @@ export const hideWelcomeScreen = () => {
     dom.welcomeScreen.classList.remove('visible');
     dom.storyMapWrapper.classList.add('visible');
     dom.boardName.classList.remove('hidden');
+    dom.mapTags?.classList.remove('hidden');
     dom.zoomControls.classList.remove('hidden');
     dom.controlsRight?.classList.remove('hidden');
     dom.searchBtn.style.display = '';
@@ -153,6 +155,7 @@ export const startNewMap = async () => {
     history.replaceState({ mapId }, '', `/${mapId}`);
     dom.boardName.value = state.name;
     _deps.render();
+    _deps.renderMapTags?.();
     await _deps.createYjsDoc(mapId);
     _deps.subscribeToMap(mapId);
     hideLoading();
@@ -180,6 +183,7 @@ export const startWithSample = async (sampleName, { showToast = true } = {}) => 
     }
     dom.boardName.value = state.name;
     _deps.render();
+    _deps.renderMapTags?.();
     await _deps.createYjsDoc(mapId);
     _deps.subscribeToMap(mapId);
     hideLoading();
@@ -203,6 +207,7 @@ export const newMap = async () => {
     initState();
     dom.boardName.value = '';
     _deps.render();
+    _deps.renderMapTags?.();
     requestAnimationFrame(zoomToFit);
 
     const mapId = await _deps.newMapId();
