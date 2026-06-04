@@ -1,7 +1,10 @@
 /* ============================================================
    Frequency brand palette — single source of truth
    Ref: https://brand.frequency.media/guidelines/colors
+        @frequencyads/brand (packages/brand/src/colors.ts)
    Linked by every page; page-local tokens map onto these vars.
+   Surfaces/neutrals come from the brand gray + dark palettes so
+   light and dark mode both render on real brand colors.
    ============================================================ */
 
 :root {
@@ -44,10 +47,45 @@
     --brand-warning: #e79e26;       /* yellow[5] */
     --brand-error:   #e63459;       /* red[5] */
 
-    /* ── Neutral text ── */
-    --brand-text:          #212121; /* gray[9] */
-    --brand-text-secondary:#808080; /* gray[6] */
-    --brand-text-disabled: #cccccc;
+    /* ── Neutral scale (brand gray) ── */
+    --brand-gray-0: #fafafa;
+    --brand-gray-1: #f7f7f7;
+    --brand-gray-2: #eeeeee;
+    --brand-gray-3: #e3e3e3;
+    --brand-gray-4: #bdbdbd;
+    --brand-gray-5: #9e9e9e;
+    --brand-gray-6: #808080;        /* text secondary */
+    --brand-gray-7: #757575;
+    --brand-gray-8: #323232;
+    --brand-gray-9: #222222;
+
+    /* ── Brand dark scale (dark-mode surfaces) ── */
+    --brand-dark-0: #c1c2c5;        /* text on dark */
+    --brand-dark-1: #a6a7ab;
+    --brand-dark-2: #909296;
+    --brand-dark-3: #5c5f66;
+    --brand-dark-4: #373a40;
+    --brand-dark-5: #333333;        /* inputs/buttons */
+    --brand-dark-6: #272727;        /* cards/toolbars */
+    --brand-dark-7: #212121;        /* body background */
+    --brand-dark-8: #141414;
+    --brand-dark-9: #101010;
+
+    /* ── Surfaces & text (LIGHT) ── */
+    --brand-bg: #fafafa;            /* page (gray[0]) */
+    --brand-surface: #ffffff;       /* cards / panels */
+    --brand-surface-alt: #f7f7f7;   /* hover / elevated (gray[1]) */
+    --brand-surface-sunken: #eeeeee;/* sunken (gray[2]) */
+    --brand-bg-nav: rgba(255, 255, 255, 0.82);
+
+    --brand-border: #e3e3e3;        /* gray[3] */
+    --brand-border-subtle: #eeeeee; /* gray[2] */
+    --brand-border-strong: #bdbdbd; /* gray[4] */
+
+    --brand-text:           #212121; /* gray[9] / dark[7] */
+    --brand-text-secondary: #808080; /* gray[6] */
+    --brand-text-muted:     #9e9e9e; /* gray[5] */
+    --brand-text-disabled:  #cccccc;
 
     /* ── Brand gradients (all 135°) ── */
     --grad-frequency-alive:      linear-gradient(135deg, #2c9ee0 0%, #7727f0 100%);
@@ -62,7 +100,7 @@
     --brand-font-body: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-/* Dark mode: lift blue/violet for contrast on dark surfaces. */
+/* Dark mode: surfaces from the brand `dark` palette, accents lifted for contrast. */
 html.dark-mode {
     --brand-blue: #45b2e1;          /* blue[3] reads better on dark */
     --brand-blue-light: #6fc4e8;
@@ -71,7 +109,18 @@ html.dark-mode {
     --brand-violet-light: #b89dda;
     --brand-violet-dark: #7e57c2;
 
-    --brand-text: #f1f5f9;
-    --brand-text-secondary: #94a3b8;
-    --brand-text-disabled: #475569;
+    --brand-bg: #212121;            /* dark[7] body */
+    --brand-surface: #272727;       /* dark[6] cards */
+    --brand-surface-alt: #333333;   /* dark[5] elevated / inputs */
+    --brand-surface-sunken: #141414;/* dark[8] */
+    --brand-bg-nav: rgba(33, 33, 33, 0.85);
+
+    --brand-border: #373a40;        /* dark[4] */
+    --brand-border-subtle: #272727; /* dark[6] */
+    --brand-border-strong: #5c5f66; /* dark[3] */
+
+    --brand-text:           #c1c2c5; /* dark[0] */
+    --brand-text-secondary: #909296; /* dark[2] */
+    --brand-text-muted:     #5c5f66; /* dark[3] */
+    --brand-text-disabled:  #5c5f66;
 }

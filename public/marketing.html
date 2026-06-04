@@ -82,19 +82,19 @@
             --yellow: #fef08a;
             --pink: var(--brand-violet-0);
             --cyan: var(--brand-blue-0);
-            --bg: #fafbfc;
-            --bg-card: #ffffff;
-            --bg-card-hover: #ffffff;
-            --bg-nav: rgba(255, 255, 255, 0.82);
-            --bg-hero: linear-gradient(168deg, #e7f5fb 0%, #fafbfc 40%, #f3edf7 100%);
+            --bg: var(--brand-bg);
+            --bg-card: var(--brand-surface);
+            --bg-card-hover: var(--brand-surface-alt);
+            --bg-nav: var(--brand-bg-nav);
+            --bg-hero: linear-gradient(168deg, #e7f5fb 0%, var(--brand-bg) 40%, #f3edf7 100%);
             --bg-cta: var(--grad-frequency-alive);
-            --bg-quote: #e7f5fb;
-            --text: #334155;
+            --bg-quote: var(--brand-surface-alt);
+            --text: var(--brand-text);
             --text-heading: var(--brand-text);
             --text-muted: var(--brand-text-secondary);
             --text-on-teal: #ffffff;
-            --border: #e2e8f0;
-            --border-card: #e8ecf0;
+            --border: var(--brand-border);
+            --border-card: var(--brand-border-subtle);
             --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
             --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
             --shadow-lg: 0 12px 40px rgba(0,0,0,0.10);
@@ -106,19 +106,8 @@
         }
 
         html.dark-mode {
-            --bg: #0f172a;
-            --bg-card: #1e293b;
-            --bg-card-hover: #253347;
-            --bg-nav: rgba(15, 23, 42, 0.85);
-            --bg-hero: linear-gradient(168deg, #0a2233 0%, #0f172a 40%, #1a0f25 100%);
-            --bg-cta: var(--grad-frequency-alive);
-            --bg-quote: #0d2433;
-            --text: #cbd5e1;
-            --text-heading: var(--brand-text);
-            --text-muted: var(--brand-text-secondary);
-            --text-on-teal: #ffffff;
-            --border: #1e293b;
-            --border-card: #2a3a4e;
+            /* surfaces/text/borders inherit the brand dark palette via brand.css */
+            --bg-hero: linear-gradient(168deg, #052e3c 0%, #212121 45%, #180f27 100%);
             --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
             --shadow-md: 0 4px 16px rgba(0,0,0,0.3);
             --shadow-lg: 0 12px 40px rgba(0,0,0,0.4);

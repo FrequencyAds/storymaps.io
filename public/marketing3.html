@@ -82,19 +82,19 @@
             --yellow: #fef08a;
             --pink: var(--brand-violet-0);
             --cyan: var(--brand-blue-0);
-            --bg: #ffffff;
-            --bg-card: #ffffff;
-            --bg-card-hover: #ffffff;
-            --bg-nav: rgba(255, 255, 255, 0.82);
+            --bg: var(--brand-bg);
+            --bg-card: var(--brand-surface);
+            --bg-card-hover: var(--brand-surface-alt);
+            --bg-nav: var(--brand-bg-nav);
             --bg-hero: radial-gradient(ellipse at 50% 0%, rgba(179, 224, 242, 0.5) 0%, transparent 60%);
             --bg-cta: var(--grad-frequency-alive);
-            --bg-quote: #e7f5fb;
-            --text: #334155;
+            --bg-quote: var(--brand-surface-alt);
+            --text: var(--brand-text);
             --text-heading: var(--brand-text);
             --text-muted: var(--brand-text-secondary);
             --text-on-teal: #ffffff;
-            --border: #ebebeb;
-            --border-card: #ebebeb;
+            --border: var(--brand-border);
+            --border-card: var(--brand-border-subtle);
             --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
             --shadow-md: 0 4px 16px rgba(0,0,0,0.07);
             --shadow-lg: 0 12px 40px rgba(0,0,0,0.09);
@@ -106,19 +106,8 @@
         }
 
         html.dark-mode {
-            --bg: #0f172a;
-            --bg-card: #1e293b;
-            --bg-card-hover: #253347;
-            --bg-nav: rgba(15, 23, 42, 0.85);
+            /* surfaces/text/borders inherit the brand dark palette via brand.css */
             --bg-hero: radial-gradient(ellipse at 50% 0%, rgba(22, 155, 222, 0.15) 0%, transparent 60%);
-            --bg-cta: var(--grad-frequency-alive);
-            --bg-quote: #0d2433;
-            --text: #e2e8f0;
-            --text-heading: var(--brand-text);
-            --text-muted: var(--brand-text-secondary);
-            --text-on-teal: #ffffff;
-            --border: #1e293b;
-            --border-card: #2a3a4e;
             --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
             --shadow-md: 0 4px 16px rgba(0,0,0,0.3);
             --shadow-lg: 0 12px 40px rgba(0,0,0,0.4);
@@ -290,7 +279,7 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: #0f172a;
+            background: #212121;
             color: #ffffff;
             padding: 7px 18px;
             border-radius: 100px;
@@ -300,7 +289,7 @@
             border: none;
         }
         html.dark-mode .hero-badge {
-            background: #1e293b;
+            background: #272727;
         }
         .hero-badge-icon {
             font-size: 14px;
@@ -355,7 +344,7 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: #0f172a;
+            background: #212121;
             color: #ffffff;
             padding: 14px 32px;
             border-radius: 100px;
@@ -368,18 +357,18 @@
         }
         html.dark-mode .btn-primary {
             background: #ffffff;
-            color: #0f172a;
+            color: #212121;
         }
         .btn-primary:hover {
-            background: #1e293b;
+            background: #272727;
             transform: translateY(-2px);
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
             text-decoration: none;
             color: #ffffff;
         }
         html.dark-mode .btn-primary:hover {
-            background: #e2e8f0;
-            color: #0f172a;
+            background: #c1c2c5;
+            color: #212121;
         }
         .btn-outline {
             display: inline-flex;
