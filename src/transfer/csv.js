@@ -3,8 +3,8 @@
 
 import { generateId } from '../core/constants.js';
 
-const DEFAULT_STEP_COLOR = '#86efac';
-const DEFAULT_STORY_COLOR = '#fef08a';
+const DEFAULT_STEP_COLOR = '#77bf81';
+const DEFAULT_STORY_COLOR = '#fad875';
 const VALID_STATUSES = new Set(['done', 'in-progress', 'planned', 'blocked']);
 
 // ============================================================================

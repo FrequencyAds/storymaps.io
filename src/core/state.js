@@ -269,8 +269,8 @@ export const initState = () => {
     partialMapEditState.activeId = null;
     partialMapEditState.expandedIds.clear();
     partialMapEditState.editingColIds.clear();
-    state.users = { [column.id]: [createStory('User Type', '#fca5a5')] };
-    state.activities = { [column.id]: [createStory('New Activity', '#93c5fd')] };
+    state.users = { [column.id]: [createStory('User Type', '#e84d6d')] };
+    state.activities = { [column.id]: [createStory('New Activity', '#45b2e1')] };
     state.legend = [
         { id: generateId(), color: CARD_COLORS.yellow, label: 'Tasks' },
         { id: generateId(), color: CARD_COLORS.cyan, label: 'Notes' },
@@ -279,7 +279,7 @@ export const initState = () => {
     ];
     state.notes = DEFAULT_NOTES;
     state.slices = [
-        { id: generateId(), name: '', collapsed: false, stories: { [column.id]: [createStory('New Task or Detail', '#fef08a')] } }
+        { id: generateId(), name: '', collapsed: false, stories: { [column.id]: [createStory('New Task or Detail', '#fad875')] } }
     ];
 };
 

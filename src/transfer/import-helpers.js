@@ -319,8 +319,8 @@ export const buildStorymapFromImport = (epics, projectName, buildUrlFn, opts = {
         const stepUrl = buildUrlFn(epic.key);
         if (stepUrl) step.url = stepUrl;
         steps.push(step);
-        users.push(includedIndex === 0 ? [{ name: '', color: '#fca5a5' }] : []);
-        activities.push(includedIndex === 0 ? [{ name: '', color: '#93c5fd' }] : []);
+        users.push(includedIndex === 0 ? [{ name: '', color: '#e84d6d' }] : []);
+        activities.push(includedIndex === 0 ? [{ name: '', color: '#45b2e1' }] : []);
         includedIndex++;
 
         const columnStories = [];
@@ -343,8 +343,8 @@ export const buildStorymapFromImport = (epics, projectName, buildUrlFn, opts = {
         const cols = Math.min(orphanCards.length, 8);
         for (let c = 0; c < cols; c++) {
             steps.push({ name: `Column ${c + 1}` });
-            users.push(c === 0 ? [{ name: '', color: '#fca5a5' }] : []);
-            activities.push(c === 0 ? [{ name: '', color: '#93c5fd' }] : []);
+            users.push(c === 0 ? [{ name: '', color: '#e84d6d' }] : []);
+            activities.push(c === 0 ? [{ name: '', color: '#45b2e1' }] : []);
         }
     }
 

@@ -22,27 +22,27 @@ export const isValidUrl = (url) => {
 };
 
 export const CARD_COLORS = {
-    red: '#fca5a5',
-    rose: '#fecdd3',
-    orange: '#fdba74',
-    amber: '#fcd34d',
-    yellow: '#fef08a',
-    lime: '#bef264',
-    green: '#86efac',
-    teal: '#5eead4',
-    cyan: '#a5f3fc',
-    blue: '#93c5fd',
+    red: '#e84d6d',
+    rose: '#ea6582',
+    orange: '#ffa356',
+    amber: '#f9cd4c',
+    yellow: '#fad875',
+    lime: '#8dd99c',
+    green: '#77bf81',
+    teal: '#5ddcf2',
+    cyan: '#30d3ef',
+    blue: '#45b2e1',
     indigo: '#a5b4fc',
-    purple: '#d8b4fe',
-    fuchsia: '#f0abfc',
-    pink: '#f9a8d4'
+    purple: '#9f7dd0',
+    fuchsia: '#f2699d',
+    pink: '#f584af'
 };
 
 // Default colors for card types (references CARD_COLORS values)
 export const DEFAULT_CARD_COLORS = {
-    Users: '#fca5a5',       // red
-    Activities: '#93c5fd',  // blue
-    story: '#fef08a'        // yellow
+    Users: '#e84d6d',       // red
+    Activities: '#45b2e1',  // blue
+    story: '#fad875'        // yellow
 };
 
 export const STATUS_OPTIONS = {

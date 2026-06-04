@@ -380,7 +380,7 @@ export const trackCursor = () => {
             if (!isColumn) {
                 const text = findStoryText(ghost.storyId);
                 ghostEl.textContent = text || '';
-                const safeColor = /^#[0-9a-fA-F]{3,6}$/.test(ghost.color) ? ghost.color : '#fef08a';
+                const safeColor = /^#[0-9a-fA-F]{3,6}$/.test(ghost.color) ? ghost.color : '#fad875';
                 ghostEl.style.backgroundColor = safeColor;
                 ghostEl.style.setProperty('--ghost-accent', safeAccent);
             }
@@ -444,7 +444,7 @@ const buildColumnGhost = (container, columnId) => {
             const card = document.createElement('div');
             card.className = 'ghost-column-card';
             card.textContent = story.name || '';
-            const color = /^#[0-9a-fA-F]{3,6}$/.test(story.color) ? story.color : '#fef08a';
+            const color = /^#[0-9a-fA-F]{3,6}$/.test(story.color) ? story.color : '#fad875';
             card.style.backgroundColor = color;
             container.appendChild(card);
         }

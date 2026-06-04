@@ -1056,10 +1056,10 @@ const initEventListeners = () => {
         const rectSize = iconSize * 7 / 24; // 7/24 of icon size (matches viewBox)
         const rr = iconSize * 1 / 24; // corner radius
         const squares = [
-            { x: iconSize * 3 / 24, y: iconSize * 3 / 24, fill: '#fef08a', stroke: '#d4aa00' },
-            { x: iconSize * 14 / 24, y: iconSize * 3 / 24, fill: '#fecdd3', stroke: '#e88a9a' },
-            { x: iconSize * 3 / 24, y: iconSize * 14 / 24, fill: '#a5f3fc', stroke: '#67c5d6' },
-            { x: iconSize * 14 / 24, y: iconSize * 14 / 24, fill: '#14b8a6', stroke: '#0d9488' },
+            { x: iconSize * 3 / 24, y: iconSize * 3 / 24, fill: '#fad875', stroke: '#d4aa00' },
+            { x: iconSize * 14 / 24, y: iconSize * 3 / 24, fill: '#ea6582', stroke: '#e88a9a' },
+            { x: iconSize * 3 / 24, y: iconSize * 14 / 24, fill: '#30d3ef', stroke: '#67c5d6' },
+            { x: iconSize * 14 / 24, y: iconSize * 14 / 24, fill: '#169bde', stroke: '#0b5a8c' },
         ];
         for (const sq of squares) {
             const sx = ix + sq.x, sy = iy + sq.y;

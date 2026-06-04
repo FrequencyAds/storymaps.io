@@ -937,7 +937,7 @@ body.welcome-visible #mainMenu > .dropdown-submenu:has(> .dropdown-submenu-trigg
 
 .legend-label:focus {
     outline: none;
-    border-color: #93c5fd;
+    border-color: #45b2e1;
     background: var(--color-bg-surface);
 }
 
@@ -969,7 +969,7 @@ body.welcome-visible #mainMenu > .dropdown-submenu:has(> .dropdown-submenu-trigg
 }
 
 .legend-add-btn:hover {
-    border-color: #93c5fd;
+    border-color: #45b2e1;
     color: var(--color-text-primary);
 }
 
@@ -1258,7 +1258,7 @@ body.welcome-visible #mainMenu > .dropdown-submenu:has(> .dropdown-submenu-trigg
 
 /* Step Card (Backbone) */
 .step {
-    background-color: #86efac;
+    background-color: #77bf81;
     padding: 12px 14px;
     border-radius: 2px;
     min-height: 100px;
@@ -2012,7 +2012,7 @@ input.partials-entry-name-input:focus {
 
 /* Story Card (Tasks) */
 .story-card {
-    background-color: #fef08a;
+    background-color: #fad875;
     padding: 10px 12px;
     border-radius: 2px;
     min-height: 90px;
@@ -2168,7 +2168,7 @@ body.main-menu-open .step:hover {
 
 .activities-row .btn-add-story:hover {
     background-color: rgba(147, 197, 253, 0.5);
-    border-color: #93c5fd;
+    border-color: #45b2e1;
 }
 
 /* Empty columns in backbone rows - clickable to add card */
@@ -2249,7 +2249,7 @@ body.main-menu-open .step:hover {
 
 .btn-delete:hover {
     background-color: #fee2e2;
-    border-color: #fca5a5;
+    border-color: #e84d6d;
 }
 
 .step:hover .btn-delete,
@@ -2410,7 +2410,7 @@ body.main-menu-open .step:hover {
 
 .slice-closed-banner {
     background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-    border-color: #93c5fd;
+    border-color: #45b2e1;
 }
 .slice-closed-banner .slice-completed-text {
     color: #1e40af;
@@ -2969,22 +2969,22 @@ html.dark-mode mark.highlight {
 }
 
 .btn-sample-yellow { background: var(--color-bg-surface); border-color: #e5e7eb; }
-.btn-sample-yellow::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #fef08a; margin-right: 8px; flex-shrink: 0; }
+.btn-sample-yellow::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #fad875; margin-right: 8px; flex-shrink: 0; }
 
 .btn-sample-pink { background: var(--color-bg-surface); border-color: #e5e7eb; }
-.btn-sample-pink::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #fecdd3; margin-right: 8px; flex-shrink: 0; }
+.btn-sample-pink::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #ea6582; margin-right: 8px; flex-shrink: 0; }
 
 .btn-sample-cyan { background: var(--color-bg-surface); border-color: #e5e7eb; }
-.btn-sample-cyan::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #a5f3fc; margin-right: 8px; flex-shrink: 0; }
+.btn-sample-cyan::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #30d3ef; margin-right: 8px; flex-shrink: 0; }
 
 .btn-sample-teal { background: var(--color-bg-surface); border-color: #e5e7eb; }
 .btn-sample-teal::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #169bde; margin-right: 8px; flex-shrink: 0; }
 
 .btn-sample-purple { background: var(--color-bg-surface); border-color: #e5e7eb; }
-.btn-sample-purple::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #d8b4fe; margin-right: 8px; flex-shrink: 0; }
+.btn-sample-purple::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #9f7dd0; margin-right: 8px; flex-shrink: 0; }
 
 .btn-sample-green { background: var(--color-bg-surface); border-color: #e5e7eb; }
-.btn-sample-green::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #86efac; margin-right: 8px; flex-shrink: 0; }
+.btn-sample-green::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #77bf81; margin-right: 8px; flex-shrink: 0; }
 
 
 /* Bottom section — learn more */
@@ -5181,7 +5181,7 @@ html.dark-mode mark.highlight {
 }
 
 .ghost-column-step {
-    background-color: #86efac;
+    background-color: #77bf81;
     color: #0f3d3a;
     font-weight: 600;
     padding: 12px 14px;
@@ -5759,7 +5759,7 @@ body.read-only-mode {
     max-width: 360px;
     width: min(360px, 90vw);
     border-radius: 2px;
-    background-color: #fef08a;
+    background-color: #fad875;
     overflow: hidden;
     position: relative;
     box-shadow:
@@ -6088,7 +6088,7 @@ body.read-only-mode .empty-backbone-column {
 }
 
 .selection-toolbar-split-option.active {
-    color: #93c5fd;
+    color: #45b2e1;
 }
 
 .selection-toolbar-clear {
@@ -6928,7 +6928,7 @@ body.read-only-mode .story-card.card-selected {
 }
 
 .selection-toolbar-tag-input:focus {
-    border-color: #93c5fd;
+    border-color: #45b2e1;
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
@@ -7481,7 +7481,7 @@ html.dark-mode .selection-toolbar-tag-option:hover {
     color: #fafafa;
 }
 html.dark-mode .selection-toolbar-tag-label {
-    color: #93c5fd;
+    color: #45b2e1;
 }
 html.dark-mode .selection-toolbar-status-row {
     color: #c1c2c5;
@@ -7556,7 +7556,7 @@ html.dark-mode .story-card .btn-options {
 }
 html.dark-mode .btn-delete:hover {
     background-color: #fee2e2 !important;
-    border-color: #fca5a5 !important;
+    border-color: #e84d6d !important;
 }
 
 /* Step drag handle */
@@ -7582,7 +7582,7 @@ html.dark-mode .empty-backbone-row:hover .row-type-label {
 html.dark-mode .btn-add-story {
     background-color: rgba(254, 240, 138, 0.1);
     border-color: rgba(250, 204, 21, 0.4);
-    color: #facc15;
+    color: #fad875;
 }
 html.dark-mode .btn-add-story:hover {
     background-color: rgba(254, 240, 138, 0.2);
@@ -7603,7 +7603,7 @@ html.dark-mode .users-row .btn-add-story:hover {
 html.dark-mode .activities-row .btn-add-story {
     background-color: rgba(147, 197, 253, 0.08);
     border-color: rgba(147, 197, 253, 0.4);
-    color: #93c5fd;
+    color: #45b2e1;
 }
 html.dark-mode .activities-row .btn-add-story:hover {
     background-color: rgba(147, 197, 253, 0.18);
@@ -7795,7 +7795,7 @@ html.dark-mode .partials-entry-btn:hover {
 }
 html.dark-mode .partials-entry-btn.delete:hover {
     background: rgba(239, 68, 68, 0.12);
-    color: #f87171;
+    color: #e84d6d;
 }
 html.dark-mode .partials-entry-btn.editing {
     background: rgba(45, 212, 191, 0.15);
@@ -7856,11 +7856,11 @@ html.dark-mode .canvas-context-menu {
     border-color: var(--color-border);
 }
 html.dark-mode .canvas-context-menu button.destructive {
-    color: #f87171;
+    color: #e84d6d;
 }
 html.dark-mode .canvas-context-menu button.destructive:hover {
     background: rgba(239, 68, 68, 0.12);
-    color: #fca5a5;
+    color: #e84d6d;
 }
 
 /* Selection toolbar: lift above dark page bg */
@@ -7909,7 +7909,7 @@ html.dark-mode .export-textarea:focus {
     background: var(--color-bg-surface);
 }
 html.dark-mode .import-validation-error {
-    color: #f87171;
+    color: #e84d6d;
     background: rgba(239, 68, 68, 0.1);
 }
 
@@ -7987,7 +7987,7 @@ html.dark-mode .jira-csv-warning a {
     color: var(--color-text-secondary);
 }
 html.dark-mode .jira-export-help-link {
-    color: #93c5fd;
+    color: #45b2e1;
 }
 
 /* Backup entries */
@@ -8098,7 +8098,7 @@ html.dark-mode .slice-menu-item:hover {
 }
 html.dark-mode .slice-menu-item-danger:hover {
     background-color: rgba(239, 68, 68, 0.12);
-    color: #fca5a5;
+    color: #e84d6d;
 }
 
 /* Options menu */
@@ -8111,12 +8111,12 @@ html.dark-mode .options-item:hover {
 }
 html.dark-mode .options-delete,
 html.dark-mode .options-delete-column {
-    color: #f87171;
+    color: #e84d6d;
 }
 html.dark-mode .options-delete:hover,
 html.dark-mode .options-delete-column:hover {
     background-color: rgba(239, 68, 68, 0.12);
-    color: #fca5a5;
+    color: #e84d6d;
 }
 
 /* Card expand modal overlay */
@@ -8235,7 +8235,7 @@ html.dark-mode .partial-delete-popover-btn:hover {
 }
 html.dark-mode .partial-delete-popover-btn.danger:hover {
     background: rgba(239, 68, 68, 0.12);
-    color: #f87171;
+    color: #e84d6d;
 }
 html.dark-mode .partial-delete-popover-btn.restore:hover {
     background: rgba(45, 212, 191, 0.1);
@@ -8579,9 +8579,9 @@ html.dark-mode .btn-verify {
     color: #6fc4e8;
 }
 html.dark-mode .btn-verify:hover { background: rgba(22,155,222,0.1); }
-html.dark-mode .export-verify-status.success { color: #4ade80; }
-html.dark-mode .export-verify-status.success::before { background: #4ade80; }
-html.dark-mode .export-verify-status.error { color: #f87171; }
+html.dark-mode .export-verify-status.success { color: #77bf81; }
+html.dark-mode .export-verify-status.success::before { background: #77bf81; }
+html.dark-mode .export-verify-status.error { color: #e84d6d; }
 html.dark-mode .export-verify-status.loading { color: #9ca3af; }
 html.dark-mode .spinner-sm { border-color: #4b5563; border-top-color: #45b2e1; }
 
@@ -8596,11 +8596,11 @@ html.dark-mode .export-progress-item.pending .status-icon { color: #373a40; }
 html.dark-mode .export-progress-item.creating { color: #6fc4e8; background: rgba(22,155,222,0.06); }
 html.dark-mode .export-progress-item.creating .status-icon { color: #45b2e1; }
 html.dark-mode .export-progress-item.done { color: var(--color-text-primary); }
-html.dark-mode .export-progress-item.done .status-icon { color: #4ade80; }
+html.dark-mode .export-progress-item.done .status-icon { color: #77bf81; }
 html.dark-mode .export-progress-item.done .item-result { color: #757575; }
 html.dark-mode .export-progress-item.done .item-result a { color: #45b2e1; }
-html.dark-mode .export-progress-item.failed { color: #f87171; background: rgba(220,38,38,0.06); }
-html.dark-mode .export-progress-item.failed .status-icon { color: #f87171; }
+html.dark-mode .export-progress-item.failed { color: #e84d6d; background: rgba(220,38,38,0.06); }
+html.dark-mode .export-progress-item.failed .status-icon { color: #e84d6d; }
 html.dark-mode .export-progress-item.skipped { color: #5c5f66; }
 html.dark-mode .export-progress-item.skipped .status-icon { color: #373a40; }
 
@@ -8615,7 +8615,7 @@ html.dark-mode .export-done-summary.has-failures {
     background: rgba(245,158,11,0.08);
     border-color: rgba(245,158,11,0.2);
 }
-html.dark-mode .export-done-summary.has-failures .done-text { color: #fbbf24; }
+html.dark-mode .export-done-summary.has-failures .done-text { color: #f9cd4c; }
 html.dark-mode .export-done-summary.has-failures .done-detail { color: #f59e0b; }
 
 /* ==================== Import Styles ==================== */
@@ -8891,12 +8891,12 @@ html.dark-mode .import-preview-header {
 
 html.dark-mode .import-status-badge.planned {
     background: rgba(59, 130, 246, 0.2);
-    color: #93c5fd;
+    color: #45b2e1;
 }
 
 html.dark-mode .import-status-badge.in-progress {
     background: rgba(245, 158, 11, 0.2);
-    color: #fbbf24;
+    color: #f9cd4c;
 }
 
 html.dark-mode .import-status-badge.done {

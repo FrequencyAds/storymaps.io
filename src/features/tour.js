@@ -24,13 +24,13 @@ const ensureDemoSlice = () => {
     // cols[3] = "Read instructions", cols[4] = "Build walls",
     // cols[5] = "Add doors and windows", cols[6] = "Add roof"
     const demoCards = {
-        0: [_createStory('Update box art to show two-story house', '#fef08a')],
-        2: [_createStory('Add extra pieces for second floor', '#fef08a')],
-        3: [_createStory('Update instructions for second floor', '#fef08a')],
-        4: [_createStory('Build second-floor walls', '#fef08a'),
-            _createStory('Add staircase between floors', '#fef08a')],
-        5: [_createStory('Add upper-level windows', '#fef08a')],
-        6: [_createStory('Extend roof over second floor', '#fef08a')],
+        0: [_createStory('Update box art to show two-story house', '#fad875')],
+        2: [_createStory('Add extra pieces for second floor', '#fad875')],
+        3: [_createStory('Update instructions for second floor', '#fad875')],
+        4: [_createStory('Build second-floor walls', '#fad875'),
+            _createStory('Add staircase between floors', '#fad875')],
+        5: [_createStory('Add upper-level windows', '#fad875')],
+        6: [_createStory('Extend roof over second floor', '#fad875')],
     };
     for (const [i, cards] of Object.entries(demoCards)) {
         const col = cols[Number(i)];
@@ -71,9 +71,9 @@ const ensureDemoLegendCards = () => {
     const cols = state.columns;
     // Add a Question, Note, and Edge Case card to different steps in V1
     const cards = [
-        { colIdx: 1, story: _createStory('Can kids open this alone?', '#bef264') },
-        { colIdx: 4, story: _createStory('Walls must support second floor later', '#a5f3fc') },
-        { colIdx: 5, story: _createStory('Small pieces - choking hazard for under 3s', '#fecdd3') },
+        { colIdx: 1, story: _createStory('Can kids open this alone?', '#8dd99c') },
+        { colIdx: 4, story: _createStory('Walls must support second floor later', '#30d3ef') },
+        { colIdx: 5, story: _createStory('Small pieces - choking hazard for under 3s', '#ea6582') },
     ];
     _demoLegendCards = [];
     for (const { colIdx, story } of cards) {
@@ -102,15 +102,15 @@ const removeDemoLegendCards = () => {
 };
 
 const DEMO_LOG_ENTRIES = [
-    { time: '10:42', color: '#f472b6', text: 'Sarah: Added step "Add roof"' },
-    { time: '10:40', color: '#60a5fa', text: 'Mike: Added card "Design ridge cap to seal roof"' },
-    { time: '10:38', color: '#60a5fa', text: 'Mike: Added card "Include angled roof pieces"' },
-    { time: '10:35', color: '#f472b6', text: 'Sarah: Edited notes' },
+    { time: '10:42', color: '#f584af', text: 'Sarah: Added step "Add roof"' },
+    { time: '10:40', color: '#45b2e1', text: 'Mike: Added card "Design ridge cap to seal roof"' },
+    { time: '10:38', color: '#45b2e1', text: 'Mike: Added card "Include angled roof pieces"' },
+    { time: '10:35', color: '#f584af', text: 'Sarah: Edited notes' },
     { time: '10:33', color: '#34d399', text: 'Jordan: Added card "Include window frame pieces"' },
-    { time: '10:31', color: '#f472b6', text: 'Sarah: Added step "Add doors and windows"' },
+    { time: '10:31', color: '#f584af', text: 'Sarah: Added step "Add doors and windows"' },
     { time: '10:28', color: '#34d399', text: 'Jordan: Added card "Design interlocking wall sections"' },
-    { time: '10:25', color: '#60a5fa', text: 'Mike: Added step "Start: Build walls"' },
-    { time: '10:22', color: '#f472b6', text: 'Sarah: Added card "Package pieces in numbered bags"' },
+    { time: '10:25', color: '#45b2e1', text: 'Mike: Added step "Start: Build walls"' },
+    { time: '10:22', color: '#f584af', text: 'Sarah: Added card "Package pieces in numbered bags"' },
     { time: '10:18', color: '#34d399', text: 'Jordan: Created map' },
 ];
 

@@ -241,7 +241,7 @@ const makeMenuItem = (label, icon, action, destructive = false) => {
 const ICON_ADD_SPACER = '<line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/>';
 const ICON_DELETE = '<polyline points="3 5 4 13 12 13 13 5"/><line x1="2" y1="5" x2="14" y2="5"/><line x1="6" y1="3" x2="10" y2="3"/>';
 const ICON_DUPLICATE = '<rect x="3" y="3" width="8" height="10" rx="1.5"/><path d="M6 3V2.5A1.5 1.5 0 0 1 7.5 1H12a1.5 1.5 0 0 1 1.5 1.5V11A1.5 1.5 0 0 1 12 12.5H11"/>';
-const ICON_INSERT_PARTIAL = '<rect x="2" y="2" width="5" height="5" rx="0.7" fill="#fef08a" stroke="#d4aa00" stroke-width="0.7"/><rect x="9" y="2" width="5" height="5" rx="0.7" fill="#fecdd3" stroke="#e88a9a" stroke-width="0.7"/><rect x="2" y="9" width="5" height="5" rx="0.7" fill="#a5f3fc" stroke="#67c5d6" stroke-width="0.7"/><rect x="9" y="9" width="5" height="5" rx="0.7" fill="#14b8a6" stroke="#0d9488" stroke-width="0.7"/>';
+const ICON_INSERT_PARTIAL = '<rect x="2" y="2" width="5" height="5" rx="0.7" fill="#fad875" stroke="#d4aa00" stroke-width="0.7"/><rect x="9" y="2" width="5" height="5" rx="0.7" fill="#ea6582" stroke="#e88a9a" stroke-width="0.7"/><rect x="2" y="9" width="5" height="5" rx="0.7" fill="#30d3ef" stroke="#67c5d6" stroke-width="0.7"/><rect x="9" y="9" width="5" height="5" rx="0.7" fill="#14b8a6" stroke="#0d9488" stroke-width="0.7"/>';
 
 const addSep = (menu) => {
     const sep = document.createElement('div');

@@ -272,7 +272,7 @@ export const initSortable = async () => {
                         const slice = _state.slices.find(s => s.id === sliceId);
                         story = slice?.stories[columnId]?.find(s => s.id === storyId);
                     }
-                    _broadcastDragStart({ type: 'story', storyId, color: story?.color || '#fef08a' });
+                    _broadcastDragStart({ type: 'story', storyId, color: story?.color || '#fad875' });
                 }
             },
             onEnd: (evt) => {
@@ -382,7 +382,7 @@ export const initSortable = async () => {
 
                 if (_broadcastDragStart) {
                     const col = _state.columns.find(c => c.id === dragColumnId);
-                    _broadcastDragStart({ type: 'column', columnId: dragColumnId, color: col?.color || '#86efac' });
+                    _broadcastDragStart({ type: 'column', columnId: dragColumnId, color: col?.color || '#77bf81' });
                 }
 
                 evt.item.classList.add('column-being-dragged');
@@ -623,7 +623,7 @@ export const updateSelectionUI = () => {
             const nonRefSelected = selectedCols.filter(c => !c.partialMapId);
             if (nonRefSelected.length >= 2) {
                 const nonRefIds = nonRefSelected.map(c => c.id);
-                const partialIcon = '<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" fill="#fef08a" stroke="#d4aa00" stroke-width="1"/><rect x="14" y="3" width="7" height="7" rx="1" fill="#fecdd3" stroke="#e88a9a" stroke-width="1"/><rect x="3" y="14" width="7" height="7" rx="1" fill="#a5f3fc" stroke="#67c5d6" stroke-width="1"/><rect x="14" y="14" width="7" height="7" rx="1" fill="#14b8a6" stroke="#0d9488" stroke-width="1"/></svg>';
+                const partialIcon = '<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" fill="#fad875" stroke="#d4aa00" stroke-width="1"/><rect x="14" y="3" width="7" height="7" rx="1" fill="#ea6582" stroke="#e88a9a" stroke-width="1"/><rect x="3" y="14" width="7" height="7" rx="1" fill="#30d3ef" stroke="#67c5d6" stroke-width="1"/><rect x="14" y="14" width="7" height="7" rx="1" fill="#14b8a6" stroke="#0d9488" stroke-width="1"/></svg>';
                 const modes = [
                     { label: 'Create Map Partial', html: partialIcon + 'Create Map Partial', action: async () => {
                         const name = await showPrompt('Name this Map Partial:');
