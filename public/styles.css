@@ -1852,6 +1852,7 @@ input.partials-entry-name-input:focus {
 
 /* Backbone rows (Users, Activities) */
 .users-row,
+.contexts-row,
 .activities-row,
 .backbone-row {
     display: flex;
@@ -2041,6 +2042,7 @@ input.partials-entry-name-input:focus {
 }
 
 .users-row:hover .row-label-container .btn-delete,
+.contexts-row:hover .row-label-container .btn-delete,
 .activities-row:hover .row-label-container .btn-delete,
 .backbone-row:hover .row-label-container .btn-delete {
     opacity: 1;
@@ -2198,6 +2200,7 @@ body.main-menu-open .step:hover {
 
 /* Slim add buttons for backbone rows */
 .users-row .btn-add-story,
+.contexts-row .btn-add-story,
 .activities-row .btn-add-story,
 .backbone-row .btn-add-story {
     min-height: 15px;
@@ -2219,6 +2222,17 @@ body.main-menu-open .step:hover {
 .users-row .btn-add-story:hover {
     background-color: rgba(253, 164, 175, 0.5);
     border-color: #fda4af;
+}
+
+.contexts-row .btn-add-story {
+    background-color: rgba(159, 125, 208, 0.25);
+    border-color: rgba(159, 125, 208, 0.55);
+    color: #5d3f95;
+}
+
+.contexts-row .btn-add-story:hover {
+    background-color: rgba(159, 125, 208, 0.45);
+    border-color: #9f7dd0;
 }
 
 .activities-row .btn-add-story {
@@ -7667,6 +7681,16 @@ html.dark-mode .users-row .btn-add-story:hover {
     background-color: rgba(253, 164, 175, 0.18);
     border-color: rgba(253, 164, 175, 0.7);
     box-shadow: 0 0 10px rgba(253, 164, 175, 0.15);
+}
+html.dark-mode .contexts-row .btn-add-story {
+    background-color: rgba(159, 125, 208, 0.1);
+    border-color: rgba(159, 125, 208, 0.4);
+    color: #b89dda;
+}
+html.dark-mode .contexts-row .btn-add-story:hover {
+    background-color: rgba(159, 125, 208, 0.2);
+    border-color: rgba(159, 125, 208, 0.7);
+    box-shadow: 0 0 10px rgba(159, 125, 208, 0.15);
 }
 html.dark-mode .activities-row .btn-add-story {
     background-color: rgba(147, 197, 253, 0.08);

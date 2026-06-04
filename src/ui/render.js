@@ -116,8 +116,9 @@ export const render = () => {
     const expandedIds = partialMapEditState.expandedIds;
     const hasAnyExpanded = expandedIds.size > 0 && !editingPmId;
 
-    // Check if users/activities have any cards (include partial map data when preview expanded)
+    // Check if users/contexts/activities have any cards (include partial map data when preview expanded)
     let hasUsersContent = Object.values(_state.users).some(cards => cards.length > 0);
+    let hasContextsContent = Object.values(_state.contexts).some(cards => cards.length > 0);
     let hasActivitiesContent = Object.values(_state.activities).some(cards => cards.length > 0);
     if (hasAnyExpanded) {
         hasUsersContent = hasUsersContent || _state.partialMaps.some(pm => expandedIds.has(pm.id) && Object.values(pm.users || {}).some(cards => cards.length > 0));
@@ -129,6 +130,13 @@ export const render = () => {
         _dom.storyMap.appendChild(createBackboneRow('Users', _state.users));
     } else {
         _dom.storyMap.appendChild(createEmptyBackboneRow('Users'));
+    }
+
+    // Render Contexts row (when/triggers — between Users and Activities)
+    if (hasContextsContent) {
+        _dom.storyMap.appendChild(createBackboneRow('Contexts', _state.contexts));
+    } else {
+        _dom.storyMap.appendChild(createEmptyBackboneRow('Contexts'));
     }
 
     // Render Activities row
@@ -266,6 +274,8 @@ export const initSortable = async () => {
                     let story;
                     if (rowType === 'users') {
                         story = _state.users[columnId]?.find(s => s.id === storyId);
+                    } else if (rowType === 'contexts') {
+                        story = _state.contexts[columnId]?.find(s => s.id === storyId);
                     } else if (rowType === 'activities') {
                         story = _state.activities[columnId]?.find(s => s.id === storyId);
                     } else {
@@ -856,12 +866,14 @@ export const duplicateColumns = () => {
 
     _state.columns.splice(lastSelectedIdx + 1, 0, ...newColumns);
 
-    // Copy users/activities for new columns
+    // Copy users/contexts/activities for new columns
     _state.users[spacerCol.id] = [];
+    _state.contexts[spacerCol.id] = [];
     _state.activities[spacerCol.id] = [];
     selectedIds.forEach(oldId => {
         const newId = idMap[oldId];
         _state.users[newId] = (_state.users[oldId] || []).map(card => ({ ...card, id: generateId(), tags: [...(card.tags || [])] }));
+        _state.contexts[newId] = (_state.contexts[oldId] || []).map(card => ({ ...card, id: generateId(), tags: [...(card.tags || [])] }));
         _state.activities[newId] = (_state.activities[oldId] || []).map(card => ({ ...card, id: generateId(), tags: [...(card.tags || [])] }));
     });
 
@@ -935,15 +947,16 @@ export const duplicateCards = () => {
 
     _state.columns.splice(lastSelectedIdx + 1, 0, ...newColumns);
 
-    // Build users/activities/stories for new columns
+    // Build users/contexts/activities/stories for new columns
     _state.users[spacerCol.id] = [];
+    _state.contexts[spacerCol.id] = [];
     _state.activities[spacerCol.id] = [];
 
     for (const newCol of newColumns.slice(1)) {
         const { oldId, cards } = columnCardMap.get(newCol.id);
 
         // Copy backbone row cards if any story clicks target them
-        for (const [rowKey, cardMap] of [['users', _state.users], ['activities', _state.activities]]) {
+        for (const [rowKey, cardMap] of [['users', _state.users], ['contexts', _state.contexts], ['activities', _state.activities]]) {
             const rowClicks = cards.filter(c => c.type === 'story' && c.rowType === rowKey);
             if (rowClicks.length > 0) {
                 const originalCards = cardMap[oldId] || [];
@@ -1038,6 +1051,7 @@ export const deleteSelectedColumns = async () => {
     _state.columns = _state.columns.filter(c => !regularIds.includes(c.id));
     regularIds.forEach(id => {
         delete _state.users[id];
+        delete _state.contexts[id];
         delete _state.activities[id];
     });
     _state.slices.forEach(slice => {
@@ -1058,6 +1072,7 @@ export const deleteSelectedColumns = async () => {
     _state.columns = _state.columns.filter(c => !refIds.includes(c.id));
     refIds.forEach(id => {
         delete _state.users[id];
+        delete _state.contexts[id];
         delete _state.activities[id];
         _state.slices.forEach(slice => delete slice.stories[id]);
     });
@@ -1073,6 +1088,7 @@ export const deleteSelectedColumns = async () => {
         const col = _createColumn('New Step', CARD_COLORS.green, null, false);
         _state.columns.push(col);
         _state.users[col.id] = [];
+        _state.contexts[col.id] = [];
         _state.activities[col.id] = [];
         _state.slices.forEach(slice => slice.stories[col.id] = []);
     }
@@ -1113,6 +1129,9 @@ export const deleteSelectedCards = async () => {
     for (const colId of Object.keys(_state.users)) {
         _state.users[colId] = _state.users[colId].filter(s => !storyIds.has(s.id));
     }
+    for (const colId of Object.keys(_state.contexts)) {
+        _state.contexts[colId] = _state.contexts[colId].filter(s => !storyIds.has(s.id));
+    }
     for (const colId of Object.keys(_state.activities)) {
         _state.activities[colId] = _state.activities[colId].filter(s => !storyIds.has(s.id));
     }
@@ -1129,6 +1148,7 @@ export const deleteSelectedCards = async () => {
             const col = _state.columns.find(c => c.id === colId);
             if (!col || !col.hidden) return false;
             if ((_state.users[colId] || []).length > 0) return false;
+            if ((_state.contexts[colId] || []).length > 0) return false;
             if ((_state.activities[colId] || []).length > 0) return false;
             return !_state.slices.some(slice => (slice.stories[colId] || []).length > 0);
         });
@@ -1139,6 +1159,7 @@ export const deleteSelectedCards = async () => {
             _state.columns = _state.columns.filter(c => !emptyColIds.includes(c.id));
             emptyColIds.forEach(id => {
                 delete _state.users[id];
+                delete _state.contexts[id];
                 delete _state.activities[id];
                 _state.slices.forEach(slice => delete slice.stories[id]);
             });
@@ -1158,10 +1179,15 @@ const getItemForCard = (card) => {
     if (card.type === 'step') {
         return _state.columns.find(c => c.id === card.columnId);
     } else if (card.type === 'story' && card.storyId) {
-        // Check users and activities first
+        // Check users, contexts and activities first
         const usersCards = _state.users[card.columnId];
         if (usersCards) {
             const found = usersCards.find(s => s.id === card.storyId);
+            if (found) return found;
+        }
+        const contextsCards = _state.contexts[card.columnId];
+        if (contextsCards) {
+            const found = contextsCards.find(s => s.id === card.storyId);
             if (found) return found;
         }
         const activitiesCards = _state.activities[card.columnId];
@@ -1270,6 +1296,7 @@ export const addColumn = (hidden = true) => {
     const column = _createColumn('', CARD_COLORS.green, null, hidden);
     _state.columns.push(column);
     _state.users[column.id] = [];
+    _state.contexts[column.id] = [];
     _state.activities[column.id] = [];
     _state.slices.forEach(slice => slice.stories[column.id] = []);
     if (!hidden) _logEvent?.(`Added step${quoted(column.name)}`, [column.id]);
@@ -1291,6 +1318,7 @@ export const addColumnAt = (index, hidden = false) => {
     const column = _createColumn('', CARD_COLORS.green, null, hidden);
     _state.columns.splice(index, 0, column);
     _state.users[column.id] = [];
+    _state.contexts[column.id] = [];
     _state.activities[column.id] = [];
     _state.slices.forEach(slice => slice.stories[column.id] = []);
     if (!hidden) _logEvent?.(`Added step${quoted(column.name)}`, [column.id]);
@@ -1308,6 +1336,11 @@ export const addStory = (columnId, sliceId, rowType = null, { skipFocus = false 
         color = DEFAULT_CARD_COLORS.Users;
         _state.users[columnId].push(_createStory('', color));
         storiesArray = _state.users[columnId];
+    } else if (rowType === 'contexts') {
+        _state.contexts[columnId] = _state.contexts[columnId] || [];
+        color = DEFAULT_CARD_COLORS.Context;
+        _state.contexts[columnId].push(_createStory('', color));
+        storiesArray = _state.contexts[columnId];
     } else if (rowType === 'activities') {
         _state.activities[columnId] = _state.activities[columnId] || [];
         color = DEFAULT_CARD_COLORS.Activities;
@@ -1324,6 +1357,7 @@ export const addStory = (columnId, sliceId, rowType = null, { skipFocus = false 
 
     const newStory = storiesArray[storiesArray.length - 1];
     const addLabel = rowType === 'users' ? 'Added user card'
+                   : rowType === 'contexts' ? 'Added context card'
                    : rowType === 'activities' ? 'Added activity card'
                    : 'Added card';
     _logEvent?.(`${addLabel}${quoted(newStory.name)}`, [newStory.id]);
@@ -1383,6 +1417,7 @@ export const deleteColumn = async (columnId) => {
             if (col.partialMapOrigin) otherRefs[0].partialMapOrigin = true;
             _state.columns = _state.columns.filter(c => c.id !== columnId);
             delete _state.users[columnId];
+            delete _state.contexts[columnId];
             delete _state.activities[columnId];
             _state.slices.forEach(slice => delete slice.stories[columnId]);
             _logEvent?.(`Deleted step${quoted(col.name)}`);
@@ -1400,6 +1435,7 @@ export const deleteColumn = async (columnId) => {
     _pushUndo();
     _state.columns.splice(index, 1);
     delete _state.users[columnId];
+    delete _state.contexts[columnId];
     delete _state.activities[columnId];
     _state.slices.forEach(slice => delete slice.stories[columnId]);
     _logEvent?.(`Deleted step${quoted(col.name)}`);
@@ -1410,6 +1446,8 @@ export const deleteStory = (columnId, sliceId, storyId, rowType = null) => {
     let stories;
     if (rowType === 'users') {
         stories = _state.users[columnId];
+    } else if (rowType === 'contexts') {
+        stories = _state.contexts[columnId];
     } else if (rowType === 'activities') {
         stories = _state.activities[columnId];
     } else {
@@ -1430,6 +1468,7 @@ export const deleteStory = (columnId, sliceId, storyId, rowType = null) => {
 
 const getStoriesArray = (columnId, sliceId, rowType) => {
     if (rowType === 'users') return _state.users[columnId];
+    if (rowType === 'contexts') return _state.contexts[columnId];
     if (rowType === 'activities') return _state.activities[columnId];
     const slice = _state.slices.find(s => s.id === sliceId);
     return slice?.stories[columnId];
@@ -1439,6 +1478,10 @@ const ensureStoriesArray = (columnId, sliceId, rowType) => {
     if (rowType === 'users') {
         if (!_state.users[columnId]) _state.users[columnId] = [];
         return _state.users[columnId];
+    }
+    if (rowType === 'contexts') {
+        if (!_state.contexts[columnId]) _state.contexts[columnId] = [];
+        return _state.contexts[columnId];
     }
     if (rowType === 'activities') {
         if (!_state.activities[columnId]) _state.activities[columnId] = [];

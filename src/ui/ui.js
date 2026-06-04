@@ -83,6 +83,9 @@ export const getAllTagsInMap = () => {
     Object.values(_state.users || {}).forEach(cards => {
         cards.forEach(s => (s.tags || []).forEach(t => tags.add(t)));
     });
+    Object.values(_state.contexts || {}).forEach(cards => {
+        cards.forEach(s => (s.tags || []).forEach(t => tags.add(t)));
+    });
     Object.values(_state.activities || {}).forEach(cards => {
         cards.forEach(s => (s.tags || []).forEach(t => tags.add(t)));
     });
@@ -830,6 +833,8 @@ export const createStoryCard = (story, columnId, sliceId, isBackboneRow = false,
     let placeholderText = 'Task or Detail...';
     if (rowType === 'Users') {
         placeholderText = 'e.g. admin, customer, client';
+    } else if (rowType === 'Contexts') {
+        placeholderText = 'e.g. live during call, follow-up, RFP';
     } else if (rowType === 'Activities') {
         placeholderText = 'Activity...';
     } else if (isBackboneRow) {
@@ -899,6 +904,8 @@ export const createStoryColumn = (col, slice, rowType = null) => {
     let cards;
     if (rowType === 'users') {
         cards = _state.users[col.id] || [];
+    } else if (rowType === 'contexts') {
+        cards = _state.contexts[col.id] || [];
     } else if (rowType === 'activities') {
         cards = _state.activities[col.id] || [];
     } else {
@@ -906,8 +913,9 @@ export const createStoryColumn = (col, slice, rowType = null) => {
         cards = slice.stories[col.id];
     }
 
+    const rowLabel = rowType === 'users' ? 'Users' : rowType === 'contexts' ? 'Contexts' : rowType === 'activities' ? 'Activities' : null;
     cards.forEach(story => {
-        columnEl.appendChild(createStoryCard(story, col.id, slice?.id || null, isBackboneRow, rowType === 'users' ? 'Users' : rowType === 'activities' ? 'Activities' : null, rowType));
+        columnEl.appendChild(createStoryCard(story, col.id, slice?.id || null, isBackboneRow, rowLabel, rowType));
     });
 
     // For backbone rows with no cards, make column clickable to add a card
@@ -935,6 +943,7 @@ export const createStoryColumn = (col, slice, rowType = null) => {
 export const createEmptyBackboneRow = (rowType) => {
     const rowTypeKey = rowType.toLowerCase(); // 'users' or 'activities'
     const containerClass = rowType === 'Users' ? 'users-row empty-backbone-row' :
+                           rowType === 'Contexts' ? 'contexts-row empty-backbone-row' :
                            rowType === 'Activities' ? 'activities-row empty-backbone-row' :
                            'backbone-row empty-backbone-row';
     const container = el('div', containerClass);
@@ -957,7 +966,7 @@ export const createEmptyBackboneRow = (rowType) => {
             if (hasAnyExpandedBR && expandedIdsBR.has(col.partialMapId)) {
                 const pm = _state.partialMaps.find(p => p.id === col.partialMapId);
                 if (pm) {
-                    const pmCardMap = rowTypeKey === 'users' ? pm.users : pm.activities;
+                    const pmCardMap = rowTypeKey === 'users' ? pm.users : rowTypeKey === 'contexts' ? pm.contexts : pm.activities;
                     pm.columns.forEach(pmCol => {
                         const cards = (pmCardMap || {})[pmCol.id] || [];
                         if (cards.length > 0) {
@@ -1008,8 +1017,9 @@ export const createEmptyBackboneRow = (rowType) => {
 };
 
 export const createBackboneRow = (rowType, cardMap) => {
-    const rowTypeKey = rowType.toLowerCase(); // 'users' or 'activities'
+    const rowTypeKey = rowType.toLowerCase(); // 'users' | 'contexts' | 'activities'
     const containerClass = rowType === 'Users' ? 'users-row' :
+                           rowType === 'Contexts' ? 'contexts-row' :
                            rowType === 'Activities' ? 'activities-row' :
                            'backbone-row';
     const container = el('div', containerClass);
@@ -1032,7 +1042,7 @@ export const createBackboneRow = (rowType, cardMap) => {
             if (hasAnyExpandedBK && expandedIdsBK.has(col.partialMapId)) {
                 const pm = _state.partialMaps.find(p => p.id === col.partialMapId);
                 if (pm) {
-                    const pmCardMap = rowTypeKey === 'users' ? pm.users : pm.activities;
+                    const pmCardMap = rowTypeKey === 'users' ? pm.users : rowTypeKey === 'contexts' ? pm.contexts : pm.activities;
                     pm.columns.forEach(pmCol => {
                         const cards = (pmCardMap || {})[pmCol.id] || [];
                         if (cards.length > 0) {

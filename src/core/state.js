@@ -12,6 +12,7 @@ export const state = {
     tags: [],
     columns: [],
     users: {},
+    contexts: {},
     activities: {},
     slices: [],
     legend: [],
@@ -62,6 +63,7 @@ const snapshotState = () => JSON.stringify({
     tags: state.tags,
     columns: state.columns.map(c => { const { _editingHidden, _partialBlank, ...rest } = c; return rest; }),
     users: cloneCardMap(state.users),
+    contexts: cloneCardMap(state.contexts),
     activities: cloneCardMap(state.activities),
     slices: state.slices.map(s => ({
         ...s,
@@ -91,6 +93,7 @@ const restoreSnapshot = (json) => {
     state.tags = snap.tags || [];
     state.columns = snap.columns;
     state.users = snap.users;
+    state.contexts = snap.contexts || {};
     state.activities = snap.activities;
     state.slices = snap.slices;
     state.legend = snap.legend;
@@ -156,8 +159,8 @@ const findChangedPositions = (before, after) => {
         }
     }
 
-    // Compare users/activities backbone rows
-    for (const rowKey of ['users', 'activities']) {
+    // Compare users/contexts/activities backbone rows
+    for (const rowKey of ['users', 'contexts', 'activities']) {
         const bRow = before[rowKey] || [];
         const aRow = after[rowKey] || [];
         for (let ci = 0; ci < maxCols; ci++) {
@@ -220,7 +223,7 @@ const highlightChangedElements = (changes) => {
         const col = state.columns[colIdx];
         if (!col || selectedColIds.has(col.id)) return;
 
-        const rowClass = row === 'users' ? '.users-row' : '.activities-row';
+        const rowClass = row === 'users' ? '.users-row' : row === 'contexts' ? '.contexts-row' : '.activities-row';
         const rowEl = _dom.storyMap.querySelector(rowClass);
         if (!rowEl) return;
 
@@ -274,6 +277,7 @@ export const initState = () => {
     partialMapEditState.expandedIds.clear();
     partialMapEditState.editingColIds.clear();
     state.users = { [column.id]: [createStory('User Type', '#e84d6d')] };
+    state.contexts = { [column.id]: [createStory('When / Trigger', '#9f7dd0')] };
     state.activities = { [column.id]: [createStory('New Activity', '#45b2e1')] };
     state.legend = [
         { id: generateId(), color: CARD_COLORS.yellow, label: 'Tasks' },
@@ -292,6 +296,9 @@ export const hasContent = () => {
     if (state.columns.some(s => s.name)) return true;
     if (state.partialMaps.length > 0) return true;
     for (const cards of Object.values(state.users)) {
+        if (cards.length > 0) return true;
+    }
+    for (const cards of Object.values(state.contexts)) {
         if (cards.length > 0) return true;
     }
     for (const cards of Object.values(state.activities)) {

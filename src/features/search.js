@@ -59,6 +59,11 @@ export const getItemForStoryCard = (card) => {
         }
         return undefined;
     }
+    if (rowType === 'contexts') {
+        const main = state.contexts[colId]?.find(s => s.id === storyId);
+        if (main) return main;
+        return undefined;
+    }
     if (rowType === 'activities') {
         const main = state.activities[colId]?.find(s => s.id === storyId);
         if (main) return main;
@@ -133,6 +138,7 @@ const getUsedStatusesAndColors = () => {
         });
     };
     Object.values(state.users || {}).forEach(addFromCards);
+    Object.values(state.contexts || {}).forEach(addFromCards);
     Object.values(state.activities || {}).forEach(addFromCards);
     state.slices.forEach(slice => {
         Object.values(slice.stories || {}).forEach(addFromCards);

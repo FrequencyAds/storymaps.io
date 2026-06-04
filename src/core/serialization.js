@@ -55,6 +55,7 @@ export const serialize = () => ({
     ...(state.mapId && { id: state.mapId }),
     site: window.location.hostname,
     users: state.columns.map(col => (state.users[col.id] || []).map(serializeCard)),
+    contexts: state.columns.map(col => (state.contexts[col.id] || []).map(serializeCard)),
     activities: state.columns.map(col => (state.activities[col.id] || []).map(serializeCard)),
     steps: state.columns.map(col => {
         if (col.partialMapId) {
@@ -104,6 +105,13 @@ const deserializeV1 = (data) => {
     const usersArr = Array.isArray(data.users) ? data.users : [];
     state.columns.forEach((col, i) => {
         state.users[col.id] = (usersArr[i] || []).map(deserializeCard);
+    });
+
+    // Contexts: positional array → keyed by column ID
+    state.contexts = {};
+    const contextsArr = Array.isArray(data.contexts) ? data.contexts : [];
+    state.columns.forEach((col, i) => {
+        state.contexts[col.id] = (contextsArr[i] || []).map(deserializeCard);
     });
 
     // Activities: positional array → keyed by column ID
@@ -169,9 +177,11 @@ const deserializeLegacy = (data) => {
 
     // Extract Users/Activities from legacy slices, put remaining into release slices
     state.users = {};
+    state.contexts = {};
     state.activities = {};
     state.columns.forEach(col => {
         state.users[col.id] = [];
+        state.contexts[col.id] = [];
         state.activities[col.id] = [];
     });
 
@@ -225,15 +235,18 @@ export const appendImport = (data) => {
     // Initialize spacer column with empty arrays
     if (spacer) {
         state.users[spacer.id] = [];
+        state.contexts[spacer.id] = [];
         state.activities[spacer.id] = [];
         state.slices.forEach(s => { s.stories[spacer.id] = []; });
     }
 
     // Append users/activities for new columns (existing ones untouched)
     const usersArr = Array.isArray(data.users) ? data.users : [];
+    const contextsArr = Array.isArray(data.contexts) ? data.contexts : [];
     const activitiesArr = Array.isArray(data.activities) ? data.activities : [];
     newCols.forEach((col, i) => {
         state.users[col.id] = (usersArr[i] || []).map(deserializeCard);
+        state.contexts[col.id] = (contextsArr[i] || []).map(deserializeCard);
         state.activities[col.id] = (activitiesArr[i] || []).map(deserializeCard);
     });
 
