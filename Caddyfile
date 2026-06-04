@@ -1,4 +1,4 @@
-storymaps.io {
+storymap.frequency.media {
     header {
         # HTTPS only, including subdomains, for one year.
         Strict-Transport-Security "max-age=31536000; includeSubDomains"
@@ -17,6 +17,6 @@ storymaps.io {
     reverse_proxy app:8080
 }
 
-www.storymaps.io {
-    redir https://storymaps.io{uri} permanent
+storymaps.frequency.media {
+    redir https://storymap.frequency.media{uri} permanent
 }
