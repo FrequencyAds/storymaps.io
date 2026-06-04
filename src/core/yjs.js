@@ -27,6 +27,7 @@ const stateHash = () => JSON.stringify([
     _state.tags,
     _state.columns,
     _state.users,
+    _state.contexts,
     _state.activities,
     _state.slices,
     _state.legend,
@@ -243,10 +244,14 @@ export const syncFromYjs = () => {
         }
     }
 
-    // Read users/activities from their own Yjs maps
+    // Read users/contexts/activities from their own Yjs maps
     const yUsers = ymap.get('users');
     if (yUsers) {
         _state.users = readBackboneRowFromYjs(yUsers);
+    }
+    const yContexts = ymap.get('contexts');
+    if (yContexts) {
+        _state.contexts = readBackboneRowFromYjs(yContexts);
     }
     const yActivities = ymap.get('activities');
     if (yActivities) {
@@ -256,6 +261,7 @@ export const syncFromYjs = () => {
     // Ensure all columns have entries
     _state.columns.forEach(col => {
         if (!_state.users[col.id]) _state.users[col.id] = [];
+        if (!_state.contexts[col.id]) _state.contexts[col.id] = [];
         if (!_state.activities[col.id]) _state.activities[col.id] = [];
     });
 
@@ -489,6 +495,13 @@ export const syncToYjs = () => {
             ymap.set('users', yUsers);
         }
         syncBackboneRow(yUsers, _state.users, _state.columns);
+
+        let yContexts = ymap.get('contexts');
+        if (!yContexts || typeof yContexts.forEach !== 'function') {
+            yContexts = new Y.Map();
+            ymap.set('contexts', yContexts);
+        }
+        syncBackboneRow(yContexts, _state.contexts, _state.columns);
 
         let yActivities = ymap.get('activities');
         if (!yActivities || typeof yActivities.forEach !== 'function') {

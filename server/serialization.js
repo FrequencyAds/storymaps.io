@@ -5,6 +5,7 @@ export const serializeDoc = (doc) => {
   const ymap = doc.getMap('storymap');
   const columns = ymap.get('columns')?.toJSON() || [];
   const usersMap = ymap.get('users')?.toJSON() || {};
+  const contextsMap = ymap.get('contexts')?.toJSON() || {};
   const activitiesMap = ymap.get('activities')?.toJSON() || {};
   const slicesArr = ymap.get('slices')?.toJSON() || [];
   const legendArr = ymap.get('legend')?.toJSON() || [];
@@ -31,6 +32,7 @@ export const serializeDoc = (doc) => {
     name: ymap.get('name') || '',
     tags: Array.isArray(ymap.get('tags')) ? ymap.get('tags') : [],
     users: toPositional(usersMap),
+    contexts: toPositional(contextsMap),
     activities: toPositional(activitiesMap),
     steps: columns.map(col => {
       if (col.partialMapId) {
@@ -133,9 +135,9 @@ export const diffPush = (oldSnapshot, body, newDoc) => {
   const newSteps = (body.steps || []).filter(s => !s.partialMapId).length;
   const oldSlices = old.slices?.length || 0;
   const newSlices = (body.slices || []).length;
-  const oldCards = flat(old.users) + flat(old.activities)
+  const oldCards = flat(old.users) + flat(old.contexts) + flat(old.activities)
     + (old.slices || []).reduce((n, s) => n + flat(s.stories), 0);
-  const newCards = flat(body.users) + flat(body.activities)
+  const newCards = flat(body.users) + flat(body.contexts) + flat(body.activities)
     + (body.slices || []).reduce((n, s) => n + flat(s.stories), 0);
 
   const parts = [];
@@ -172,6 +174,7 @@ export const diffPush = (oldSnapshot, body, newDoc) => {
     const j = (v) => JSON.stringify(v ?? []);
     if (j(old.steps) !== j(body.steps)) parts.push('edited steps');
     if (j(old.users) !== j(body.users)) parts.push('edited user cards');
+    if (j(old.contexts) !== j(body.contexts)) parts.push('edited context cards');
     if (j(old.activities) !== j(body.activities)) parts.push('edited activity cards');
     if (j(old.slices) !== j(body.slices)) {
       const renamed = countRenames(old.slices, body.slices);
@@ -211,6 +214,7 @@ export const diffPush = (oldSnapshot, body, newDoc) => {
     });
   };
   diffCards(old.users, body.users, 'users');
+  diffCards(old.contexts, body.contexts, 'contexts');
   diffCards(old.activities, body.activities, 'activities');
 
   // Diff slice story cards
@@ -300,6 +304,16 @@ export const writeDocFromJson = (doc, data, Y) => {
       yUsers.set(columns[i].id, yArr);
     });
     ymap.set('users', yUsers);
+
+    // Contexts
+    const yContexts = new Y.Map();
+    (data.contexts || []).forEach((cards, i) => {
+      if (i >= columns.length) return;
+      const yArr = new Y.Array();
+      (cards || []).forEach(card => yArr.push([makeYCard(card)]));
+      yContexts.set(columns[i].id, yArr);
+    });
+    ymap.set('contexts', yContexts);
 
     // Activities
     const yActivities = new Y.Map();
@@ -395,5 +409,5 @@ export const countCards = (snapshot) => {
   const flat = (arr) => Array.isArray(arr) ? arr.reduce((n, a) => n + (Array.isArray(a) ? a.length : 0), 0) : 0;
   const steps = Array.isArray(snapshot.steps) ? snapshot.steps.filter(s => s.name && !s.partialMapId).length : 0;
   const stories = Array.isArray(snapshot.slices) ? snapshot.slices.reduce((n, s) => n + flat(s.stories), 0) : 0;
-  return steps + flat(snapshot.users) + flat(snapshot.activities) + stories;
+  return steps + flat(snapshot.users) + flat(snapshot.contexts) + flat(snapshot.activities) + stories;
 };

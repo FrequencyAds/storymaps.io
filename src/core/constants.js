@@ -41,6 +41,7 @@ export const CARD_COLORS = {
 // Default colors for card types (references CARD_COLORS values)
 export const DEFAULT_CARD_COLORS = {
     Users: '#e84d6d',       // red
+    Context: '#9f7dd0',     // purple
     Activities: '#45b2e1',  // blue
     story: '#fad875'        // yellow
 };
