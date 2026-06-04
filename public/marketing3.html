@@ -67,9 +67,8 @@
     })();
     </script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Geist:wght@400;500&display=swap" rel="stylesheet" crossorigin="anonymous">
+    <link rel="stylesheet" href="/fonts.css">
+    <link rel="stylesheet" href="/brand.css">
 
     <style>
         /* ── Reset & Base ── */
@@ -77,22 +76,22 @@
         html { scroll-behavior: smooth; }
 
         :root {
-            --teal: #14b8a6;
-            --teal-dark: #0d9488;
-            --teal-light: #99f6e4;
+            --teal: var(--brand-blue);
+            --teal-dark: var(--brand-blue-dark);
+            --teal-light: var(--brand-blue-1);
             --yellow: #fef08a;
-            --pink: #fecdd3;
-            --cyan: #a5f3fc;
+            --pink: var(--brand-violet-0);
+            --cyan: var(--brand-blue-0);
             --bg: #ffffff;
             --bg-card: #ffffff;
             --bg-card-hover: #ffffff;
             --bg-nav: rgba(255, 255, 255, 0.82);
-            --bg-hero: radial-gradient(ellipse at 50% 0%, rgba(204, 251, 241, 0.5) 0%, transparent 60%);
-            --bg-cta: linear-gradient(135deg, #0d9488 0%, #14b8a6 50%, #2dd4bf 100%);
-            --bg-quote: #f0fdfa;
+            --bg-hero: radial-gradient(ellipse at 50% 0%, rgba(179, 224, 242, 0.5) 0%, transparent 60%);
+            --bg-cta: var(--grad-frequency-alive);
+            --bg-quote: #e7f5fb;
             --text: #334155;
-            --text-heading: #0f172a;
-            --text-muted: #64748b;
+            --text-heading: var(--brand-text);
+            --text-muted: var(--brand-text-secondary);
             --text-on-teal: #ffffff;
             --border: #ebebeb;
             --border-card: #ebebeb;
@@ -102,8 +101,8 @@
             --shadow-screenshot: 0 20px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);
             --radius: 20px;
             --radius-lg: 24px;
-            --font-heading: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            --font-body: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-heading: var(--brand-font-heading);
+            --font-body: var(--brand-font-body);
         }
 
         html.dark-mode {
@@ -111,12 +110,12 @@
             --bg-card: #1e293b;
             --bg-card-hover: #253347;
             --bg-nav: rgba(15, 23, 42, 0.85);
-            --bg-hero: radial-gradient(ellipse at 50% 0%, rgba(13, 148, 136, 0.15) 0%, transparent 60%);
-            --bg-cta: linear-gradient(135deg, #0d5c54 0%, #0d9488 50%, #14b8a6 100%);
-            --bg-quote: #132824;
+            --bg-hero: radial-gradient(ellipse at 50% 0%, rgba(22, 155, 222, 0.15) 0%, transparent 60%);
+            --bg-cta: var(--grad-frequency-alive);
+            --bg-quote: #0d2433;
             --text: #e2e8f0;
-            --text-heading: #f1f5f9;
-            --text-muted: #94a3b8;
+            --text-heading: var(--brand-text);
+            --text-muted: var(--brand-text-secondary);
             --text-on-teal: #ffffff;
             --border: #1e293b;
             --border-card: #2a3a4e;
@@ -125,7 +124,6 @@
             --shadow-lg: 0 12px 40px rgba(0,0,0,0.4);
             --shadow-screenshot: 0 20px 60px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.3);
         }
-        html.dark-mode { --teal: #2dd4bf; }
 
         body {
             font-family: var(--font-body);
@@ -170,7 +168,7 @@
             gap: 6px;
             background: var(--bg-card);
             border: 1px solid var(--border);
-            color: #14b8a6;
+            color: #169bde;
             padding: 5px 16px;
             border-radius: 100px;
             font-family: var(--font-body);
@@ -179,7 +177,7 @@
             margin-bottom: 20px;
             letter-spacing: 0.01em;
         }
-        html.dark-mode .section-pill { color: #2dd4bf; }
+        html.dark-mode .section-pill { color: #45b2e1; }
 
         /* ── Nav ── */
         .nav {
@@ -237,8 +235,8 @@
             font-size: 14px;
             transition: background 0.2s, transform 0.15s;
         }
-        html.dark-mode .nav-cta { background: #14b8a6; }
-        .nav-cta:hover { background: #0d9488; transform: translateY(-1px); color: var(--text-on-teal) !important; }
+        html.dark-mode .nav-cta { background: #169bde; }
+        .nav-cta:hover { background: #0b5a8c; transform: translateY(-1px); color: var(--text-on-teal) !important; }
         .nav-hamburger {
             display: none;
             background: none;
@@ -327,7 +325,7 @@
             font-weight: 500;
         }
         html.dark-mode .hero-sub strong {
-            color: #ccfbf1;
+            color: #e7f5fb;
         }
         .hero-ctas {
             display: flex;
@@ -500,8 +498,8 @@
             margin-top: 14px;
         }
         html.dark-mode .hero-bento-free-pill {
-            background: #042f2e;
-            color: #2dd4bf;
+            background: #052e3c;
+            color: #45b2e1;
         }
 
         @media (max-width: 768px) {
@@ -574,10 +572,10 @@
             font-family: var(--font-heading);
             font-weight: 800;
             font-size: 28px;
-            color: #14b8a6;
+            color: #169bde;
             letter-spacing: -0.02em;
         }
-        html.dark-mode .metric-value { color: #2dd4bf; }
+        html.dark-mode .metric-value { color: #45b2e1; }
         .metric-label {
             font-size: 14px;
             color: var(--text-muted);
@@ -613,7 +611,7 @@
         .feature-card.accent-yellow { border-left-color: #eab308; }
         .feature-card.accent-pink { border-left-color: #f43f5e; }
         .feature-card.accent-cyan { border-left-color: #06b6d4; }
-        .feature-card.accent-teal { border-left-color: #14b8a6; }
+        .feature-card.accent-teal { border-left-color: #169bde; }
         .feature-icon {
             width: 48px;
             height: 48px;
@@ -627,11 +625,11 @@
         .feature-icon.yellow { background: #fef9c3; }
         .feature-icon.pink { background: #fce7f3; }
         .feature-icon.cyan { background: #cffafe; }
-        .feature-icon.teal { background: #ccfbf1; }
+        .feature-icon.teal { background: #e7f5fb; }
         html.dark-mode .feature-icon.yellow { background: #422006; }
         html.dark-mode .feature-icon.pink { background: #3b0a20; }
         html.dark-mode .feature-icon.cyan { background: #083344; }
-        html.dark-mode .feature-icon.teal { background: #042f2e; }
+        html.dark-mode .feature-icon.teal { background: #052e3c; }
 
         .feature-card h3 {
             font-size: 20px;
@@ -669,15 +667,15 @@
             width: 40px;
             height: 40px;
             border-radius: 10px;
-            background: #ccfbf1;
+            background: #e7f5fb;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 14px;
         }
-        html.dark-mode .benefit-icon { background: #042f2e; }
-        .benefit-icon svg { width: 20px; height: 20px; color: #14b8a6; }
-        html.dark-mode .benefit-icon svg { color: #2dd4bf; }
+        html.dark-mode .benefit-icon { background: #052e3c; }
+        .benefit-icon svg { width: 20px; height: 20px; color: #169bde; }
+        html.dark-mode .benefit-icon svg { color: #45b2e1; }
         .benefit-card h3 {
             font-size: 16px;
             font-weight: 700;
@@ -720,19 +718,19 @@
             height: 80px;
             border-radius: 50%;
             background: var(--bg-card);
-            border: 2px solid #14b8a6;
+            border: 2px solid #169bde;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: var(--font-heading);
             font-weight: 800;
             font-size: 28px;
-            color: #14b8a6;
+            color: #169bde;
             margin: 0 auto 24px;
             position: relative;
             z-index: 1;
         }
-        html.dark-mode .step-number { border-color: #2dd4bf; color: #2dd4bf; }
+        html.dark-mode .step-number { border-color: #45b2e1; color: #45b2e1; }
         .step h3 {
             font-size: 22px;
             font-weight: 700;
@@ -809,13 +807,13 @@
         }
         .quote-text blockquote::before {
             content: '\201C';
-            color: #14b8a6;
+            color: #169bde;
             font-size: 48px;
             line-height: 0;
             vertical-align: -12px;
             margin-right: 4px;
         }
-        html.dark-mode .quote-text blockquote::before { color: #2dd4bf; }
+        html.dark-mode .quote-text blockquote::before { color: #45b2e1; }
         .quote-attribution {
             font-size: 15px;
             color: var(--text-muted);
@@ -883,11 +881,11 @@
             border-bottom: none;
         }
         .comparison-table .check {
-            color: #14b8a6;
+            color: #169bde;
             font-size: 18px;
             font-weight: 700;
         }
-        html.dark-mode .comparison-table .check { color: #2dd4bf; }
+        html.dark-mode .comparison-table .check { color: #45b2e1; }
         .comparison-table .cross {
             color: var(--text-muted);
             font-size: 16px;
@@ -937,15 +935,15 @@
             width: 44px;
             height: 44px;
             border-radius: 12px;
-            background: #ccfbf1;
+            background: #e7f5fb;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 14px;
         }
-        html.dark-mode .persona-icon { background: #042f2e; }
-        .persona-icon svg { width: 22px; height: 22px; color: #14b8a6; }
-        html.dark-mode .persona-icon svg { color: #2dd4bf; }
+        html.dark-mode .persona-icon { background: #052e3c; }
+        .persona-icon svg { width: 22px; height: 22px; color: #169bde; }
+        html.dark-mode .persona-icon svg { color: #45b2e1; }
         .persona-card h3 {
             font-size: 15px;
             font-weight: 700;
@@ -1037,7 +1035,7 @@
             align-items: center;
             gap: 8px;
             background: #ffffff;
-            color: #0d9488;
+            color: #0b5a8c;
             padding: 14px 32px;
             border-radius: 100px;
             font-family: var(--font-heading);
@@ -1051,7 +1049,7 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             text-decoration: none;
-            color: #0d9488;
+            color: #0b5a8c;
         }
 
         @media (max-width: 768px) {
@@ -1144,7 +1142,7 @@
                     <rect x="3" y="3" width="7" height="7" rx="1.5" fill="#fef08a"/>
                     <rect x="14" y="3" width="7" height="7" rx="1.5" fill="#fecdd3"/>
                     <rect x="3" y="14" width="7" height="7" rx="1.5" fill="#a5f3fc"/>
-                    <rect x="14" y="14" width="7" height="7" rx="1.5" fill="#14b8a6"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1.5" fill="#169bde"/>
                 </svg>
                 Storymaps.io
             </a>
@@ -1197,7 +1195,7 @@
                         <div class="hero-bento-color" style="background: #fef08a;"></div>
                         <div class="hero-bento-color" style="background: #fecdd3;"></div>
                         <div class="hero-bento-color" style="background: #a5f3fc;"></div>
-                        <div class="hero-bento-color" style="background: #14b8a6;"></div>
+                        <div class="hero-bento-color" style="background: #169bde;"></div>
                     </div>
                 </div>
                 <div class="hero-bento-card hero-bento-integrations">
@@ -1288,7 +1286,7 @@
                 </div>
                 <div class="feature-card accent-teal animate-on-scroll" style="transition-delay: 0.3s">
                     <div class="feature-icon teal">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#0b5a8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
                             <polyline points="16 6 12 2 8 6"/>
                             <line x1="12" y1="2" x2="12" y2="15"/>
@@ -1692,7 +1690,7 @@
                             <rect x="3" y="3" width="7" height="7" rx="1.5" fill="#fef08a"/>
                             <rect x="14" y="3" width="7" height="7" rx="1.5" fill="#fecdd3"/>
                             <rect x="3" y="14" width="7" height="7" rx="1.5" fill="#a5f3fc"/>
-                            <rect x="14" y="14" width="7" height="7" rx="1.5" fill="#14b8a6"/>
+                            <rect x="14" y="14" width="7" height="7" rx="1.5" fill="#169bde"/>
                         </svg>
                         Storymaps.io
                     </a>

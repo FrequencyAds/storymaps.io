@@ -1,0 +1,77 @@
+/* ============================================================
+   Frequency brand palette — single source of truth
+   Ref: https://brand.frequency.media/guidelines/colors
+   Linked by every page; page-local tokens map onto these vars.
+   ============================================================ */
+
+:root {
+    /* ── Primary: Blue ── */
+    --brand-blue: #169bde;          /* blue[5]  — primary */
+    --brand-blue-light: #45b2e1;    /* blue[3] */
+    --brand-blue-dark: #0b5a8c;     /* blue[7] */
+
+    /* Blue 10-shade scale */
+    --brand-blue-0: #e7f5fb;
+    --brand-blue-1: #b3e0f2;
+    --brand-blue-2: #6fc4e8;
+    --brand-blue-3: #45b2e1;
+    --brand-blue-4: #3da8dc;
+    --brand-blue-5: #169bde;
+    --brand-blue-6: #0f6c9b;
+    --brand-blue-7: #0b5a8c;
+    --brand-blue-8: #084464;
+    --brand-blue-9: #052e3c;
+
+    /* ── Secondary: Violet ── */
+    --brand-violet: #7e57c2;        /* violet[5] — secondary */
+    --brand-violet-light: #b89dda;  /* violet[2] */
+    --brand-violet-dark: #442e6f;   /* violet[7] */
+
+    /* Violet 10-shade scale */
+    --brand-violet-0: #f3edf7;
+    --brand-violet-1: #d9c5ea;
+    --brand-violet-2: #b89dda;
+    --brand-violet-3: #9f7dd0;
+    --brand-violet-4: #8e6ac9;
+    --brand-violet-5: #7e57c2;
+    --brand-violet-6: #5d3f95;
+    --brand-violet-7: #442e6f;
+    --brand-violet-8: #2c1e4a;
+    --brand-violet-9: #180f27;
+
+    /* ── Semantic ── */
+    --brand-success: #5ab267;       /* green[5] */
+    --brand-warning: #e79e26;       /* yellow[5] */
+    --brand-error:   #e63459;       /* red[5] */
+
+    /* ── Neutral text ── */
+    --brand-text:          #212121; /* gray[9] */
+    --brand-text-secondary:#808080; /* gray[6] */
+    --brand-text-disabled: #cccccc;
+
+    /* ── Brand gradients (all 135°) ── */
+    --grad-frequency-alive:      linear-gradient(135deg, #2c9ee0 0%, #7727f0 100%);
+    --grad-electric-allure:      linear-gradient(135deg, #4442f0 0%, #36b7cd 100%);
+    --grad-bright-jewel:         linear-gradient(135deg, #2de1b9 0%, #2c9ee0 100%);
+    --grad-specialty-attraction: linear-gradient(135deg, #6a0d9e 0%, #6e18f0 100%);
+    --grad-eyecatching-error:    linear-gradient(135deg, #ff7009 0%, #e23646 100%);
+    --grad-caution-flag:         linear-gradient(135deg, #da8b01 0%, #f6b13e 100%);
+
+    /* ── Type ── */
+    --brand-font-heading: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --brand-font-body: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Dark mode: lift blue/violet for contrast on dark surfaces. */
+html.dark-mode {
+    --brand-blue: #45b2e1;          /* blue[3] reads better on dark */
+    --brand-blue-light: #6fc4e8;
+    --brand-blue-dark: #169bde;
+    --brand-violet: #9f7dd0;        /* violet[3] */
+    --brand-violet-light: #b89dda;
+    --brand-violet-dark: #7e57c2;
+
+    --brand-text: #f1f5f9;
+    --brand-text-secondary: #94a3b8;
+    --brand-text-disabled: #475569;
+}
