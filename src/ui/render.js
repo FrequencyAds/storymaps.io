@@ -3,7 +3,7 @@
 
 import { el, DEFAULT_CARD_COLORS, CARD_COLORS, STATUS_OPTIONS, generateId } from '/src/core/constants.js';
 import { createColumnCard, createStoryCard, createStoryColumn, createSliceContainer, createBackboneRow, createEmptyBackboneRow, createPhantomStep, PHANTOM_BUFFER, renderLegend as uiRenderLegend, getAllTagsInMap, createPartialMapRef, createPartialMapRefCell, renderPartialsList as uiRenderPartialsList, patchCard } from '/src/ui/ui.js';
-import { partialMapEditState, getUpperColumns } from '/src/core/state.js';
+import { partialMapEditState, getUpperColumns, getActivityColumns } from '/src/core/state.js';
 import { showAlert, showConfirm, showPrompt } from '/src/core/modals.js';
 import { quoted } from '/src/core/log.js';
 
@@ -125,9 +125,11 @@ export const render = () => {
         hasActivitiesContent = hasActivitiesContent || _state.partialMaps.some(pm => expandedIds.has(pm.id) && Object.values(pm.activities || {}).some(cards => cards.length > 0));
     }
 
-    // Upper backbone rows render in their own order, independent of the step
-    // order, so dragging a step leaves them fixed.
+    // Backbone rows render in their own orders, independent of the step order,
+    // so dragging a step leaves them fixed. Users/Contexts share one order;
+    // Activities has its own (so inserting a step pushes it right).
     const upperColumns = getUpperColumns();
+    const activityColumns = getActivityColumns();
 
     // Render Users row
     if (hasUsersContent) {
@@ -143,11 +145,11 @@ export const render = () => {
         _dom.storyMap.appendChild(createEmptyBackboneRow('Contexts', upperColumns));
     }
 
-    // Render Activities row
+    // Render Activities row (its own order — gains a slot on insert)
     if (hasActivitiesContent) {
-        _dom.storyMap.appendChild(createBackboneRow('Activities', _state.activities, upperColumns));
+        _dom.storyMap.appendChild(createBackboneRow('Activities', _state.activities, activityColumns));
     } else {
-        _dom.storyMap.appendChild(createEmptyBackboneRow('Activities', upperColumns));
+        _dom.storyMap.appendChild(createEmptyBackboneRow('Activities', activityColumns));
     }
 
     // Steps row (the backbone)

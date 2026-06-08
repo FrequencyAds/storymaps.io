@@ -18,27 +18,53 @@ export const state = {
     legend: [],
     notes: '',
     partialMaps: [],
-    // Horizontal order of the upper backbone rows (Users/Contexts/Activities),
-    // independent of the step order so dragging a step doesn't move them.
+    // Horizontal orders for the backbone rows, independent of the step order so
+    // dragging a step leaves them fixed. Users/Contexts share `upperOrder` (which
+    // never includes inserted detail steps); Activities has its own `activityOrder`
+    // (which does gain a slot on insert, so inserting a step pushes it right).
     upperOrder: [],
+    activityOrder: [],
     mapLoaded: false
 };
 
-// Reconcile the stored upper order against the live columns: keep the stored
-// order for columns that still exist (excluding detail steps, which never
-// occupy the upper rows), then append any new columns. Self-healing — a stale
-// or missing upperOrder still renders every cell. Writes the result back so the
-// order persists, and returns the ordered column objects for rendering.
+// Reconcile a stored row order against the live columns. Keep the stored order
+// for columns that still exist; insert any new column next to its column-order
+// neighbour (so an inserted step pushes the row right at that point); drop
+// missing ones. Self-healing — a stale or missing order still renders every
+// cell. `includeDetail` controls whether inserted detail steps occupy this row.
+const reconcileOrder = (storedOrder, includeDetail) => {
+    const cols = state.columns.filter(c => includeDetail || !c.detail);
+    const present = new Set(cols.map(c => c.id));
+    const result = (storedOrder || []).filter(id => present.has(id));
+    const seen = new Set(result);
+    cols.forEach((c, i) => {
+        if (seen.has(c.id)) return;
+        let insertAt = result.length;
+        for (let j = i - 1; j >= 0; j--) {
+            const idx = result.indexOf(cols[j].id);
+            if (idx >= 0) { insertAt = idx + 1; break; }
+        }
+        result.splice(insertAt, 0, c.id);
+        seen.add(c.id);
+    });
+    return result;
+};
+
+// Users/Contexts order — excludes detail steps (insert never pushes them).
 export const getUpperColumns = () => {
+    const ids = reconcileOrder(state.upperOrder, false);
+    state.upperOrder = ids;
     const byId = new Map(state.columns.map(c => [c.id, c]));
-    const eligibleIds = new Set(state.columns.filter(c => !c.detail).map(c => c.id));
-    const ordered = (state.upperOrder || []).filter(id => eligibleIds.has(id));
-    const seen = new Set(ordered);
-    for (const c of state.columns) {
-        if (!c.detail && !seen.has(c.id)) { ordered.push(c.id); seen.add(c.id); }
-    }
-    state.upperOrder = ordered;
-    return ordered.map(id => byId.get(id));
+    return ids.map(id => byId.get(id));
+};
+
+// Activities order — includes detail steps (insert pushes it right) but stays
+// frozen when a step is dragged.
+export const getActivityColumns = () => {
+    const ids = reconcileOrder(state.activityOrder, true);
+    state.activityOrder = ids;
+    const byId = new Map(state.columns.map(c => [c.id, c]));
+    return ids.map(id => byId.get(id));
 };
 
 // Ephemeral state for partial map editing (not serialized, not synced)
@@ -83,6 +109,7 @@ const snapshotState = () => JSON.stringify({
     tags: state.tags,
     columns: state.columns.map(c => { const { _editingHidden, _partialBlank, ...rest } = c; return rest; }),
     upperOrder: [...(state.upperOrder || [])],
+    activityOrder: [...(state.activityOrder || [])],
     users: cloneCardMap(state.users),
     contexts: cloneCardMap(state.contexts),
     activities: cloneCardMap(state.activities),
@@ -114,6 +141,7 @@ const restoreSnapshot = (json) => {
     state.tags = snap.tags || [];
     state.columns = snap.columns;
     state.upperOrder = snap.upperOrder || [];
+    state.activityOrder = snap.activityOrder || [];
     state.users = snap.users;
     state.contexts = snap.contexts || {};
     state.activities = snap.activities;

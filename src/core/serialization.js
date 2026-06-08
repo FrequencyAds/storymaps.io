@@ -78,15 +78,21 @@ export const serialize = () => ({
         if (slice.closedReason) obj.closedReason = slice.closedReason;
         return obj;
     }),
-    // Upper-row order stored positionally (column ids aren't serialized) — index
-    // into the steps array. Omitted when it matches the natural column order.
+    // Backbone-row orders stored positionally (column ids aren't serialized) —
+    // indices into the steps array. Omitted when they match the natural order.
     ...((() => {
-        const idx = (state.upperOrder || [])
+        const toIdx = (order) => (order || [])
             .map(id => state.columns.findIndex(c => c.id === id))
             .filter(i => i >= 0);
-        const natural = state.columns.map((c, i) => c.detail ? -1 : i).filter(i => i >= 0);
-        const isNatural = idx.length === natural.length && idx.every((v, i) => v === natural[i]);
-        return isNatural ? {} : { upperOrder: idx };
+        const matches = (idx, natural) => idx.length === natural.length && idx.every((v, i) => v === natural[i]);
+        const out = {};
+        const upperIdx = toIdx(state.upperOrder);
+        const upperNatural = state.columns.map((c, i) => c.detail ? -1 : i).filter(i => i >= 0);
+        if (!matches(upperIdx, upperNatural)) out.upperOrder = upperIdx;
+        const actIdx = toIdx(state.activityOrder);
+        const actNatural = state.columns.map((c, i) => i);
+        if (!matches(actIdx, actNatural)) out.activityOrder = actIdx;
+        return out;
     })()),
     ...(state.legend.length > 0 && {
         legend: state.legend.map(entry => ({ color: entry.color, label: entry.label }))
@@ -114,9 +120,12 @@ const deserializeV1 = (data) => {
         return deserializeColumn(step);
     });
 
-    // Upper-row order: positional indices → live column ids (empty = natural order)
+    // Backbone-row orders: positional indices → live column ids (empty = natural)
     state.upperOrder = Array.isArray(data.upperOrder)
         ? data.upperOrder.map(i => state.columns[i]?.id).filter(Boolean)
+        : [];
+    state.activityOrder = Array.isArray(data.activityOrder)
+        ? data.activityOrder.map(i => state.columns[i]?.id).filter(Boolean)
         : [];
 
     // Users: positional array → keyed by column ID

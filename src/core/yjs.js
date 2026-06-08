@@ -241,6 +241,9 @@ export const syncFromYjs = () => {
     const upperOrder = ymap.get('upperOrder');
     if (Array.isArray(upperOrder)) _state.upperOrder = upperOrder.filter(id => typeof id === 'string');
 
+    const activityOrder = ymap.get('activityOrder');
+    if (Array.isArray(activityOrder)) _state.activityOrder = activityOrder.filter(id => typeof id === 'string');
+
     const yColumns = ymap.get('columns');
     if (yColumns) {
         const columnsData = typeof yColumns.toJSON === 'function' ? yColumns.toJSON() : yColumns;
@@ -479,8 +482,9 @@ export const syncToYjs = () => {
     ydoc.transact(() => {
         ymap.set('name', _state.name);
         ymap.set('tags', _state.tags);
-        // Upper-row order by column id (ids are stable within a Yjs doc)
+        // Backbone-row orders by column id (ids are stable within a Yjs doc)
         ymap.set('upperOrder', [...(_state.upperOrder || [])]);
+        ymap.set('activityOrder', [...(_state.activityOrder || [])]);
 
         let yColumns = ymap.get('columns');
         if (!yColumns || typeof yColumns.toArray !== 'function') {
