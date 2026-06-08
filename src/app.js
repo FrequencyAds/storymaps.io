@@ -1654,6 +1654,7 @@ ui.init({
     renderAndSave,
     scrollElementIntoView,
     addColumn,
+    addColumnAt,
     addSlice,
     materializePhantomColumn,
     handleColumnSelection,

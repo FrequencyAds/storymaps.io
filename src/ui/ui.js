@@ -18,6 +18,7 @@ let _saveToStorage = null;
 let _renderAndSave = null;
 let _scrollElementIntoView = null;
 let _addColumn = null;
+let _addColumnAt = null;
 let _addSlice = null;
 let _materializePhantomColumn = null;
 let _handleColumnSelection = null;
@@ -33,7 +34,7 @@ let _initSortable = null;
 
 export const PHANTOM_BUFFER = 3;
 
-export const init = ({ state, isMapEditable, pushUndo, addStory, deleteColumn, deleteStory, deleteSlice, saveToStorage, renderAndSave, scrollElementIntoView, addColumn, addSlice, materializePhantomColumn, handleColumnSelection, startEditingPartial, stopEditingPartial, deletePartialMap, restorePartialMap, openExpandModal, logEvent, logTextEdit, refilterCard, initSortable }) => {
+export const init = ({ state, isMapEditable, pushUndo, addStory, deleteColumn, deleteStory, deleteSlice, saveToStorage, renderAndSave, scrollElementIntoView, addColumn, addColumnAt, addSlice, materializePhantomColumn, handleColumnSelection, startEditingPartial, stopEditingPartial, deletePartialMap, restorePartialMap, openExpandModal, logEvent, logTextEdit, refilterCard, initSortable }) => {
     _state = state;
     _dom = {
         storyMap: document.getElementById('storyMap'),
@@ -57,6 +58,7 @@ export const init = ({ state, isMapEditable, pushUndo, addStory, deleteColumn, d
     _renderAndSave = renderAndSave;
     _scrollElementIntoView = scrollElementIntoView;
     _addColumn = addColumn;
+    _addColumnAt = addColumnAt;
     _addSlice = addSlice;
     _materializePhantomColumn = materializePhantomColumn;
     _handleColumnSelection = handleColumnSelection;
@@ -213,7 +215,7 @@ export const createExpandButton = (item, { readOnly = false } = {}) => {
     return btn;
 };
 
-export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColorChange, onUrlChange, onStatusChange = null, onHide = null, onDeleteColumn = null) => {
+export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColorChange, onUrlChange, onStatusChange = null, onHide = null, onDeleteColumn = null, onInsertLeft = null, onInsertRight = null) => {
     const container = el('div', 'card-options');
 
     const btn = el('button', 'btn-options', { text: '...', title: 'Options', ariaLabel: 'Options menu', ariaHasPopup: 'true', ariaExpanded: 'false' });
@@ -429,6 +431,27 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
         }
     });
     menu.appendChild(deleteOption);
+
+    // Insert step options (for step cards only) — add a step beside this one,
+    // pushing steps + stories right without disturbing the rows above.
+    if (onInsertLeft) {
+        const insertLeftOption = el('button', 'options-item options-insert-step', { text: 'Insert step left' });
+        insertLeftOption.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menu.classList.remove('visible');
+            onInsertLeft();
+        });
+        menu.appendChild(insertLeftOption);
+    }
+    if (onInsertRight) {
+        const insertRightOption = el('button', 'options-item options-insert-step', { text: 'Insert step right' });
+        insertRightOption.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menu.classList.remove('visible');
+            onInsertRight();
+        });
+        menu.appendChild(insertRightOption);
+    }
 
     // Delete column option (for step cards only)
     if (onDeleteColumn) {
@@ -799,7 +822,15 @@ export const createColumnCard = (column) => {
             _saveToStorage();
         },
         null, // onHide - not used for step cards (Delete already hides)
-        () => _deleteColumn(column.id)
+        () => _deleteColumn(column.id),
+        () => {
+            const idx = _state.columns.findIndex(c => c.id === column.id);
+            if (idx >= 0) _addColumnAt?.(idx, false, true);
+        },
+        () => {
+            const idx = _state.columns.findIndex(c => c.id === column.id);
+            if (idx >= 0) _addColumnAt?.(idx + 1, false, true);
+        }
     );
 
     card.append(textarea, optionsMenu, buildIndicators(column, card));
@@ -962,8 +993,8 @@ export const createEmptyBackboneRow = (rowType) => {
 
     _state.columns.forEach(col => {
         if (col._editingHidden) return;
-        // detail steps don't occupy Users/Contexts cells, so those rows stay fixed
-        if (col.detail && (rowTypeKey === 'users' || rowTypeKey === 'contexts')) return;
+        // detail steps don't occupy the upper backbone rows, so those rows stay fixed
+        if (col.detail && (rowTypeKey === 'users' || rowTypeKey === 'contexts' || rowTypeKey === 'activities')) return;
         if (col.partialMapId) {
             if (hasAnyExpandedBR && expandedIdsBR.has(col.partialMapId)) {
                 const pm = _state.partialMaps.find(p => p.id === col.partialMapId);
@@ -1040,8 +1071,8 @@ export const createBackboneRow = (rowType, cardMap) => {
 
     _state.columns.forEach(col => {
         if (col._editingHidden) return;
-        // detail steps don't occupy Users/Contexts cells, so those rows stay fixed
-        if (col.detail && (rowTypeKey === 'users' || rowTypeKey === 'contexts')) return;
+        // detail steps don't occupy the upper backbone rows, so those rows stay fixed
+        if (col.detail && (rowTypeKey === 'users' || rowTypeKey === 'contexts' || rowTypeKey === 'activities')) return;
         if (col.partialMapId) {
             if (hasAnyExpandedBK && expandedIdsBK.has(col.partialMapId)) {
                 const pm = _state.partialMaps.find(p => p.id === col.partialMapId);
