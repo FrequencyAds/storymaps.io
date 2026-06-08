@@ -86,12 +86,11 @@ export const serialize = () => ({
             .filter(i => i >= 0);
         const matches = (idx, natural) => idx.length === natural.length && idx.every((v, i) => v === natural[i]);
         const out = {};
+        const natural = state.columns.map((c, i) => i);
         const upperIdx = toIdx(state.upperOrder);
-        const upperNatural = state.columns.map((c, i) => c.detail ? -1 : i).filter(i => i >= 0);
-        if (!matches(upperIdx, upperNatural)) out.upperOrder = upperIdx;
+        if (!matches(upperIdx, natural)) out.upperOrder = upperIdx;
         const actIdx = toIdx(state.activityOrder);
-        const actNatural = state.columns.map((c, i) => i);
-        if (!matches(actIdx, actNatural)) out.activityOrder = actIdx;
+        if (!matches(actIdx, natural)) out.activityOrder = actIdx;
         return out;
     })()),
     ...(state.legend.length > 0 && {

@@ -50,9 +50,10 @@ const reconcileOrder = (storedOrder, includeDetail) => {
     return result;
 };
 
-// Users/Contexts order — excludes detail steps (insert never pushes them).
+// Users/Contexts order — spans all columns (so every step can host a user/
+// context), but stays frozen when a step is dragged.
 export const getUpperColumns = () => {
-    const ids = reconcileOrder(state.upperOrder, false);
+    const ids = reconcileOrder(state.upperOrder, true);
     state.upperOrder = ids;
     const byId = new Map(state.columns.map(c => [c.id, c]));
     return ids.map(id => byId.get(id));
