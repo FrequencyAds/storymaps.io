@@ -1360,6 +1360,15 @@ body.welcome-visible #mainMenu > .dropdown-submenu:has(> .dropdown-submenu-trigg
     pointer-events: none;
 }
 
+/* While dragging a step, hide the "+" add cells/phantoms — they don't follow
+   the translated columns and would otherwise strand at stale positions.
+   visibility keeps their space so the layout doesn't shift. */
+.dragging-column .btn-add-story,
+.dragging-column .phantom-column,
+.dragging-column .phantom-step {
+    visibility: hidden;
+}
+
 .step::before {
     content: '';
     position: absolute;

@@ -362,7 +362,8 @@ export const initPan = () => {
     });
 
     wrapper.addEventListener('mousedown', (e) => {
-        if (e.button !== 2) return;
+        // Middle-click (1) or right-click (2) grabs and pans the canvas.
+        if (e.button !== 1 && e.button !== 2) return;
         e.preventDefault();
         dismissContextMenu();
 

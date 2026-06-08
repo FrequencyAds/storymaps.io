@@ -408,6 +408,9 @@ export const initSortable = async () => {
                 }
 
                 evt.item.classList.add('column-being-dragged');
+                // Hide the "+" add cells/phantoms while dragging; they don't follow
+                // the translated columns and would otherwise strand at stale positions.
+                _dom.storyMap.classList.add('dragging-column');
                 document.querySelectorAll(`.story-column[data-column-id="${dragColumnId}"]:not([data-row-type]) .story-card`).forEach(card => {
                     card.classList.add('column-being-dragged');
                 });
@@ -423,6 +426,7 @@ export const initSortable = async () => {
                     animFrame = null;
                 }
 
+                _dom.storyMap.classList.remove('dragging-column');
                 document.querySelectorAll('.story-column').forEach(el => {
                     el.style.transform = '';
                 });
