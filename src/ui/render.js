@@ -264,6 +264,9 @@ export const initSortable = async () => {
             group: 'stories',
             animation: 150,
             forceFallback: true,
+            // Make empty columns reliable drop targets (e.g. dragging a context
+            // card into an empty column to the right); default 5px is too small.
+            emptyInsertThreshold: 40,
             delay: 150,
             delayOnTouchOnly: true,
             ghostClass: 'sortable-ghost',
