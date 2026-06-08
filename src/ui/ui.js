@@ -962,6 +962,8 @@ export const createEmptyBackboneRow = (rowType) => {
 
     _state.columns.forEach(col => {
         if (col._editingHidden) return;
+        // detail steps don't occupy Users/Contexts cells, so those rows stay fixed
+        if (col.detail && (rowTypeKey === 'users' || rowTypeKey === 'contexts')) return;
         if (col.partialMapId) {
             if (hasAnyExpandedBR && expandedIdsBR.has(col.partialMapId)) {
                 const pm = _state.partialMaps.find(p => p.id === col.partialMapId);
@@ -1038,6 +1040,8 @@ export const createBackboneRow = (rowType, cardMap) => {
 
     _state.columns.forEach(col => {
         if (col._editingHidden) return;
+        // detail steps don't occupy Users/Contexts cells, so those rows stay fixed
+        if (col.detail && (rowTypeKey === 'users' || rowTypeKey === 'contexts')) return;
         if (col.partialMapId) {
             if (hasAnyExpandedBK && expandedIdsBK.has(col.partialMapId)) {
                 const pm = _state.partialMaps.find(p => p.id === col.partialMapId);

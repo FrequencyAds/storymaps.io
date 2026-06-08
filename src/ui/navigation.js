@@ -239,6 +239,8 @@ const makeMenuItem = (label, icon, action, destructive = false) => {
 };
 
 const ICON_ADD_SPACER = '<line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/>';
+const ICON_INSERT_LEFT = '<rect x="7.5" y="3" width="6" height="10" rx="1"/><line x1="3" y1="5" x2="3" y2="11"/><polyline points="5 6 3.5 8 5 10"/>';
+const ICON_INSERT_RIGHT = '<rect x="2.5" y="3" width="6" height="10" rx="1"/><line x1="13" y1="5" x2="13" y2="11"/><polyline points="11 6 12.5 8 11 10"/>';
 const ICON_DELETE = '<polyline points="3 5 4 13 12 13 13 5"/><line x1="2" y1="5" x2="14" y2="5"/><line x1="6" y1="3" x2="10" y2="3"/>';
 const ICON_DUPLICATE = '<rect x="3" y="3" width="8" height="10" rx="1.5"/><path d="M6 3V2.5A1.5 1.5 0 0 1 7.5 1H12a1.5 1.5 0 0 1 1.5 1.5V11A1.5 1.5 0 0 1 12 12.5H11"/>';
 const ICON_INSERT_PARTIAL = '<rect x="2" y="2" width="5" height="5" rx="0.7" fill="#fad875" stroke="#d4aa00" stroke-width="0.7"/><rect x="9" y="2" width="5" height="5" rx="0.7" fill="#ea6582" stroke="#e88a9a" stroke-width="0.7"/><rect x="2" y="9" width="5" height="5" rx="0.7" fill="#30d3ef" stroke="#67c5d6" stroke-width="0.7"/><rect x="9" y="9" width="5" height="5" rx="0.7" fill="#14b8a6" stroke="#0d9488" stroke-width="0.7"/>';
@@ -272,6 +274,16 @@ const showContextMenu = (x, y, columnId, columnIndex) => {
     menu.className = 'canvas-context-menu';
 
     if (_selection.columnIds.length > 0) return;
+
+    if (columnIndex !== null) {
+        menu.appendChild(makeMenuItem('Insert step left', ICON_INSERT_LEFT, () => {
+            _addColumnAt(columnIndex, false, true);
+        }));
+        menu.appendChild(makeMenuItem('Insert step right', ICON_INSERT_RIGHT, () => {
+            _addColumnAt(columnIndex + 1, false, true);
+        }));
+        addSep(menu);
+    }
 
     menu.appendChild(makeMenuItem('Add spacer column', ICON_ADD_SPACER, () => {
         _addColumnAt(columnIndex !== null ? columnIndex + 1 : _state.columns.length, true);

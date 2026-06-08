@@ -100,7 +100,8 @@ const CARD_FIELDS = {
     status: { default: null },
     points: { default: null },
     partialMapId: { default: null },
-    partialMapOrigin: { default: false }
+    partialMapOrigin: { default: false },
+    detail: { default: false }
 };
 
 const createYCard = (obj) => {
@@ -154,7 +155,8 @@ const cardFromYjs = (data) => {
         points: data.points ?? null,
         tags,
         partialMapId: data.partialMapId || null,
-        partialMapOrigin: data.partialMapOrigin || false
+        partialMapOrigin: data.partialMapOrigin || false,
+        detail: data.detail || false
     };
 };
 

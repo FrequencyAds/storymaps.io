@@ -34,7 +34,7 @@ const deserializeCard = (obj) => {
 };
 
 const deserializeColumn = (obj) => {
-    return createColumn(
+    const col = createColumn(
         obj.name || obj.n || '',
         obj.color || obj.c || null,
         sanitizeUrl(obj.url || obj.u),
@@ -44,6 +44,8 @@ const deserializeColumn = (obj) => {
         Array.isArray(obj.tags || obj.tg) ? (obj.tags || obj.tg) : [],
         obj.body || obj.b || ''
     );
+    if (obj.detail) col.detail = true;
+    return col;
 };
 
 export const serialize = () => ({
@@ -63,7 +65,9 @@ export const serialize = () => ({
             if (col.partialMapOrigin) obj.partialMapOrigin = true;
             return obj;
         }
-        return serializeCard(col);
+        const obj = serializeCard(col);
+        if (col.detail) obj.detail = true;
+        return obj;
     }),
     slices: state.slices.map(slice => {
         const obj = {

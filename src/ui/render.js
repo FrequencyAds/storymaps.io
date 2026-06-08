@@ -379,12 +379,14 @@ export const initSortable = async () => {
         const sortable = Sortable.create(stepsRow, {
             animation: 150,
             forceFallback: true,
-            handle: '.step-drag-handle',
+            delay: 150,
+            delayOnTouchOnly: true,
             ghostClass: 'sortable-ghost',
             chosenClass: 'sortable-chosen',
             dragClass: 'sortable-drag',
             draggable: '.step',
-            filter: '.steps-row-spacer, .phantom-step, .partial-map-ref, .partial-map-preview-col',
+            filter: '.step-text, .btn-options, .options-menu, .card-indicators, a, button, .steps-row-spacer, .phantom-step, .partial-map-ref, .partial-map-preview-col',
+            preventOnFilter: false,
             onStart: (evt) => {
                 isDragging = true;
                 dragColumnId = evt.item.dataset.columnId;
@@ -1313,9 +1315,12 @@ export const addColumn = (hidden = true) => {
     });
 };
 
-export const addColumnAt = (index, hidden = false) => {
+export const addColumnAt = (index, hidden = false, detail = false) => {
     _pushUndo();
     const column = _createColumn('', CARD_COLORS.green, null, hidden);
+    // detail steps build out under existing phases: they get Activities/Steps/story
+    // cells (which shift right) but no Users/Contexts cells, so the top rows stay fixed.
+    if (detail) column.detail = true;
     _state.columns.splice(index, 0, column);
     _state.users[column.id] = [];
     _state.contexts[column.id] = [];
@@ -1323,6 +1328,14 @@ export const addColumnAt = (index, hidden = false) => {
     _state.slices.forEach(slice => slice.stories[column.id] = []);
     if (!hidden) _logEvent?.(`Added step${quoted(column.name)}`, [column.id]);
     _renderAndSave();
+
+    requestAnimationFrame(() => {
+        const newStep = _dom.storyMap.querySelector(`[data-column-id="${column.id}"]`);
+        if (newStep) {
+            _scrollElementIntoView(newStep);
+            if (!hidden) newStep.querySelector('.step-text')?.focus();
+        }
+    });
 };
 
 export const addStory = (columnId, sliceId, rowType = null, { skipFocus = false } = {}) => {
