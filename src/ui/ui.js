@@ -798,11 +798,10 @@ export const createColumnCard = (column) => {
     const optionsMenu = createOptionsMenu(
         column,
         CARD_COLORS,
-        () => {
-            column.hidden = true;
-            _renderAndSave();
-        },
-        `Delete "${column.name || 'this step'}"?`,
+        // Delete removes the column entirely, so the steps to its right shift
+        // left to fill the gap (rather than leaving an empty placeholder).
+        () => _deleteColumn(column.id),
+        `Delete "${column.name || 'this step'}" and its stories?`,
         (color) => {
             _pushUndo();
             column.color = color;
@@ -821,8 +820,8 @@ export const createColumnCard = (column) => {
             patchCard(card, column);
             _saveToStorage();
         },
-        null, // onHide - not used for step cards (Delete already hides)
-        () => _deleteColumn(column.id),
+        null, // onHide - not used for step cards
+        null, // onDeleteColumn - Delete already removes the column
         () => {
             const idx = _state.columns.findIndex(c => c.id === column.id);
             if (idx >= 0) _addColumnAt?.(idx, false, true);
