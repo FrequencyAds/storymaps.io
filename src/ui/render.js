@@ -3,7 +3,7 @@
 
 import { el, DEFAULT_CARD_COLORS, CARD_COLORS, STATUS_OPTIONS, generateId } from '/src/core/constants.js';
 import { createColumnCard, createStoryCard, createStoryColumn, createSliceContainer, createBackboneRow, createEmptyBackboneRow, createPhantomStep, PHANTOM_BUFFER, renderLegend as uiRenderLegend, getAllTagsInMap, createPartialMapRef, createPartialMapRefCell, renderPartialsList as uiRenderPartialsList, patchCard } from '/src/ui/ui.js';
-import { partialMapEditState } from '/src/core/state.js';
+import { partialMapEditState, getUpperColumns } from '/src/core/state.js';
 import { showAlert, showConfirm, showPrompt } from '/src/core/modals.js';
 import { quoted } from '/src/core/log.js';
 
@@ -125,25 +125,29 @@ export const render = () => {
         hasActivitiesContent = hasActivitiesContent || _state.partialMaps.some(pm => expandedIds.has(pm.id) && Object.values(pm.activities || {}).some(cards => cards.length > 0));
     }
 
+    // Upper backbone rows render in their own order, independent of the step
+    // order, so dragging a step leaves them fixed.
+    const upperColumns = getUpperColumns();
+
     // Render Users row
     if (hasUsersContent) {
-        _dom.storyMap.appendChild(createBackboneRow('Users', _state.users));
+        _dom.storyMap.appendChild(createBackboneRow('Users', _state.users, upperColumns));
     } else {
-        _dom.storyMap.appendChild(createEmptyBackboneRow('Users'));
+        _dom.storyMap.appendChild(createEmptyBackboneRow('Users', upperColumns));
     }
 
     // Render Contexts row (when/triggers — between Users and Activities)
     if (hasContextsContent) {
-        _dom.storyMap.appendChild(createBackboneRow('Contexts', _state.contexts));
+        _dom.storyMap.appendChild(createBackboneRow('Contexts', _state.contexts, upperColumns));
     } else {
-        _dom.storyMap.appendChild(createEmptyBackboneRow('Contexts'));
+        _dom.storyMap.appendChild(createEmptyBackboneRow('Contexts', upperColumns));
     }
 
     // Render Activities row
     if (hasActivitiesContent) {
-        _dom.storyMap.appendChild(createBackboneRow('Activities', _state.activities));
+        _dom.storyMap.appendChild(createBackboneRow('Activities', _state.activities, upperColumns));
     } else {
-        _dom.storyMap.appendChild(createEmptyBackboneRow('Activities'));
+        _dom.storyMap.appendChild(createEmptyBackboneRow('Activities', upperColumns));
     }
 
     // Steps row (the backbone)
@@ -368,7 +372,9 @@ export const initSortable = async () => {
                 const stepRect = step.getBoundingClientRect();
                 const deltaX = stepRect.left - startX;
 
-                document.querySelectorAll(`.story-column[data-column-id="${columnId}"]`).forEach(el => {
+                // Only the story (slice) cells follow the step; the upper backbone
+                // rows (which carry data-row-type) stay fixed.
+                document.querySelectorAll(`.story-column[data-column-id="${columnId}"]:not([data-row-type])`).forEach(el => {
                     el.style.transform = `translateX(${deltaX}px)`;
                 });
             });
@@ -398,7 +404,7 @@ export const initSortable = async () => {
                 }
 
                 evt.item.classList.add('column-being-dragged');
-                document.querySelectorAll(`.story-column[data-column-id="${dragColumnId}"] .story-card`).forEach(card => {
+                document.querySelectorAll(`.story-column[data-column-id="${dragColumnId}"]:not([data-row-type]) .story-card`).forEach(card => {
                     card.classList.add('column-being-dragged');
                 });
 

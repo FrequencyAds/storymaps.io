@@ -78,6 +78,16 @@ export const serialize = () => ({
         if (slice.closedReason) obj.closedReason = slice.closedReason;
         return obj;
     }),
+    // Upper-row order stored positionally (column ids aren't serialized) — index
+    // into the steps array. Omitted when it matches the natural column order.
+    ...((() => {
+        const idx = (state.upperOrder || [])
+            .map(id => state.columns.findIndex(c => c.id === id))
+            .filter(i => i >= 0);
+        const natural = state.columns.map((c, i) => c.detail ? -1 : i).filter(i => i >= 0);
+        const isNatural = idx.length === natural.length && idx.every((v, i) => v === natural[i]);
+        return isNatural ? {} : { upperOrder: idx };
+    })()),
     ...(state.legend.length > 0 && {
         legend: state.legend.map(entry => ({ color: entry.color, label: entry.label }))
     }),
@@ -103,6 +113,11 @@ const deserializeV1 = (data) => {
         if (step.partialMapId) return createRefColumn(step.partialMapId, !!step.partialMapOrigin);
         return deserializeColumn(step);
     });
+
+    // Upper-row order: positional indices → live column ids (empty = natural order)
+    state.upperOrder = Array.isArray(data.upperOrder)
+        ? data.upperOrder.map(i => state.columns[i]?.id).filter(Boolean)
+        : [];
 
     // Users: positional array → keyed by column ID
     state.users = {};

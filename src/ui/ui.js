@@ -971,7 +971,7 @@ export const createStoryColumn = (col, slice, rowType = null) => {
     return columnEl;
 };
 
-export const createEmptyBackboneRow = (rowType) => {
+export const createEmptyBackboneRow = (rowType, upperColumns = _state.columns) => {
     const rowTypeKey = rowType.toLowerCase(); // 'users' or 'activities'
     const containerClass = rowType === 'Users' ? 'users-row empty-backbone-row' :
                            rowType === 'Contexts' ? 'contexts-row empty-backbone-row' :
@@ -991,10 +991,8 @@ export const createEmptyBackboneRow = (rowType) => {
     const expandedIdsBR = partialMapEditState.expandedIds;
     const hasAnyExpandedBR = expandedIdsBR.size > 0 && !partialMapEditState.activeId;
 
-    _state.columns.forEach(col => {
+    upperColumns.forEach(col => {
         if (col._editingHidden) return;
-        // detail steps don't occupy the upper backbone rows, so those rows stay fixed
-        if (col.detail && (rowTypeKey === 'users' || rowTypeKey === 'contexts' || rowTypeKey === 'activities')) return;
         if (col.partialMapId) {
             if (hasAnyExpandedBR && expandedIdsBR.has(col.partialMapId)) {
                 const pm = _state.partialMaps.find(p => p.id === col.partialMapId);
@@ -1049,7 +1047,7 @@ export const createEmptyBackboneRow = (rowType) => {
     return container;
 };
 
-export const createBackboneRow = (rowType, cardMap) => {
+export const createBackboneRow = (rowType, cardMap, upperColumns = _state.columns) => {
     const rowTypeKey = rowType.toLowerCase(); // 'users' | 'contexts' | 'activities'
     const containerClass = rowType === 'Users' ? 'users-row' :
                            rowType === 'Contexts' ? 'contexts-row' :
@@ -1069,10 +1067,8 @@ export const createBackboneRow = (rowType, cardMap) => {
     const expandedIdsBK = partialMapEditState.expandedIds;
     const hasAnyExpandedBK = expandedIdsBK.size > 0 && !partialMapEditState.activeId;
 
-    _state.columns.forEach(col => {
+    upperColumns.forEach(col => {
         if (col._editingHidden) return;
-        // detail steps don't occupy the upper backbone rows, so those rows stay fixed
-        if (col.detail && (rowTypeKey === 'users' || rowTypeKey === 'contexts' || rowTypeKey === 'activities')) return;
         if (col.partialMapId) {
             if (hasAnyExpandedBK && expandedIdsBK.has(col.partialMapId)) {
                 const pm = _state.partialMaps.find(p => p.id === col.partialMapId);

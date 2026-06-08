@@ -18,7 +18,27 @@ export const state = {
     legend: [],
     notes: '',
     partialMaps: [],
+    // Horizontal order of the upper backbone rows (Users/Contexts/Activities),
+    // independent of the step order so dragging a step doesn't move them.
+    upperOrder: [],
     mapLoaded: false
+};
+
+// Reconcile the stored upper order against the live columns: keep the stored
+// order for columns that still exist (excluding detail steps, which never
+// occupy the upper rows), then append any new columns. Self-healing — a stale
+// or missing upperOrder still renders every cell. Writes the result back so the
+// order persists, and returns the ordered column objects for rendering.
+export const getUpperColumns = () => {
+    const byId = new Map(state.columns.map(c => [c.id, c]));
+    const eligibleIds = new Set(state.columns.filter(c => !c.detail).map(c => c.id));
+    const ordered = (state.upperOrder || []).filter(id => eligibleIds.has(id));
+    const seen = new Set(ordered);
+    for (const c of state.columns) {
+        if (!c.detail && !seen.has(c.id)) { ordered.push(c.id); seen.add(c.id); }
+    }
+    state.upperOrder = ordered;
+    return ordered.map(id => byId.get(id));
 };
 
 // Ephemeral state for partial map editing (not serialized, not synced)
@@ -62,6 +82,7 @@ const snapshotState = () => JSON.stringify({
     name: state.name,
     tags: state.tags,
     columns: state.columns.map(c => { const { _editingHidden, _partialBlank, ...rest } = c; return rest; }),
+    upperOrder: [...(state.upperOrder || [])],
     users: cloneCardMap(state.users),
     contexts: cloneCardMap(state.contexts),
     activities: cloneCardMap(state.activities),
@@ -92,6 +113,7 @@ const restoreSnapshot = (json) => {
     state.name = snap.name;
     state.tags = snap.tags || [];
     state.columns = snap.columns;
+    state.upperOrder = snap.upperOrder || [];
     state.users = snap.users;
     state.contexts = snap.contexts || {};
     state.activities = snap.activities;

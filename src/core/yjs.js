@@ -238,6 +238,9 @@ export const syncFromYjs = () => {
     const tags = ymap.get('tags');
     if (Array.isArray(tags)) _state.tags = tags.filter(t => typeof t === 'string');
 
+    const upperOrder = ymap.get('upperOrder');
+    if (Array.isArray(upperOrder)) _state.upperOrder = upperOrder.filter(id => typeof id === 'string');
+
     const yColumns = ymap.get('columns');
     if (yColumns) {
         const columnsData = typeof yColumns.toJSON === 'function' ? yColumns.toJSON() : yColumns;
@@ -476,6 +479,8 @@ export const syncToYjs = () => {
     ydoc.transact(() => {
         ymap.set('name', _state.name);
         ymap.set('tags', _state.tags);
+        // Upper-row order by column id (ids are stable within a Yjs doc)
+        ymap.set('upperOrder', [...(_state.upperOrder || [])]);
 
         let yColumns = ymap.get('columns');
         if (!yColumns || typeof yColumns.toArray !== 'function') {
