@@ -392,7 +392,9 @@ export const initSortable = async () => {
             ghostClass: 'sortable-ghost',
             chosenClass: 'sortable-chosen',
             dragClass: 'sortable-drag',
-            draggable: '.step',
+            // Hidden-column placeholders (holes) are draggable too, so a step can
+            // be dragged into/past an empty slot. The trailing "+" phantoms stay fixed.
+            draggable: '.step, .step-placeholder:not(.phantom-step)',
             filter: '.step-text, .btn-options, .options-menu, .card-indicators, a, button, .steps-row-spacer, .phantom-step, .partial-map-ref, .partial-map-preview-col',
             preventOnFilter: false,
             onStart: (evt) => {
